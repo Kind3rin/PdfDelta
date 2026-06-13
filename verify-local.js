@@ -455,7 +455,7 @@ async function main() {
 
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
     if (value.worker !== "vendor/pdf.worker.min.js") failures.push("worker PDF.js non locale");
-    if (!value.initialUx.firstHeading.includes("Carica") || value.initialUx.editorReady || !value.initialUx.editorEmpty || !value.initialUx.suggestions.includes("pdf-to-word")) failures.push("UX iniziale non riuscita");
+    if (!value.initialUx.firstHeading.includes("PDF") || value.initialUx.editorReady || !value.initialUx.editorEmpty || !value.initialUx.suggestions.includes("pdf-to-word")) failures.push("UX iniziale non riuscita");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
     if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");

@@ -1400,6 +1400,7 @@ const runButton = $("#runTool");
 const resultPanel = $("#resultPanel");
 const dropzone = $("#dropzone");
 const fileInput = $("#fileInput");
+const clearQueueButton = $("#clearQueue");
 const topbar = $(".topbar");
 const smartSuggestions = $("#smartSuggestions");
 const compatibilityNote = $("#compatibilityNote");
@@ -1622,13 +1623,14 @@ function toggleFavorite(toolId) {
 function renderFiles() {
   runButton.disabled = !isToolCompatible(state.selectedTool);
   if (compatibilityNote) compatibilityNote.textContent = compatibilityMessage();
+  if (clearQueueButton) clearQueueButton.hidden = !state.files.length;
   renderSuggestions();
   updateStepStrip();
 
   if (!state.selectedTool) {
     runButton.innerHTML = state.files.length
       ? '<span aria-hidden="true">▶</span> Scegli azione'
-      : '<span aria-hidden="true">⇣</span> Carica file';
+      : '<span aria-hidden="true">+</span> Carica file';
   } else if (state.selectedTool.status === "bloccato") {
     runButton.textContent = "Bloccato per zero costi";
   } else if (!isToolCompatible(state.selectedTool)) {

@@ -1,5 +1,6 @@
 .ruflo/
 .swarm/
+.claude-flow/
 *.png
 *.tmp
 *.log

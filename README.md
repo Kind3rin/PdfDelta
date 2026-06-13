@@ -76,7 +76,7 @@ Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie local
 - Unisci PDF e intercala due PDF fronte/retro.
 - Unisci PDF e immagini nello stesso documento mantenendo l'ordine della coda.
 - Editor visuale per compilare, firmare e disegnare su PDF nel browser.
-- Cockpit guidato sopra tutto: carica file, scegli azione, scarica.
+- Cockpit applicativo ridisegnato da zero: carica file, scegli azione, scarica.
 - Suggerimenti automatici in base ai file caricati e auto-selezione dell'azione piu probabile.
 - Editor contestuale: niente canvas vuoto, si apre solo quando esiste un PDF.
 - Preferiti locali per tenere in alto gli strumenti usati spesso, senza account.

@@ -41,76 +41,80 @@
       </div>
     </header>
 
-    <main id="home">
-      <section class="workspace-band workspace-first" id="workspace" aria-labelledby="workspace-title">
-        <div class="workspace-copy">
+    <main id="home" class="app-shell">
+      <section class="command-center" id="workspace" aria-labelledby="workspace-title">
+        <div class="command-head">
           <div>
-            <p class="eyebrow">Inizia qui</p>
-            <h1 id="workspace-title">Carica un file. Scegli il risultato.</h1>
+            <p class="eyebrow">PdfDelta</p>
+            <h1 id="workspace-title">Cosa vuoi fare col tuo PDF?</h1>
+            <p class="command-subtitle">Carica file. Scegli una card. Scarica. Nessun upload, nessun account.</p>
           </div>
           <div class="step-strip" aria-label="Flusso di lavoro">
-            <span class="step active">1 File</span>
-            <span class="step">2 Azione</span>
-            <span class="step">3 Download</span>
+            <span class="step active">1 Carica</span>
+            <span class="step">2 Scegli</span>
+            <span class="step">3 Scarica</span>
           </div>
         </div>
 
-        <div class="tool-launcher" id="smartSuggestions" aria-label="Azioni consigliate">
-          <button class="launcher-card primary" type="button" data-tool-shortcut="edit-pdf">
-            <span>Compila e firma</span>
-            <strong>Editor PDF</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="merge-mixed">
-            <span>Unisci</span>
-            <strong>PDF + immagini</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-word">
-            <span>Converti</span>
-            <strong>PDF in Word</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-jpg">
-            <span>Immagini</span>
-            <strong>PDF in JPG</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="clean-metadata">
-            <span>Privacy</span>
-            <strong>Pulisci metadati</strong>
-          </button>
-        </div>
-
-        <div class="workspace-grid">
-          <label class="dropzone" for="fileInput" id="dropzone">
-            <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple />
-            <span class="drop-icon" aria-hidden="true">⇣</span>
-            <strong>Carica o trascina file</strong>
-            <small>PDF, JPG, PNG e TXT. Tutto resta nel browser.</small>
-          </label>
-
-          <div class="queue-panel" aria-live="polite">
-            <div class="panel-head">
-              <h3>Operazione</h3>
-              <button class="text-button" id="clearQueue" type="button">Svuota</button>
-            </div>
-            <div class="selected-tool" id="selectedTool">Scegli un'azione</div>
-            <div class="compatibility-note" id="compatibilityNote">Carica file o scegli una card consigliata.</div>
-            <div class="tool-options" id="toolOptions" hidden></div>
+        <div class="command-grid">
+          <section class="upload-card" aria-labelledby="upload-title">
+            <div class="card-kicker">Step 1</div>
+            <h2 id="upload-title">Carica i file</h2>
+            <label class="dropzone" for="fileInput" id="dropzone">
+              <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple />
+              <span class="drop-icon" aria-hidden="true">+</span>
+              <strong>Seleziona o trascina qui</strong>
+              <small>PDF, JPG, PNG, TXT. Tutto resta nel browser.</small>
+            </label>
             <ul class="file-list" id="fileList">
               <li class="empty-state">Nessun file caricato.</li>
             </ul>
+            <button class="text-button" id="clearQueue" type="button">Svuota file</button>
+          </section>
+
+          <section class="choice-card" aria-labelledby="choice-title">
+            <div class="card-kicker">Step 2</div>
+            <h2 id="choice-title">Scegli il risultato</h2>
+            <div class="tool-launcher" id="smartSuggestions" aria-label="Azioni consigliate">
+              <button class="launcher-card primary" type="button" data-tool-shortcut="edit-pdf">
+                <span>Modifica</span>
+                <strong>Compila e firma</strong>
+              </button>
+              <button class="launcher-card" type="button" data-tool-shortcut="merge-mixed">
+                <span>Organizza</span>
+                <strong>Unisci file</strong>
+              </button>
+              <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-word">
+                <span>Converti</span>
+                <strong>PDF in Word</strong>
+              </button>
+              <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-jpg">
+                <span>Immagini</span>
+                <strong>PDF in JPG</strong>
+              </button>
+            </div>
+          </section>
+
+          <section class="run-card" aria-labelledby="run-title" aria-live="polite">
+            <div class="card-kicker">Step 3</div>
+            <h2 id="run-title">Esegui</h2>
+            <div class="selected-tool" id="selectedTool">Scegli un'azione</div>
+            <div class="compatibility-note" id="compatibilityNote">Carica file o scegli una card consigliata.</div>
+            <div class="tool-options" id="toolOptions" hidden></div>
             <button class="button button-accent primary-action" id="runTool" type="button" disabled>
-              <span aria-hidden="true">▶</span>
+              <span aria-hidden="true">+</span>
               Carica file
             </button>
             <div class="result-panel" id="resultPanel" aria-live="polite"></div>
-          </div>
+          </section>
         </div>
       </section>
 
       <section class="tools-section" id="strumenti" aria-labelledby="tools-title">
         <div class="section-head compact-head">
           <div>
-            <p class="eyebrow">Tutti gli strumenti</p>
-            <h2 id="tools-title">Cerca solo se ti serve.</h2>
+            <p class="eyebrow">Catalogo</p>
+            <h2 id="tools-title">Tutti gli strumenti</h2>
           </div>
           <div class="hero-search" role="search">
             <label for="toolSearch">Cerca funzione</label>
@@ -131,6 +135,7 @@
           <button class="chip" type="button" data-filter="Popolari">Popolari</button>
           <button class="chip" type="button" data-filter="Attivo">Attivi</button>
           <button class="chip" type="button" data-filter="Converti">Converti</button>
+          <button class="chip" type="button" data-filter="Modifica">Modifica</button>
           <button class="chip" type="button" data-filter="Privacy">Privacy</button>
         </div>
 
@@ -139,12 +144,12 @@
       </section>
 
       <section class="editor-band" id="editor" aria-labelledby="editor-title">
-        <div class="section-head">
+        <div class="section-head compact-head">
           <div>
-            <p class="eyebrow">Editor PDF</p>
-            <h2 id="editor-title">Compila e firma PDF.</h2>
+            <p class="eyebrow">Editor</p>
+            <h2 id="editor-title">Compila e firma</h2>
           </div>
-          <p>Si attiva solo dopo aver caricato un PDF: niente canvas vuoti, niente passaggi ambigui.</p>
+          <p>Si apre solo dopo un PDF. Clicca sulla pagina per inserire testo, firma o disegno.</p>
         </div>
 
         <div class="editor-shell" id="editorPanel">
@@ -155,7 +160,7 @@
               <button type="button" data-editor-mode="draw">Disegna</button>
             </div>
             <label class="editor-field">
-              <span>Valore</span>
+              <span>Testo</span>
               <input id="editorTextInput" type="text" value="Firmato da PdfDelta" />
             </label>
             <div class="editor-pages">
@@ -170,8 +175,8 @@
           <div class="editor-status" id="editorStatus">Carica un PDF e scegli Compila e firma.</div>
           <div class="editor-stage" id="editorStage">
             <div class="editor-empty-state" id="editorEmptyState">
-              <strong>Prima carica un PDF.</strong>
-              <span>Quando scegli “Compila e firma”, qui compare la pagina. Poi clicchi dove vuoi inserire testo o firma.</span>
+              <strong>Carica un PDF per iniziare.</strong>
+              <span>Il documento comparirà qui solo quando serve. Nessuna area vuota gigante.</span>
               <a class="button button-dark" href="#workspace">Carica PDF</a>
             </div>
             <canvas id="pdfEditorCanvas"></canvas>
@@ -180,28 +185,15 @@
         </div>
       </section>
 
-      <section class="info-band" id="gratis" aria-labelledby="free-title">
-        <div class="section-head compact-head">
-          <div>
-            <p class="eyebrow">Gratis e locale</p>
-            <h2 id="free-title">Nessun upload. Nessun premium.</h2>
-          </div>
-          <p>Gli strumenti attivi lavorano nel browser. Quelli che richiederebbero server o licenze restano segnalati come bloccati.</p>
+      <section class="trust-band" id="gratis" aria-labelledby="free-title">
+        <div>
+          <p class="eyebrow">Gratis</p>
+          <h2 id="free-title">Zero upload. Zero premium.</h2>
         </div>
-
-        <div class="status-grid">
-          <article>
-            <strong>File sul dispositivo</strong>
-            <span>PDF e immagini non vengono caricati su server.</span>
-          </article>
-          <article>
-            <strong>Download diretto</strong>
-            <span>Il risultato viene generato localmente e scaricato subito.</span>
-          </article>
-          <article>
-            <strong>Costo zero</strong>
-            <span>Solo hosting statico gratuito. ADS solo in futuro, senza paywall.</span>
-          </article>
+        <div class="trust-grid">
+          <span>File sul dispositivo</span>
+          <span>Download locale</span>
+          <span>Hosting statico free</span>
         </div>
       </section>
     </main>
