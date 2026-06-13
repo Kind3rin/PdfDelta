@@ -1,0 +1,10 @@
+{
+  "name": "PdfDelta",
+  "short_name": "PdfDelta",
+  "description": "Toolkit PDF gratuito, moderno e pensato per hosting statico.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ea",
+  "theme_color": "#f7f3ea",
+  "icons": []
+}

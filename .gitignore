@@ -1,0 +1,7 @@
+.ruflo/
+.swarm/
+*.png
+*.tmp
+*.log
+dist/
+node_modules/

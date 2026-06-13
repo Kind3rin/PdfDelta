@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="PdfDelta: strumenti PDF gratuiti, moderni e pensati per lavorare nel browser."
+    />
+    <meta name="theme-color" content="#f7f3ea" />
+    <title>PdfDelta - PDF gratis, moderni, senza premium</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="vendor/pdf-lib.min.js" defer></script>
+    <script src="vendor/jszip.min.js" defer></script>
+    <script src="vendor/pdf.min.js" defer></script>
+    <script src="vendor/qrcode-generator.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar" data-scrolled="false">
+      <a class="brand" href="#home" aria-label="PdfDelta home">
+        <span class="brand-mark">PΔ</span>
+        <span>PdfDelta</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Navigazione principale">
+        <a href="#editor">Editor</a>
+        <a href="#strumenti">Strumenti</a>
+        <a href="#lab">Lab</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#gratis">Gratis</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-button" id="themeToggle" type="button" aria-label="Cambia tema">
+          <span aria-hidden="true">◐</span>
+        </button>
+        <a class="button button-dark" href="#workspace">
+          <span aria-hidden="true">+</span>
+          Carica
+        </a>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">PDF toolkit gratuito, ad-supported in futuro</p>
+          <h1 id="hero-title">PDF gratis. Nessun premium.</h1>
+          <p class="hero-text">
+            Tutti gli strumenti PDF in un prodotto veloce, moderno, gratuito e
+            sostenuto solo da ADS non invasivi.
+          </p>
+
+          <div class="hero-search" role="search">
+            <label for="toolSearch">Cerca uno strumento PDF</label>
+            <div class="search-shell">
+              <span aria-hidden="true">⌕</span>
+            <input
+              id="toolSearch"
+              type="search"
+              placeholder="Compila, firma, unisci, converti, privacy..."
+              autocomplete="off"
+            />
+            </div>
+          </div>
+
+          <div class="quick-actions" aria-label="Strumenti rapidi">
+            <button class="chip active" type="button" data-filter="Tutti">Tutti</button>
+            <button class="chip" type="button" data-filter="Popolari">Popolari</button>
+            <button class="chip" type="button" data-filter="Attivo">Attivi</button>
+            <button class="chip" type="button" data-filter="Privacy">Privacy</button>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="Anteprima area di lavoro PDF">
+          <div class="paper-stack">
+            <article class="document-preview document-preview-main">
+              <div class="doc-toolbar">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="doc-lines">
+                <span class="wide"></span>
+                <span></span>
+                <span class="short"></span>
+              </div>
+              <div class="doc-grid">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </article>
+            <article class="document-preview document-preview-back"></article>
+          </div>
+
+          <div class="flow-strip" aria-hidden="true">
+            <span>Comprimi</span>
+            <span>Ruota</span>
+            <span>Testo</span>
+            <span>Firma</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-band" id="workspace" aria-labelledby="workspace-title">
+        <div class="workspace-copy">
+          <p class="eyebrow">Workspace</p>
+          <h2 id="workspace-title">Carica file, scegli tool, lavora in batch.</h2>
+        </div>
+
+        <div class="tool-launcher" aria-label="Azioni rapide">
+          <button class="launcher-card primary" type="button" data-tool-shortcut="edit-pdf">
+            <span>Compila e firma</span>
+            <strong>Editor PDF</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="merge-mixed">
+            <span>Unisci</span>
+            <strong>PDF + immagini</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="compress-scan">
+            <span>Alleggerisci</span>
+            <strong>Comprimi scansione</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="clean-metadata">
+            <span>Privacy</span>
+            <strong>Pulisci metadati</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-social">
+            <span>Export</span>
+            <strong>PDF in social</strong>
+          </button>
+        </div>
+
+        <div class="workspace-grid">
+          <label class="dropzone" for="fileInput" id="dropzone">
+            <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple />
+            <span class="drop-icon" aria-hidden="true">⇣</span>
+            <strong>Trascina qui i file</strong>
+            <small>PDF, JPG, PNG e TXT. I file restano nel browser: nessun upload, nessun server.</small>
+          </label>
+
+          <div class="queue-panel" aria-live="polite">
+            <div class="panel-head">
+              <h3>Pipeline</h3>
+              <button class="text-button" id="clearQueue" type="button">Svuota</button>
+            </div>
+            <div class="selected-tool" id="selectedTool">Nessuno strumento selezionato</div>
+            <div class="tool-options" id="toolOptions" hidden></div>
+            <ul class="file-list" id="fileList">
+              <li class="empty-state">Aggiungi file per iniziare.</li>
+            </ul>
+            <button class="button button-accent" id="runTool" type="button" disabled>
+              <span aria-hidden="true">▶</span>
+              Avvia gratis
+            </button>
+            <div class="result-panel" id="resultPanel" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="editor-band" id="editor" aria-labelledby="editor-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Editor PDF</p>
+            <h2 id="editor-title">Compila e firma, direttamente nel browser.</h2>
+          </div>
+          <p>Testo, firma e disegno restano locali. Il PDF modificato viene generato sul dispositivo.</p>
+        </div>
+
+        <div class="editor-shell" id="editorPanel">
+          <div class="editor-toolbar" aria-label="Strumenti editor">
+            <div class="segmented-control" id="editorModes">
+              <button class="active" type="button" data-editor-mode="text">Testo</button>
+              <button type="button" data-editor-mode="signature">Firma</button>
+              <button type="button" data-editor-mode="draw">Disegna</button>
+            </div>
+            <label class="editor-field">
+              <span>Valore</span>
+              <input id="editorTextInput" type="text" value="Firmato da PdfDelta" />
+            </label>
+            <div class="editor-pages">
+              <button class="icon-button" id="editorPrev" type="button" aria-label="Pagina precedente">‹</button>
+              <span id="editorPageInfo">0 / 0</span>
+              <button class="icon-button" id="editorNext" type="button" aria-label="Pagina successiva">›</button>
+            </div>
+            <button class="text-button" id="editorClear" type="button">Pulisci pagina</button>
+            <button class="button button-accent" id="editorSave" type="button">Scarica PDF</button>
+          </div>
+
+          <div class="editor-status" id="editorStatus">Carica un PDF e scegli Compila e firma.</div>
+          <div class="editor-stage" id="editorStage">
+            <canvas id="pdfEditorCanvas"></canvas>
+            <canvas id="editorInkCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="lab-band" id="lab" aria-labelledby="lab-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Lab locale</p>
+            <h2 id="lab-title">Feature vere, senza upload.</h2>
+          </div>
+          <p>
+            Gli strumenti attivi lavorano nel browser. Quelli con AI, OCR avanzato,
+            protezione password o conversioni Office richiederebbero costi/server e
+            sono bloccati finche il vincolo resta zero euro.
+          </p>
+        </div>
+
+        <div class="status-grid">
+          <article>
+            <strong>Zero costi nascosti</strong>
+            <span>Solo static assets su Cloudflare Pages Free.</span>
+          </article>
+          <article>
+            <strong>Privacy-first</strong>
+            <span>Nessun file viene caricato fuori dal dispositivo.</span>
+          </article>
+          <article>
+            <strong>Download diretti</strong>
+            <span>PDF, TXT e ZIP generati localmente.</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="tools-section" id="strumenti" aria-labelledby="tools-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Catalogo</p>
+            <h2 id="tools-title">Più strumenti, zero paywall.</h2>
+          </div>
+          <p>
+            Base completa tipo portale PDF, più feature pro: sanitizzazione,
+            accessibilità, metadati, batch e analisi documentale.
+          </p>
+        </div>
+
+        <div class="category-bar" id="categoryBar" aria-label="Categorie strumenti"></div>
+        <div class="tools-grid" id="toolsGrid"></div>
+      </section>
+
+      <section class="workflow-band" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Workflow</p>
+            <h2 id="workflow-title">Preset rapidi per i casi piu comuni.</h2>
+          </div>
+          <p>Workflow salvati e catene automatiche arriveranno solo se restano 100% locali e gratis.</p>
+        </div>
+
+        <div class="workflow-grid">
+          <article class="workflow-card" data-tool-shortcut="enhance-scan">
+            <span class="step-count">01</span>
+            <h3>Scansione pulita</h3>
+            <p>Migliora scansioni, comprimi allegati e conserva tutto nel browser.</p>
+          </article>
+          <article class="workflow-card" data-tool-shortcut="merge">
+            <span class="step-count">02</span>
+            <h3>Consegna cliente</h3>
+            <p>Unisci documenti, aggiungi numeri pagina e filigrana testuale.</p>
+          </article>
+          <article class="workflow-card" data-tool-shortcut="compare-text">
+            <span class="step-count">03</span>
+            <h3>Studio legale</h3>
+            <p>Confronto testuale, pulizia metadati e firma testuale locale.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="free-band" id="gratis" aria-labelledby="free-title">
+        <div>
+          <p class="eyebrow">Modello economico</p>
+          <h2 id="free-title">Sempre gratis. Ricavi solo da ADS.</h2>
+          <p>
+            L’interfaccia riserva spazi sponsor discreti, senza bloccare funzioni
+            dietro abbonamenti. Hosting: Cloudflare Pages Free, senza backend.
+          </p>
+        </div>
+
+        <div class="ad-layout" aria-label="Anteprima spazi ADS futuri">
+          <span class="ad-slot">Sponsor 728×90</span>
+          <span class="ad-slot slim">Sponsor laterale</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>PdfDelta</span>
+      <span>Gratis oggi, gratis domani.</span>
+      <a href="privacy.html">Privacy</a>
+      <a href="#home">Torna su</a>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
