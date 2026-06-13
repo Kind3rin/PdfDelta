@@ -334,13 +334,13 @@ const tools = [
   },
   {
     id: "pdf-to-word",
-    name: "PDF in Word",
+    name: "Word testo",
     category: "Converti",
-    badge: "Nuovo",
+    badge: "Testo",
     icon: "W",
     status: "attivo",
     accepts: ["pdf"],
-    description: "Crea un DOCX testuale dal PDF selezionabile, senza OCR e senza server.",
+    description: "Crea un DOCX editabile dal testo selezionabile. Non ricrea layout complessi o scansioni.",
   },
   {
     id: "pdf-to-images",
@@ -1484,12 +1484,12 @@ function getFileProfile() {
 
 function suggestionIds() {
   const profile = getFileProfile();
-  if (!profile.total) return ["edit-pdf", "merge-mixed", "pdf-to-word", "pdf-to-jpg", "clean-metadata"];
+  if (!profile.total) return ["edit-pdf", "merge-mixed", "pdf-to-jpg", "images-to-pdf", "clean-metadata"];
   if (profile.images && !profile.pdf && !profile.text) return ["images-to-pdf", "merge-mixed", "queue-report"];
   if (profile.text && !profile.pdf && !profile.images) return ["text-to-pdf", "queue-report"];
   if (profile.mixed) return ["merge-mixed", "queue-report"];
   if (profile.pdf > 1) return ["merge", "merge-mixed", "interleave", "compress-scan", "queue-report"];
-  if (profile.pdf === 1) return ["edit-pdf", "pdf-to-word", "pdf-to-jpg", "compress-scan", "clean-metadata"];
+  if (profile.pdf === 1) return ["edit-pdf", "pdf-to-jpg", "pdf-to-word", "compress-scan", "clean-metadata"];
   return ["queue-report", "merge-mixed"];
 }
 
@@ -1538,6 +1538,7 @@ function compatibilityMessage() {
   if (!tool) return "Scegli una delle azioni consigliate.";
   if (tool.status === "bloccato") return "Bloccato: servirebbero server o servizi a pagamento.";
   if (!isToolCompatible(tool)) return `${tool.name} richiede ${toolRequirementText(tool).toLowerCase()}.`;
+  if (tool.id === "pdf-to-word") return "Word testo pronto: estrae solo testo selezionabile, senza OCR o ricostruzione layout.";
   return `${tool.name} pronto. I file restano sul dispositivo.`;
 }
 
@@ -2350,6 +2351,63 @@ async function blankPdf(options) {
   downloadBlob(new Blob([bytes], { type: "application/pdf" }), "pdfdelta-vuoto.pdf");
 }
 
+function joinPdfTextLine(items) {
+  let text = "";
+  let previousEnd = null;
+
+  items
+    .sort((left, right) => left.x - right.x)
+    .forEach((item) => {
+      const chunk = item.str.replace(/\s+/g, " ").trim();
+      if (!chunk) return;
+
+      const gap = previousEnd === null ? 0 : item.x - previousEnd;
+      const needsSpace = text && gap > Math.max(1.5, item.height * 0.12) && !/^[,.;:!?%)\]}]/.test(chunk);
+      if (needsSpace) text += " ";
+
+      text += chunk;
+      previousEnd = Math.max(previousEnd ?? item.x, item.x + item.width);
+    });
+
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function pdfTextItemsToLines(items) {
+  const lines = [];
+  items
+    .map((item) => {
+      const transform = item.transform || [];
+      return {
+        str: String(item.str || ""),
+        x: Number(transform[4]) || 0,
+        y: Number(transform[5]) || 0,
+        width: Number(item.width) || 0,
+        height: Number(item.height) || 8,
+      };
+    })
+    .filter((item) => item.str.trim())
+    .sort((left, right) => right.y - left.y || left.x - right.x)
+    .forEach((item) => {
+      const tolerance = Math.max(2.5, item.height * 0.45);
+      const line = lines.find((candidate) => Math.abs(candidate.y - item.y) <= tolerance);
+      if (line) {
+        line.items.push(item);
+        line.y = (line.y * (line.items.length - 1) + item.y) / line.items.length;
+      } else {
+        lines.push({ y: item.y, items: [item] });
+      }
+    });
+
+  return lines
+    .sort((left, right) => right.y - left.y)
+    .map((line) => joinPdfTextLine(line.items))
+    .filter(Boolean);
+}
+
+function extractedTextBody(text) {
+  return text.replace(/^--- Pagina \d+ ---$/gm, "").trim();
+}
+
 async function extractTextFromPdfFile(file) {
   if (!window.pdfjsLib) throw new Error("PDF.js non caricato. Controlla la connessione.");
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -2358,7 +2416,7 @@ async function extractTextFromPdfFile(file) {
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
     const page = await pdf.getPage(pageNumber);
     const content = await page.getTextContent();
-    const text = content.items.map((item) => item.str).join(" ").replace(/\s+/g, " ").trim();
+    const text = pdfTextItemsToLines(content.items).join("\n");
     pages.push(`--- Pagina ${pageNumber} ---\n${text}`);
   }
   return pages.join("\n\n");
@@ -2425,7 +2483,8 @@ function docxDocumentXml(fileName, text) {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>
-    ${docxParagraph(fileName, "Title")}
+    ${docxParagraph(`${fileName} - testo estratto`, "Title")}
+    ${docxParagraph("Conversione locale: conserva il testo selezionabile, non ricostruisce layout complesso, tabelle o scansioni.", "Subtitle")}
     ${sections}
     <w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>
   </w:body>
@@ -2463,6 +2522,7 @@ async function makeDocxBlob(fileName, text) {
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:rPr><w:b/><w:sz w:val="32"/></w:rPr></w:style>
+  <w:style w:type="paragraph" w:styleId="Subtitle"><w:name w:val="Subtitle"/><w:rPr><w:color w:val="64748B"/><w:sz w:val="22"/></w:rPr></w:style>
   <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:rPr><w:b/><w:sz w:val="26"/></w:rPr></w:style>
 </w:styles>`
   );
@@ -2473,7 +2533,10 @@ async function pdfToWord() {
   const outputs = [];
   for (const file of getPdfFiles()) {
     const text = await extractTextFromPdfFile(file);
-    outputs.push({ name: `${sanitizeFileName(file.name)}.docx`, bytes: await makeDocxBlob(file.name, text) });
+    if (!extractedTextBody(text)) {
+      throw new Error(`${file.name}: nessun testo selezionabile. Word testo funziona gratis solo con PDF digitali; OCR e layout avanzato richiederebbero compute/server.`);
+    }
+    outputs.push({ name: `${sanitizeFileName(file.name)}-testo.docx`, bytes: await makeDocxBlob(file.name, text) });
   }
   if (outputs.length === 1) {
     downloadBlob(
@@ -2481,7 +2544,7 @@ async function pdfToWord() {
       outputs[0].name
     );
   } else {
-    downloadBlob(await zipOutputs(outputs, "pdfdelta-word.zip"), "pdfdelta-word.zip");
+    downloadBlob(await zipOutputs(outputs, "pdfdelta-word-testo.zip"), "pdfdelta-word-testo.zip");
   }
 }
 
@@ -2497,7 +2560,7 @@ async function wordCountReport() {
   const rows = ["file,pagine,parole,caratteri"];
   for (const file of getPdfFiles()) {
     const text = await extractTextFromPdfFile(file);
-    const body = text.replace(/^--- Pagina \d+ ---$/gm, "").trim();
+    const body = extractedTextBody(text);
     rows.push(
       [
         csvCell(file.name),

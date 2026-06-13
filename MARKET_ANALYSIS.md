@@ -56,7 +56,7 @@ PdfDelta non deve copiare iLovePDF. Deve posizionarsi cosi:
 - Blank PDF creation.
 - Margins, print-safe scaling, crop, crop marks, auto-trim, page-size normalization, N-up, booklet, poster tiling, blank-page removal, orientation/page-size splitting and duplicate removal.
 - Images to PDF, TXT to PDF.
-- PDF to TXT/Markdown/Word text DOCX, PDF to PNG/JPG/WebP/social presets, long JPG and preview contact sheets.
+- PDF to TXT/Markdown/Word text DOCX from selectable text, PDF to PNG/JPG/WebP/social presets, long JPG and preview contact sheets.
 - Visual PDF editor for fill/sign/draw, watermark, cover pages, image/logo stamping, file-name stamping, letterhead templates, page numbers, Bates numbering, header/footer, text signature, QR stamping, form flattening.
 - Metadata read/write/clean, annotation/action/attachment cleanup and attachment insertion, raster sanitization, scan compression/enhancement and grayscale raster output.
 - Text/visual compare, word count, queue and document reports, text-based page filtering and audit base.

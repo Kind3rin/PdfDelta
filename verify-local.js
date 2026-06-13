@@ -455,7 +455,7 @@ async function main() {
 
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
     if (value.worker !== "vendor/pdf.worker.min.js") failures.push("worker PDF.js non locale");
-    if (!value.initialUx.firstHeading.includes("PDF") || value.initialUx.editorReady || !value.initialUx.editorEmpty || !value.initialUx.suggestions.includes("pdf-to-word")) failures.push("UX iniziale non riuscita");
+    if (!value.initialUx.firstHeading.includes("PDF") || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word")) failures.push("UX iniziale non riuscita");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
     if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");
@@ -467,7 +467,7 @@ async function main() {
     if (!value.imageStamp.includes("-logo.pdf")) failures.push("logo/immagine non riuscito");
     if (!value.text.includes(".txt")) failures.push("estrazione testo non riuscita");
     if (!value.markdown.includes(".md")) failures.push("PDF in Markdown non riuscito");
-    if (!value.word.includes(".docx")) failures.push("PDF in Word non riuscito");
+    if (!value.word.includes("-testo.docx")) failures.push("Word testo non riuscito");
     if (!value.jpg.includes("pdfdelta-jpg.zip")) failures.push("PDF in JPG non riuscito");
     if (!value.webp.includes("pdfdelta-webp.zip")) failures.push("PDF in WebP non riuscito");
     if (!value.social.includes("pdfdelta-social.zip")) failures.push("PDF in social non riuscito");

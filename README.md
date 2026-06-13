@@ -69,7 +69,7 @@ node audit-zero-cost.js
 node verify-local.js
 ```
 
-Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie locali, preferiti localStorage, zero richieste esterne, merge PDF, merge PDF+immagini, editor compila/firma, intercalazione PDF, split per range, split pari/dispari, split per testo, split su pagine bianche, carta intestata, copertina, logo immagine, QR su PDF, PDF in TXT/Markdown/Word/JPG/WebP/social, JPG lungo, scheda anteprime, crop, margine stampabile, segni di taglio, normalizzazione formato, separazione orientamento, report documento, report coda, report/separazione formati pagina, header/footer, Bates, timbro nome file, auto-trim, confronto visuale, conteggio parole, lettura/scrittura/pulizia metadati, annotazioni, azioni PDF, allegati PDF, aggiunta/rimozione allegati, estrazione/rimozione per testo, duplicati, booklet, poster multipagina, compressione scansioni, miglioramento scansioni, scala di grigi, pagine vuote, PDF vuoto e overflow desktop.
+Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie locali, preferiti localStorage, zero richieste esterne, merge PDF, merge PDF+immagini, editor compila/firma, intercalazione PDF, split per range, split pari/dispari, split per testo, split su pagine bianche, carta intestata, copertina, logo immagine, QR su PDF, PDF in TXT/Markdown/Word testo/JPG/WebP/social, JPG lungo, scheda anteprime, crop, margine stampabile, segni di taglio, normalizzazione formato, separazione orientamento, report documento, report coda, report/separazione formati pagina, header/footer, Bates, timbro nome file, auto-trim, confronto visuale, conteggio parole, lettura/scrittura/pulizia metadati, annotazioni, azioni PDF, allegati PDF, aggiunta/rimozione allegati, estrazione/rimozione per testo, duplicati, booklet, poster multipagina, compressione scansioni, miglioramento scansioni, scala di grigi, pagine vuote, PDF vuoto e overflow desktop.
 
 ## Feature attive
 
@@ -89,7 +89,7 @@ Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie local
 - TXT in PDF.
 - PDF in TXT.
 - PDF in Markdown.
-- PDF in Word testuale DOCX, senza OCR e senza server.
+- Word testo DOCX da testo selezionabile, senza OCR, server o ricostruzione layout complesso.
 - PDF in PNG.
 - PDF in JPG.
 - PDF in WebP.
