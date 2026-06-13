@@ -1,4 +1,4 @@
-const CACHE_NAME = "pdfdelta-static-v31";
+const CACHE_NAME = "pdfdelta-static-v32";
 const ASSETS = [
   "./",
   "./index.html",

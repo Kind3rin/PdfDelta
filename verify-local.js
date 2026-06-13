@@ -269,6 +269,12 @@ async function main() {
       dt.items.add(new File([secondPdf], 'b.pdf', { type: 'application/pdf' }));
       mergeInput.files = dt.files;
       mergeInput.dispatchEvent(new Event('change', { bubbles: true }));
+      const guidedUx = {
+        selected: document.querySelector('#selectedTool').textContent.trim(),
+        compatibility: document.querySelector('#compatibilityNote').textContent.trim(),
+        runText: document.querySelector('#runTool').textContent.trim(),
+        suggestions: [...document.querySelectorAll('#smartSuggestions [data-tool-shortcut]')].map(card => card.dataset.toolShortcut)
+      };
       document.querySelector('[data-tool="merge"]').click();
       document.querySelector('#runTool').click();
       await new Promise(resolve => setTimeout(resolve, 1400));
@@ -370,6 +376,7 @@ async function main() {
         worker: window.pdfjsLib?.GlobalWorkerOptions?.workerSrc,
         merge,
         favorites,
+        guidedUx,
         mixedMerge,
         editor,
         qr,
@@ -441,6 +448,7 @@ async function main() {
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
     if (value.worker !== "vendor/pdf.worker.min.js") failures.push("worker PDF.js non locale");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
+    if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");
     if (!value.mixedMerge.includes("pdfdelta-unito-misto.pdf")) failures.push("merge PDF+immagini non riuscito");
     if (!value.editor.result.includes("-compilato-firmato.pdf") || !value.editor.pageInfo.includes("1 / 1")) failures.push("editor compila e firma non riuscito");

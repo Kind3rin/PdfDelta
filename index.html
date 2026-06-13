@@ -43,10 +43,74 @@
     </header>
 
     <main id="home">
+      <section class="workspace-band workspace-first" id="workspace" aria-labelledby="workspace-title">
+        <div class="workspace-copy">
+          <div>
+            <p class="eyebrow">Inizia qui</p>
+            <h1 id="workspace-title">Scegli il risultato. PdfDelta fa il resto.</h1>
+          </div>
+          <div class="step-strip" aria-label="Flusso di lavoro">
+            <span class="step active">1 File</span>
+            <span class="step">2 Azione</span>
+            <span class="step">3 Download</span>
+          </div>
+        </div>
+
+        <div class="tool-launcher" id="smartSuggestions" aria-label="Azioni consigliate">
+          <button class="launcher-card primary" type="button" data-tool-shortcut="edit-pdf">
+            <span>Compila e firma</span>
+            <strong>Editor PDF</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="merge-mixed">
+            <span>Unisci</span>
+            <strong>PDF + immagini</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-word">
+            <span>Converti</span>
+            <strong>PDF in Word</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-jpg">
+            <span>Immagini</span>
+            <strong>PDF in JPG</strong>
+          </button>
+          <button class="launcher-card" type="button" data-tool-shortcut="clean-metadata">
+            <span>Privacy</span>
+            <strong>Pulisci metadati</strong>
+          </button>
+        </div>
+
+        <div class="workspace-grid">
+          <label class="dropzone" for="fileInput" id="dropzone">
+            <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple />
+            <span class="drop-icon" aria-hidden="true">⇣</span>
+            <strong>Carica o trascina file</strong>
+            <small>PDF, JPG, PNG e TXT. Tutto resta nel browser.</small>
+          </label>
+
+          <div class="queue-panel" aria-live="polite">
+            <div class="panel-head">
+              <h3>Operazione</h3>
+              <button class="text-button" id="clearQueue" type="button">Svuota</button>
+            </div>
+            <div class="selected-tool" id="selectedTool">Scegli un'azione</div>
+            <div class="compatibility-note" id="compatibilityNote">Carica file o scegli una card consigliata.</div>
+            <div class="tool-options" id="toolOptions" hidden></div>
+            <ul class="file-list" id="fileList">
+              <li class="empty-state">Nessun file caricato.</li>
+            </ul>
+            <button class="button button-accent primary-action" id="runTool" type="button" disabled>
+              <span aria-hidden="true">▶</span>
+              Carica file
+            </button>
+            <div class="result-panel" id="resultPanel" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow">PDF toolkit gratuito, ad-supported in futuro</p>
-          <h1 id="hero-title">PDF gratis. Nessun premium.</h1>
+          <h2 id="hero-title">PDF gratis. Nessun premium.</h2>
           <p class="hero-text">
             Tutti gli strumenti PDF in un prodotto veloce, moderno, gratuito e
             sostenuto solo da ADS non invasivi.
@@ -101,62 +165,6 @@
             <span>Ruota</span>
             <span>Testo</span>
             <span>Firma</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="workspace-band" id="workspace" aria-labelledby="workspace-title">
-        <div class="workspace-copy">
-          <p class="eyebrow">Workspace</p>
-          <h2 id="workspace-title">Carica file, scegli tool, lavora in batch.</h2>
-        </div>
-
-        <div class="tool-launcher" aria-label="Azioni rapide">
-          <button class="launcher-card primary" type="button" data-tool-shortcut="edit-pdf">
-            <span>Compila e firma</span>
-            <strong>Editor PDF</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="merge-mixed">
-            <span>Unisci</span>
-            <strong>PDF + immagini</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="compress-scan">
-            <span>Alleggerisci</span>
-            <strong>Comprimi scansione</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="clean-metadata">
-            <span>Privacy</span>
-            <strong>Pulisci metadati</strong>
-          </button>
-          <button class="launcher-card" type="button" data-tool-shortcut="pdf-to-social">
-            <span>Export</span>
-            <strong>PDF in social</strong>
-          </button>
-        </div>
-
-        <div class="workspace-grid">
-          <label class="dropzone" for="fileInput" id="dropzone">
-            <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple />
-            <span class="drop-icon" aria-hidden="true">⇣</span>
-            <strong>Trascina qui i file</strong>
-            <small>PDF, JPG, PNG e TXT. I file restano nel browser: nessun upload, nessun server.</small>
-          </label>
-
-          <div class="queue-panel" aria-live="polite">
-            <div class="panel-head">
-              <h3>Pipeline</h3>
-              <button class="text-button" id="clearQueue" type="button">Svuota</button>
-            </div>
-            <div class="selected-tool" id="selectedTool">Nessuno strumento selezionato</div>
-            <div class="tool-options" id="toolOptions" hidden></div>
-            <ul class="file-list" id="fileList">
-              <li class="empty-state">Aggiungi file per iniziare.</li>
-            </ul>
-            <button class="button button-accent" id="runTool" type="button" disabled>
-              <span aria-hidden="true">▶</span>
-              Avvia gratis
-            </button>
-            <div class="result-panel" id="resultPanel" aria-live="polite"></div>
           </div>
         </div>
       </section>

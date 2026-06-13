@@ -1401,6 +1401,8 @@ const resultPanel = $("#resultPanel");
 const dropzone = $("#dropzone");
 const fileInput = $("#fileInput");
 const topbar = $(".topbar");
+const smartSuggestions = $("#smartSuggestions");
+const compatibilityNote = $("#compatibilityNote");
 const editorPanel = $("#editorPanel");
 const editorStatus = $("#editorStatus");
 const editorStage = $("#editorStage");
@@ -1450,6 +1452,81 @@ function isToolCompatible(tool) {
   return state.files.every((file) => tool.accepts.includes(fileExt(file)));
 }
 
+function toolRequirementText(tool) {
+  const accepts = tool.accepts?.length ? tool.accepts.map((item) => item.toUpperCase()).join(", ") : "qualsiasi file";
+  const min = Object.hasOwn(tool, "minFiles") ? tool.minFiles : 1;
+  const max = tool.maxFiles || Infinity;
+  const count =
+    max === Infinity
+      ? min > 1
+        ? `${min}+ file`
+        : "1+ file"
+      : min === max
+        ? `${min} file`
+        : `${min}-${max} file`;
+  return `${accepts} · ${count}`;
+}
+
+function getFileProfile() {
+  const pdf = getPdfFiles().length;
+  const images = getImageFiles().length;
+  const text = getTextFiles().length;
+  return {
+    pdf,
+    images,
+    text,
+    total: state.files.length,
+    mixed: [pdf > 0, images > 0, text > 0].filter(Boolean).length > 1,
+  };
+}
+
+function suggestionIds() {
+  const profile = getFileProfile();
+  if (!profile.total) return ["edit-pdf", "merge-mixed", "pdf-to-word", "pdf-to-jpg", "clean-metadata"];
+  if (profile.images && !profile.pdf && !profile.text) return ["images-to-pdf", "merge-mixed", "queue-report"];
+  if (profile.text && !profile.pdf && !profile.images) return ["text-to-pdf", "queue-report"];
+  if (profile.mixed) return ["merge-mixed", "queue-report"];
+  if (profile.pdf > 1) return ["merge", "merge-mixed", "interleave", "compress-scan", "queue-report"];
+  if (profile.pdf === 1) return ["edit-pdf", "pdf-to-word", "pdf-to-jpg", "compress-scan", "clean-metadata"];
+  return ["queue-report", "merge-mixed"];
+}
+
+function firstCompatibleSuggestion() {
+  return suggestionIds()
+    .map((id) => tools.find((tool) => tool.id === id))
+    .find((tool) => tool && tool.status !== "bloccato" && (!state.files.length || isToolCompatible(tool)));
+}
+
+function renderSuggestions() {
+  if (!smartSuggestions) return;
+  smartSuggestions.innerHTML = suggestionIds()
+    .map((id, index) => tools.find((tool) => tool.id === id))
+    .filter(Boolean)
+    .map((tool, index) => {
+      const selected = state.selectedTool?.id === tool.id ? " selected" : "";
+      const primary = index === 0 ? " primary" : "";
+      const disabled = state.files.length && !isToolCompatible(tool) ? " disabled" : "";
+      return `
+        <button class="launcher-card${primary}${selected}${disabled}" type="button" data-tool-shortcut="${tool.id}">
+          <span>${tool.category}</span>
+          <strong>${tool.name}</strong>
+        </button>
+      `;
+    })
+    .join("");
+}
+
+function compatibilityMessage() {
+  const tool = state.selectedTool;
+  const profile = getFileProfile();
+  if (!profile.total && !tool) return "Carica file o scegli una card consigliata.";
+  if (!profile.total && tool) return `${tool.name}: carica ${toolRequirementText(tool).toLowerCase()}.`;
+  if (!tool) return "Scegli una delle azioni consigliate.";
+  if (tool.status === "bloccato") return "Bloccato: servirebbero server o servizi a pagamento.";
+  if (!isToolCompatible(tool)) return `${tool.name} richiede ${toolRequirementText(tool).toLowerCase()}.`;
+  return `${tool.name} pronto. I file restano sul dispositivo.`;
+}
+
 function matchesTool(tool) {
   const query = state.query.trim().toLowerCase();
   const categoryMatch =
@@ -1480,7 +1557,13 @@ function renderCategories() {
 function renderTools() {
   const visibleTools = tools
     .filter(matchesTool)
-    .sort((left, right) => Number(state.favorites.has(right.id)) - Number(state.favorites.has(left.id)));
+    .sort((left, right) => {
+      const favoriteScore = Number(state.favorites.has(right.id)) - Number(state.favorites.has(left.id));
+      if (favoriteScore) return favoriteScore;
+      const compatibleScore = Number(isToolCompatible(right)) - Number(isToolCompatible(left));
+      if (state.files.length && compatibleScore) return compatibleScore;
+      return Number(left.status === "bloccato") - Number(right.status === "bloccato");
+    });
 
   if (!visibleTools.length) {
     grid.innerHTML =
@@ -1495,8 +1578,10 @@ function renderTools() {
       const selected = state.selectedTool?.id === tool.id ? " selected" : "";
       const disabled = tool.status === "bloccato" ? " blocked" : "";
       const favorite = state.favorites.has(tool.id);
+      const compatible = state.files.length && isToolCompatible(tool) ? " compatible" : "";
+      const incompatible = state.files.length && tool.status !== "bloccato" && !isToolCompatible(tool) ? " incompatible" : "";
       return `
-        <article class="tool-card${selected}${disabled}${favorite ? " favorite" : ""}" tabindex="0" role="button" data-tool="${tool.id}" data-status="${tool.status}">
+        <article class="tool-card${selected}${disabled}${compatible}${incompatible}${favorite ? " favorite" : ""}" tabindex="0" role="button" data-tool="${tool.id}" data-status="${tool.status}">
           <div class="tool-top">
             <span class="tool-icon" aria-hidden="true">${tool.icon}</span>
             <div class="tool-actions">
@@ -1506,6 +1591,7 @@ function renderTools() {
           </div>
           <h3>${tool.name}</h3>
           <p>${tool.description}</p>
+          <small class="tool-meta">${toolRequirementText(tool)}</small>
         </article>
       `;
     })
@@ -1522,22 +1608,36 @@ function toggleFavorite(toolId) {
 
 function renderFiles() {
   runButton.disabled = !isToolCompatible(state.selectedTool);
+  if (compatibilityNote) compatibilityNote.textContent = compatibilityMessage();
+  renderSuggestions();
 
   if (!state.selectedTool) {
-    runButton.innerHTML = '<span aria-hidden="true">▶</span> Avvia gratis';
+    runButton.innerHTML = state.files.length
+      ? '<span aria-hidden="true">▶</span> Scegli azione'
+      : '<span aria-hidden="true">⇣</span> Carica file';
   } else if (state.selectedTool.status === "bloccato") {
     runButton.textContent = "Bloccato per zero costi";
+  } else if (!isToolCompatible(state.selectedTool)) {
+    runButton.textContent = "File non compatibili";
   } else {
-    runButton.innerHTML = '<span aria-hidden="true">▶</span> Avvia gratis';
+    runButton.innerHTML = `<span aria-hidden="true">▶</span> ${state.selectedTool.name}`;
   }
 
   if (!state.files.length) {
-    fileList.innerHTML = '<li class="empty-state">Aggiungi file per iniziare.</li>';
+    fileList.innerHTML = '<li class="empty-state">Nessun file caricato.</li>';
     return;
   }
 
   fileList.innerHTML = state.files
-    .map((file) => `<li><span>${file.name}</span><span>${formatBytes(file.size)}</span></li>`)
+    .map(
+      (file, index) => `
+        <li>
+          <span class="file-name">${escapeHtml(file.name)}<small>${fileExt(file).toUpperCase()}</small></span>
+          <span>${formatBytes(file.size)}</span>
+          <button class="remove-file" type="button" data-remove-file="${index}" aria-label="Rimuovi ${escapeHtml(file.name)}">×</button>
+        </li>
+      `
+    )
     .join("");
 }
 
@@ -1585,7 +1685,7 @@ function getOptions() {
   );
 }
 
-function selectTool(toolId) {
+function selectTool(toolId, options = {}) {
   const tool = tools.find((item) => item.id === toolId);
   if (!tool) return;
 
@@ -1597,7 +1697,7 @@ function selectTool(toolId) {
   renderTools();
   renderFiles();
 
-  if (tool.id === "edit-pdf") {
+  if (tool.id === "edit-pdf" && options.scrollEditor !== false) {
     setEditorStatus(getPdfFiles()[0] ? "Premi Avvia gratis o usa l'editor qui sotto." : "Carica un PDF per compilare e firmare.");
     document.querySelector("#editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -1615,6 +1715,15 @@ function addFiles(fileCollection) {
     }
   });
 
+  if (!state.selectedTool || !isToolCompatible(state.selectedTool)) {
+    const suggested = firstCompatibleSuggestion();
+    if (suggested) {
+      selectTool(suggested.id, { scrollEditor: false });
+      return;
+    }
+  }
+
+  renderTools();
   renderFiles();
 }
 
@@ -4412,27 +4521,45 @@ grid.addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelectorAll("[data-tool-shortcut]").forEach((card) => {
-  card.addEventListener("click", async () => {
-    selectTool(card.dataset.toolShortcut);
-    if (card.dataset.toolShortcut === "edit-pdf") {
-      try {
-        await openPdfEditorTool();
-      } catch (error) {
-        setEditorStatus(error.message || "Editor non disponibile.");
-      }
-      return;
+document.addEventListener("click", async (event) => {
+  const shortcut = event.target.closest("[data-tool-shortcut]");
+  if (!shortcut) return;
+  const toolId = shortcut.dataset.toolShortcut;
+  selectTool(toolId);
+  if (toolId === "edit-pdf") {
+    try {
+      await openPdfEditorTool();
+    } catch (error) {
+      setEditorStatus(error.message || "Editor non disponibile.");
     }
-    document.querySelector("#workspace").scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+    return;
+  }
+  document.querySelector("#workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 searchInput.addEventListener("input", (event) => {
   state.query = event.target.value;
   renderTools();
+  if (state.query.trim().length > 1) document.querySelector("#strumenti")?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 fileInput.addEventListener("change", (event) => addFiles(event.target.files));
+
+fileList.addEventListener("click", (event) => {
+  const remove = event.target.closest("[data-remove-file]");
+  if (!remove) return;
+  state.files.splice(Number(remove.dataset.removeFile), 1);
+  fileInput.value = "";
+  if (state.selectedTool && !isToolCompatible(state.selectedTool)) {
+    const suggested = firstCompatibleSuggestion();
+    state.selectedTool = suggested || null;
+    selectedTool.textContent = suggested ? `${suggested.name} selezionato` : "Scegli un'azione";
+    renderOptions();
+  }
+  resultPanel.textContent = "";
+  renderTools();
+  renderFiles();
+});
 
 ["dragenter", "dragover"].forEach((eventName) => {
   dropzone.addEventListener(eventName, (event) => {

@@ -76,7 +76,8 @@ Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie local
 - Unisci PDF e intercala due PDF fronte/retro.
 - Unisci PDF e immagini nello stesso documento mantenendo l'ordine della coda.
 - Editor visuale per compilare, firmare e disegnare su PDF nel browser.
-- Launcher rapido per scegliere le azioni principali senza navigare tutto il catalogo.
+- Workspace guidato con suggerimenti automatici in base ai file caricati.
+- Launcher rapido e auto-selezione dell'azione piu probabile, senza navigare tutto il catalogo.
 - Preferiti locali per tenere in alto gli strumenti usati spesso, senza account.
 - Dividi PDF in ZIP, dividi per range e separa pari/dispari.
 - Dividi PDF per marker testuale o usando pagine bianche come separatori.
