@@ -263,6 +263,13 @@ async function main() {
 
       const pdf = await makePdf('PdfDelta verify');
       const secondPdf = await makePdf('Second side');
+      const initialUx = {
+        firstHeading: document.querySelector('h1')?.textContent.trim(),
+        editorReady: document.querySelector('#editorPanel').classList.contains('editor-ready'),
+        editorEmpty: getComputedStyle(document.querySelector('#editorEmptyState')).display !== 'none',
+        runText: document.querySelector('#runTool').textContent.trim(),
+        suggestions: [...document.querySelectorAll('#smartSuggestions [data-tool-shortcut]')].map(card => card.dataset.toolShortcut)
+      };
       const mergeInput = document.querySelector('#fileInput');
       const dt = new DataTransfer();
       dt.items.add(new File([pdf], 'a.pdf', { type: 'application/pdf' }));
@@ -374,6 +381,7 @@ async function main() {
       return {
         libs: { pdfLib: !!window.PDFLib, jszip: !!window.JSZip, pdfjs: !!window.pdfjsLib, qrcode: typeof window.qrcode === 'function' },
         worker: window.pdfjsLib?.GlobalWorkerOptions?.workerSrc,
+        initialUx,
         merge,
         favorites,
         guidedUx,
@@ -447,6 +455,7 @@ async function main() {
 
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
     if (value.worker !== "vendor/pdf.worker.min.js") failures.push("worker PDF.js non locale");
+    if (!value.initialUx.firstHeading.includes("Carica") || value.initialUx.editorReady || !value.initialUx.editorEmpty || !value.initialUx.suggestions.includes("pdf-to-word")) failures.push("UX iniziale non riuscita");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
     if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");

@@ -180,7 +180,8 @@ a {
 .editor-band,
 .tools-section,
 .workflow-band,
-.free-band {
+.free-band,
+.info-band {
   padding: clamp(42px, 7vw, 92px) clamp(18px, 4vw, 56px);
 }
 
@@ -498,6 +499,12 @@ h3 {
   color: white;
 }
 
+.step.done {
+  border-color: color-mix(in srgb, var(--mint) 55%, transparent);
+  background: color-mix(in srgb, var(--mint) 24%, transparent);
+  color: var(--bg);
+}
+
 .workspace-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
@@ -615,7 +622,20 @@ h3 {
 }
 
 .editor-band {
+  padding-top: clamp(30px, 5vw, 58px);
+  padding-bottom: clamp(30px, 5vw, 58px);
   background: var(--paper);
+}
+
+.compact-head {
+  align-items: center;
+}
+
+.compact-head h2,
+.editor-band .section-head h2,
+.info-band .section-head h2 {
+  font-size: clamp(1.7rem, 3vw, 2.7rem);
+  line-height: 1.05;
 }
 
 .editor-shell {
@@ -625,6 +645,10 @@ h3 {
   border-radius: var(--radius);
   background: var(--paper-alt);
   padding: 14px;
+}
+
+.editor-shell:not(.editor-ready) .editor-toolbar {
+  display: none;
 }
 
 .editor-toolbar {
@@ -721,6 +745,39 @@ h3 {
     var(--bg);
   background-position: 0 0, 0 10px, 10px -10px, -10px 0;
   background-size: 20px 20px;
+}
+
+.editor-shell:not(.editor-ready) .editor-stage {
+  min-height: 250px;
+  place-items: center;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.editor-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 28px;
+  text-align: center;
+}
+
+.editor-empty-state strong {
+  font-size: 1.2rem;
+}
+
+.editor-empty-state span {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.editor-shell.editor-ready .editor-empty-state {
+  display: none;
+}
+
+.editor-shell:not(.editor-ready) .editor-stage canvas {
+  display: none;
 }
 
 .editor-stage canvas {
@@ -897,6 +954,19 @@ h3 {
   background: var(--bg);
 }
 
+.tools-section .section-head {
+  margin-bottom: 18px;
+}
+
+.tools-section .hero-search {
+  max-width: 560px;
+  margin-top: 0;
+}
+
+.tools-section .quick-actions {
+  margin: 0 0 14px;
+}
+
 .category-bar {
   display: flex;
   gap: 10px;
@@ -1042,6 +1112,10 @@ h3 {
 
 .lab-band {
   padding: clamp(42px, 7vw, 92px) clamp(18px, 4vw, 56px);
+  background: var(--paper);
+}
+
+.info-band {
   background: var(--paper);
 }
 

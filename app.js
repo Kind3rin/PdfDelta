@@ -1403,6 +1403,7 @@ const fileInput = $("#fileInput");
 const topbar = $(".topbar");
 const smartSuggestions = $("#smartSuggestions");
 const compatibilityNote = $("#compatibilityNote");
+const stepItems = Array.from(document.querySelectorAll(".step"));
 const editorPanel = $("#editorPanel");
 const editorStatus = $("#editorStatus");
 const editorStage = $("#editorStage");
@@ -1495,6 +1496,18 @@ function firstCompatibleSuggestion() {
   return suggestionIds()
     .map((id) => tools.find((tool) => tool.id === id))
     .find((tool) => tool && tool.status !== "bloccato" && (!state.files.length || isToolCompatible(tool)));
+}
+
+function updateStepStrip() {
+  const activeIndex = resultPanel?.querySelector("a[download]")
+    ? 2
+    : isToolCompatible(state.selectedTool)
+      ? 1
+      : 0;
+  stepItems.forEach((step, index) => {
+    step.classList.toggle("active", index === activeIndex);
+    step.classList.toggle("done", index < activeIndex);
+  });
 }
 
 function renderSuggestions() {
@@ -1610,6 +1623,7 @@ function renderFiles() {
   runButton.disabled = !isToolCompatible(state.selectedTool);
   if (compatibilityNote) compatibilityNote.textContent = compatibilityMessage();
   renderSuggestions();
+  updateStepStrip();
 
   if (!state.selectedTool) {
     runButton.innerHTML = state.files.length
@@ -1697,9 +1711,11 @@ function selectTool(toolId, options = {}) {
   renderTools();
   renderFiles();
 
-  if (tool.id === "edit-pdf" && options.scrollEditor !== false) {
+  if (tool.id === "edit-pdf" && getPdfFiles()[0] && options.scrollEditor !== false) {
     setEditorStatus(getPdfFiles()[0] ? "Premi Avvia gratis o usa l'editor qui sotto." : "Carica un PDF per compilare e firmare.");
     document.querySelector("#editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (tool.id === "edit-pdf") {
+    setEditorStatus("Carica un PDF per compilare e firmare.");
   }
 }
 
@@ -1735,6 +1751,33 @@ function setFilter(filter) {
 
 function setEditorStatus(message) {
   if (editorStatus) editorStatus.textContent = message;
+}
+
+function setEditorReady(ready) {
+  editorPanel?.classList.toggle("editor-ready", Boolean(ready));
+}
+
+function resetEditor() {
+  state.editor.file = null;
+  state.editor.pdfBytes = null;
+  state.editor.pdf = null;
+  state.editor.pageNumber = 1;
+  state.editor.pageCount = 0;
+  state.editor.marks = [];
+  state.editor.strokes = [];
+  state.editor.pageSize = { width: 0, height: 0 };
+  state.editor.canvasSize = { width: 0, height: 0 };
+  if (pdfEditorCanvas) {
+    pdfEditorCanvas.width = 0;
+    pdfEditorCanvas.height = 0;
+  }
+  if (editorInkCanvas) {
+    editorInkCanvas.width = 0;
+    editorInkCanvas.height = 0;
+  }
+  if (editorPageInfo) editorPageInfo.textContent = "0 / 0";
+  setEditorReady(false);
+  setEditorStatus("Carica un PDF e scegli Compila e firma.");
 }
 
 function setEditorMode(mode) {
@@ -1846,6 +1889,7 @@ async function openPdfEditorTool() {
   state.editor.marks = [];
   state.editor.strokes = [];
   setEditorMode(state.editor.mode || "text");
+  setEditorReady(true);
   setEditorStatus(`${file.name} pronto per compilazione e firma.`);
   resultPanel.innerHTML = "<strong>Editor pronto.</strong> Compila, firma e scarica il PDF modificato.";
   await renderEditorPage();
@@ -1961,6 +2005,7 @@ function downloadBlob(blob, filename) {
     <strong>Pronto.</strong>
     <a href="${url}" download="${filename}">Scarica di nuovo ${filename}</a>
   `;
+  updateStepStrip();
 }
 
 async function zipOutputs(outputs, filename) {
@@ -4527,6 +4572,10 @@ document.addEventListener("click", async (event) => {
   const toolId = shortcut.dataset.toolShortcut;
   selectTool(toolId);
   if (toolId === "edit-pdf") {
+    if (!getPdfFiles()[0]) {
+      document.querySelector("#workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     try {
       await openPdfEditorTool();
     } catch (error) {
@@ -4550,6 +4599,7 @@ fileList.addEventListener("click", (event) => {
   if (!remove) return;
   state.files.splice(Number(remove.dataset.removeFile), 1);
   fileInput.value = "";
+  if (state.editor.file && !state.files.includes(state.editor.file)) resetEditor();
   if (state.selectedTool && !isToolCompatible(state.selectedTool)) {
     const suggested = firstCompatibleSuggestion();
     state.selectedTool = suggested || null;
@@ -4581,6 +4631,7 @@ $("#clearQueue").addEventListener("click", () => {
   state.files = [];
   fileInput.value = "";
   resultPanel.textContent = "";
+  resetEditor();
   renderFiles();
 });
 
@@ -4685,4 +4736,5 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 renderCategories();
 renderTools();
 renderOptions();
+resetEditor();
 renderFiles();

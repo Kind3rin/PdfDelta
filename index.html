@@ -24,10 +24,9 @@
       </a>
 
       <nav class="nav-links" aria-label="Navigazione principale">
-        <a href="#editor">Editor</a>
+        <a href="#workspace">Carica</a>
         <a href="#strumenti">Strumenti</a>
-        <a href="#lab">Lab</a>
-        <a href="#workflow">Workflow</a>
+        <a href="#editor">Editor</a>
         <a href="#gratis">Gratis</a>
       </nav>
 
@@ -47,7 +46,7 @@
         <div class="workspace-copy">
           <div>
             <p class="eyebrow">Inizia qui</p>
-            <h1 id="workspace-title">Scegli il risultato. PdfDelta fa il resto.</h1>
+            <h1 id="workspace-title">Carica un file. Scegli il risultato.</h1>
           </div>
           <div class="step-strip" aria-label="Flusso di lavoro">
             <span class="step active">1 File</span>
@@ -107,75 +106,45 @@
         </div>
       </section>
 
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="eyebrow">PDF toolkit gratuito, ad-supported in futuro</p>
-          <h2 id="hero-title">PDF gratis. Nessun premium.</h2>
-          <p class="hero-text">
-            Tutti gli strumenti PDF in un prodotto veloce, moderno, gratuito e
-            sostenuto solo da ADS non invasivi.
-          </p>
-
+      <section class="tools-section" id="strumenti" aria-labelledby="tools-title">
+        <div class="section-head compact-head">
+          <div>
+            <p class="eyebrow">Tutti gli strumenti</p>
+            <h2 id="tools-title">Cerca solo se ti serve.</h2>
+          </div>
           <div class="hero-search" role="search">
-            <label for="toolSearch">Cerca uno strumento PDF</label>
+            <label for="toolSearch">Cerca funzione</label>
             <div class="search-shell">
               <span aria-hidden="true">⌕</span>
-            <input
-              id="toolSearch"
-              type="search"
-              placeholder="Compila, firma, unisci, converti, privacy..."
-              autocomplete="off"
-            />
+              <input
+                id="toolSearch"
+                type="search"
+                placeholder="Unisci, firma, Word, JPG, metadati..."
+                autocomplete="off"
+              />
             </div>
           </div>
-
-          <div class="quick-actions" aria-label="Strumenti rapidi">
-            <button class="chip active" type="button" data-filter="Tutti">Tutti</button>
-            <button class="chip" type="button" data-filter="Popolari">Popolari</button>
-            <button class="chip" type="button" data-filter="Attivo">Attivi</button>
-            <button class="chip" type="button" data-filter="Privacy">Privacy</button>
-          </div>
         </div>
 
-        <div class="hero-visual" aria-label="Anteprima area di lavoro PDF">
-          <div class="paper-stack">
-            <article class="document-preview document-preview-main">
-              <div class="doc-toolbar">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div class="doc-lines">
-                <span class="wide"></span>
-                <span></span>
-                <span class="short"></span>
-              </div>
-              <div class="doc-grid">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </article>
-            <article class="document-preview document-preview-back"></article>
-          </div>
-
-          <div class="flow-strip" aria-hidden="true">
-            <span>Comprimi</span>
-            <span>Ruota</span>
-            <span>Testo</span>
-            <span>Firma</span>
-          </div>
+        <div class="quick-actions" aria-label="Filtri rapidi">
+          <button class="chip active" type="button" data-filter="Tutti">Tutti</button>
+          <button class="chip" type="button" data-filter="Popolari">Popolari</button>
+          <button class="chip" type="button" data-filter="Attivo">Attivi</button>
+          <button class="chip" type="button" data-filter="Converti">Converti</button>
+          <button class="chip" type="button" data-filter="Privacy">Privacy</button>
         </div>
+
+        <div class="category-bar" id="categoryBar" aria-label="Categorie strumenti"></div>
+        <div class="tools-grid" id="toolsGrid"></div>
       </section>
 
       <section class="editor-band" id="editor" aria-labelledby="editor-title">
         <div class="section-head">
           <div>
             <p class="eyebrow">Editor PDF</p>
-            <h2 id="editor-title">Compila e firma, direttamente nel browser.</h2>
+            <h2 id="editor-title">Compila e firma PDF.</h2>
           </div>
-          <p>Testo, firma e disegno restano locali. Il PDF modificato viene generato sul dispositivo.</p>
+          <p>Si attiva solo dopo aver caricato un PDF: niente canvas vuoti, niente passaggi ambigui.</p>
         </div>
 
         <div class="editor-shell" id="editorPanel">
@@ -200,98 +169,39 @@
 
           <div class="editor-status" id="editorStatus">Carica un PDF e scegli Compila e firma.</div>
           <div class="editor-stage" id="editorStage">
+            <div class="editor-empty-state" id="editorEmptyState">
+              <strong>Prima carica un PDF.</strong>
+              <span>Quando scegli “Compila e firma”, qui compare la pagina. Poi clicchi dove vuoi inserire testo o firma.</span>
+              <a class="button button-dark" href="#workspace">Carica PDF</a>
+            </div>
             <canvas id="pdfEditorCanvas"></canvas>
             <canvas id="editorInkCanvas"></canvas>
           </div>
         </div>
       </section>
 
-      <section class="lab-band" id="lab" aria-labelledby="lab-title">
-        <div class="section-head">
+      <section class="info-band" id="gratis" aria-labelledby="free-title">
+        <div class="section-head compact-head">
           <div>
-            <p class="eyebrow">Lab locale</p>
-            <h2 id="lab-title">Feature vere, senza upload.</h2>
+            <p class="eyebrow">Gratis e locale</p>
+            <h2 id="free-title">Nessun upload. Nessun premium.</h2>
           </div>
-          <p>
-            Gli strumenti attivi lavorano nel browser. Quelli con AI, OCR avanzato,
-            protezione password o conversioni Office richiederebbero costi/server e
-            sono bloccati finche il vincolo resta zero euro.
-          </p>
+          <p>Gli strumenti attivi lavorano nel browser. Quelli che richiederebbero server o licenze restano segnalati come bloccati.</p>
         </div>
 
         <div class="status-grid">
           <article>
-            <strong>Zero costi nascosti</strong>
-            <span>Solo static assets su Cloudflare Pages Free.</span>
+            <strong>File sul dispositivo</strong>
+            <span>PDF e immagini non vengono caricati su server.</span>
           </article>
           <article>
-            <strong>Privacy-first</strong>
-            <span>Nessun file viene caricato fuori dal dispositivo.</span>
+            <strong>Download diretto</strong>
+            <span>Il risultato viene generato localmente e scaricato subito.</span>
           </article>
           <article>
-            <strong>Download diretti</strong>
-            <span>PDF, TXT e ZIP generati localmente.</span>
+            <strong>Costo zero</strong>
+            <span>Solo hosting statico gratuito. ADS solo in futuro, senza paywall.</span>
           </article>
-        </div>
-      </section>
-
-      <section class="tools-section" id="strumenti" aria-labelledby="tools-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Catalogo</p>
-            <h2 id="tools-title">Più strumenti, zero paywall.</h2>
-          </div>
-          <p>
-            Base completa tipo portale PDF, più feature pro: sanitizzazione,
-            accessibilità, metadati, batch e analisi documentale.
-          </p>
-        </div>
-
-        <div class="category-bar" id="categoryBar" aria-label="Categorie strumenti"></div>
-        <div class="tools-grid" id="toolsGrid"></div>
-      </section>
-
-      <section class="workflow-band" id="workflow" aria-labelledby="workflow-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Workflow</p>
-            <h2 id="workflow-title">Preset rapidi per i casi piu comuni.</h2>
-          </div>
-          <p>Workflow salvati e catene automatiche arriveranno solo se restano 100% locali e gratis.</p>
-        </div>
-
-        <div class="workflow-grid">
-          <article class="workflow-card" data-tool-shortcut="enhance-scan">
-            <span class="step-count">01</span>
-            <h3>Scansione pulita</h3>
-            <p>Migliora scansioni, comprimi allegati e conserva tutto nel browser.</p>
-          </article>
-          <article class="workflow-card" data-tool-shortcut="merge">
-            <span class="step-count">02</span>
-            <h3>Consegna cliente</h3>
-            <p>Unisci documenti, aggiungi numeri pagina e filigrana testuale.</p>
-          </article>
-          <article class="workflow-card" data-tool-shortcut="compare-text">
-            <span class="step-count">03</span>
-            <h3>Studio legale</h3>
-            <p>Confronto testuale, pulizia metadati e firma testuale locale.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="free-band" id="gratis" aria-labelledby="free-title">
-        <div>
-          <p class="eyebrow">Modello economico</p>
-          <h2 id="free-title">Sempre gratis. Ricavi solo da ADS.</h2>
-          <p>
-            L’interfaccia riserva spazi sponsor discreti, senza bloccare funzioni
-            dietro abbonamenti. Hosting: Cloudflare Pages Free, senza backend.
-          </p>
-        </div>
-
-        <div class="ad-layout" aria-label="Anteprima spazi ADS futuri">
-          <span class="ad-slot">Sponsor 728×90</span>
-          <span class="ad-slot slim">Sponsor laterale</span>
         </div>
       </section>
     </main>
