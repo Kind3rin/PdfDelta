@@ -1,10 +1,13 @@
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
+const http = require("node:http");
 const os = require("node:os");
 const path = require("node:path");
 
 const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const userData = path.join(os.tmpdir(), `pdfdelta-verify-${Date.now()}`);
 const port = 9245;
+const rootDir = __dirname;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -21,7 +24,58 @@ async function cdpJson(url) {
   throw new Error("Chrome DevTools Protocol non disponibile.");
 }
 
+function mimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  return (
+    {
+      ".css": "text/css;charset=utf-8",
+      ".html": "text/html;charset=utf-8",
+      ".js": "text/javascript;charset=utf-8",
+      ".json": "application/json;charset=utf-8",
+      ".md": "text/markdown;charset=utf-8",
+      ".wasm": "application/wasm",
+      ".webmanifest": "application/manifest+json;charset=utf-8",
+    }[ext] || "application/octet-stream"
+  );
+}
+
+function startStaticServer() {
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, "http://127.0.0.1");
+    const pathname = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
+    const filePath = path.resolve(rootDir, `.${pathname}`);
+
+    if (!filePath.startsWith(rootDir)) {
+      res.writeHead(403);
+      res.end("Forbidden");
+      return;
+    }
+
+    fs.readFile(filePath, (error, data) => {
+      if (error) {
+        res.writeHead(404);
+        res.end("Not found");
+        return;
+      }
+      res.writeHead(200, {
+        "Cache-Control": "no-store",
+        "Content-Type": mimeType(filePath),
+      });
+      res.end(data);
+    });
+  });
+
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      resolve({ server, origin: `http://127.0.0.1:${address.port}` });
+    });
+  });
+}
+
 async function main() {
+  const staticSite = await startStaticServer();
   const chrome = spawn(
     chromePath,
     [
@@ -69,10 +123,28 @@ async function main() {
     await send("Page.enable");
     await send("Runtime.enable");
     await send("Network.enable");
-    await send("Page.navigate", { url: "http://127.0.0.1:4173/?verify=local" });
+    await send("Page.navigate", { url: `${staticSite.origin}/?verify=local` });
     await wait(1800);
 
     const expression = `async () => {
+      await new Promise((resolve, reject) => {
+        const deadline = Date.now() + 12000;
+        const tick = () => {
+          if (window.PDFLib && window.JSZip && window.pdfjsLib && window.qrcode) {
+            resolve();
+            return;
+          }
+          if (Date.now() > deadline) {
+            reject(new Error('Librerie locali non caricate entro il timeout.'));
+            return;
+          }
+          setTimeout(tick, 100);
+        };
+        tick();
+      });
+
+      const PDFLib = window.PDFLib;
+
       async function makePdf(text) {
         const doc = await PDFLib.PDFDocument.create();
         const page = doc.addPage([300, 200]);
@@ -268,7 +340,9 @@ async function main() {
         editorReady: document.querySelector('#editorPanel').classList.contains('editor-ready'),
         editorEmpty: getComputedStyle(document.querySelector('#editorEmptyState')).display !== 'none',
         runText: document.querySelector('#runTool').textContent.trim(),
-        suggestions: [...document.querySelectorAll('#smartSuggestions [data-tool-shortcut]')].map(card => card.dataset.toolShortcut)
+        suggestions: [...document.querySelectorAll('#smartSuggestions [data-tool-shortcut]')].map(card => card.dataset.toolShortcut),
+        roadmapHidden: ![...document.querySelectorAll('[data-tool]')].some(card => card.dataset.status === 'bloccato'),
+        catalogInsights: document.querySelector('#catalogInsights')?.textContent.trim()
       };
       const mergeInput = document.querySelector('#fileInput');
       const dt = new DataTransfer();
@@ -280,7 +354,9 @@ async function main() {
         selected: document.querySelector('#selectedTool').textContent.trim(),
         compatibility: document.querySelector('#compatibilityNote').textContent.trim(),
         runText: document.querySelector('#runTool').textContent.trim(),
-        suggestions: [...document.querySelectorAll('#smartSuggestions [data-tool-shortcut]')].map(card => card.dataset.toolShortcut)
+        suggestions: [...document.querySelectorAll('#smartSuggestions [data-tool-shortcut]')].map(card => card.dataset.toolShortcut),
+        queueSummary: document.querySelector('#queueSummary')?.textContent.trim(),
+        toolBrief: document.querySelector('#toolBrief')?.textContent.trim()
       };
       document.querySelector('[data-tool="merge"]').click();
       document.querySelector('#runTool').click();
@@ -449,15 +525,21 @@ async function main() {
       returnByValue: true,
     });
 
+    if (result.result.exceptionDetails) {
+      const details = result.result.exceptionDetails;
+      throw new Error(details.exception?.description || details.text || "Runtime.evaluate failed");
+    }
+
     const value = result.result.result.value;
-    const external = requests.filter((url) => /^https?:\/\//.test(url) && !url.startsWith("http://127.0.0.1:4173"));
+    if (!value) throw new Error("Runtime.evaluate non ha restituito dati di verifica.");
+    const external = requests.filter((url) => /^https?:\/\//.test(url) && !url.startsWith(staticSite.origin));
     const failures = [];
 
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
     if (value.worker !== "vendor/pdf.worker.min.js") failures.push("worker PDF.js non locale");
-    if (!value.initialUx.firstHeading.includes("PDF") || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word")) failures.push("UX iniziale non riuscita");
+    if (!value.initialUx.firstHeading.includes("PDF") || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word") || !value.initialUx.roadmapHidden || !value.initialUx.catalogInsights.includes("strumenti realmente eseguibili")) failures.push("UX iniziale non riuscita");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
-    if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge")) failures.push("UX guidata non riuscita");
+    if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge") || !value.guidedUx.queueSummary.includes("2 PDF") || !value.guidedUx.toolBrief.includes("PDF unico")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");
     if (!value.mixedMerge.includes("pdfdelta-unito-misto.pdf")) failures.push("merge PDF+immagini non riuscito");
     if (!value.editor.result.includes("-compilato-firmato.pdf") || !value.editor.pageInfo.includes("1 / 1")) failures.push("editor compila e firma non riuscito");
@@ -526,6 +608,7 @@ async function main() {
     console.log(JSON.stringify({ ok: true, value, external }, null, 2));
   } finally {
     chrome.kill();
+    staticSite.server.close();
   }
 }
 

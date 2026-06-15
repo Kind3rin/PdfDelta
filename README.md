@@ -5,8 +5,8 @@ Toolkit PDF statico, gratuito e pensato per hosting free senza costi nascosti.
 ## Stack
 
 - HTML, CSS e JavaScript vanilla.
-- Nessun backend, nessun database, nessun piano cloud.
-- Pubblicabile gratis su Cloudflare Pages.
+- Nessun backend per le funzioni PDF core, nessun database, nessun piano cloud paid.
+- Pubblicabile gratis su GitHub Pages o Cloudflare Pages Free.
 - Monetizzazione futura: ADS/sponsor non invasivi, nessun paywall.
 - Elaborazione locale: i file non vengono caricati su server.
 - Librerie browser vendorizzate in `vendor/`: `pdf-lib`, `JSZip`, `PDF.js`, `qrcode-generator`.
@@ -25,29 +25,34 @@ Poi apri `http://localhost:4173`.
 
 ## Regole zero costi
 
-- Hosting: usare solo Cloudflare Pages Free.
-- URL: usare il sottodominio gratuito `*.pages.dev`.
+- Hosting: GitHub Pages o Cloudflare Pages Free.
+- URL: usare sottodomini gratuiti (`*.github.io` o `*.pages.dev`).
 - Non inserire carta di credito se non strettamente necessario.
 - Non attivare prodotti a pagamento o metered: Workers Paid, R2, D1, KV, Stream, Images, Argo, Load Balancing, Zaraz paid.
-- Non usare funzioni server: tutte le feature devono girare nel browser.
+- Non usare funzioni server per i PDF: tutte le feature core devono girare nel browser.
+- Backend opzionale solo per funzioni non critiche e solo se resta nel piano free con hard limit.
 - Non comprare dominio custom finche l'obiettivo e costo assoluto `0`.
 - Non usare API AI, OCR cloud, conversioni Office server-side o storage cloud.
 - Non dipendere da CDN esterni a runtime: le librerie core sono servite come file statici locali.
 - Prima di abilitare ADS, verificare che il provider non richieda costi o servizi terzi a pagamento.
 
-## Deploy gratis su Cloudflare Pages
+## Deploy gratis
 
-1. Crea un repository pubblico su GitHub.
-2. Carica questi file nella branch `main`.
-3. Apri Cloudflare Dashboard -> Workers & Pages -> Create application -> Pages.
-4. Collega il repository.
-5. Build command: lascia vuoto.
-6. Build output directory: `/`.
-7. Deploy.
+Il deploy corrente usa GitHub Pages:
+
+`https://kind3rin.github.io/PdfDelta/`
+
+Cloudflare Pages Free resta l'alternativa consigliata se vuoi cambiare hosting:
+
+1. Apri Cloudflare Dashboard -> Workers & Pages -> Create application -> Pages.
+2. Collega il repository.
+3. Build command: lascia vuoto.
+4. Build output directory: `/`.
+5. Deploy.
 
 URL previsto: `https://NOME-PROGETTO.pages.dev/`.
 
-GitHub Pages resta un fallback free. Vercel Hobby non e consigliato per un prodotto con ADS perche l'uso diventa commerciale.
+Dettagli backend zero-cost: `FREE_BACKEND_STRATEGY.md`.
 
 ## Dipendenze locali
 
@@ -78,6 +83,8 @@ Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie local
 - Editor visuale per compilare, firmare e disegnare su PDF nel browser.
 - Cockpit applicativo ridisegnato da zero: carica file, scegli azione, scarica.
 - Suggerimenti automatici in base ai file caricati e auto-selezione dell'azione piu probabile.
+- Coda intelligente con riepilogo file e azioni compatibili.
+- Catalogo pulito: le funzioni bloccate non confondono il flusso principale e restano in Roadmap/ricerca.
 - Editor contestuale: niente canvas vuoto, si apre solo quando esiste un PDF.
 - Preferiti locali per tenere in alto gli strumenti usati spesso, senza account.
 - Dividi PDF in ZIP, dividi per range e separa pari/dispari.

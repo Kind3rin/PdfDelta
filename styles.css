@@ -37,6 +37,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -372,6 +376,55 @@ h3 {
   line-height: 1.45;
 }
 
+.queue-summary {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--green) 38%, var(--line));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--green) 8%, var(--surface));
+}
+
+.queue-summary span,
+.tool-brief span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.queue-summary strong,
+.tool-brief strong {
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.queue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.mini-action {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.mini-action:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
 .tool-launcher {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -450,6 +503,20 @@ h3 {
   font-size: 0.92rem;
   font-weight: 800;
   line-height: 1.4;
+}
+
+.tool-brief {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tool-brief > div {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 .tool-options {
@@ -630,13 +697,13 @@ h3 {
 
 .quick-actions,
 .category-bar {
+  display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 .category-bar {
-  display: flex;
   overflow-x: auto;
   scrollbar-width: thin;
 }
@@ -662,6 +729,19 @@ h3 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+}
+
+.catalog-insights {
+  min-height: 38px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 850;
+  line-height: 1.35;
 }
 
 .tool-card {
@@ -1083,7 +1163,8 @@ h3 {
   }
 
   .tool-launcher,
-  .tools-grid {
+  .tools-grid,
+  .tool-brief {
     grid-template-columns: minmax(0, 1fr);
   }
 

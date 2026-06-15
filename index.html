@@ -69,6 +69,7 @@
             <ul class="file-list" id="fileList">
               <li class="empty-state">Nessun file caricato.</li>
             </ul>
+            <div class="queue-summary" id="queueSummary" hidden></div>
             <button class="text-button" id="clearQueue" type="button">Svuota file</button>
           </section>
 
@@ -100,6 +101,7 @@
             <h2 id="run-title">Esegui</h2>
             <div class="selected-tool" id="selectedTool">Scegli un'azione</div>
             <div class="compatibility-note" id="compatibilityNote">Carica file o scegli una card consigliata.</div>
+            <div class="tool-brief" id="toolBrief" hidden></div>
             <div class="tool-options" id="toolOptions" hidden></div>
             <button class="button button-accent primary-action" id="runTool" type="button" disabled>
               <span aria-hidden="true">+</span>
@@ -137,9 +139,11 @@
           <button class="chip" type="button" data-filter="Converti">Converti</button>
           <button class="chip" type="button" data-filter="Modifica">Modifica</button>
           <button class="chip" type="button" data-filter="Privacy">Privacy</button>
+          <button class="chip" type="button" data-filter="Roadmap">Roadmap</button>
         </div>
 
         <div class="category-bar" id="categoryBar" aria-label="Categorie strumenti"></div>
+        <div class="catalog-insights" id="catalogInsights"></div>
         <div class="tools-grid" id="toolsGrid"></div>
       </section>
 
@@ -194,6 +198,7 @@
           <span>File sul dispositivo</span>
           <span>Download locale</span>
           <span>Hosting statico free</span>
+          <span>Backend solo opzionale</span>
         </div>
       </section>
     </main>

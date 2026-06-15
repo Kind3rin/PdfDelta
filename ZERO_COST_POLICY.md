@@ -6,14 +6,16 @@ Il progetto deve poter vivere a costo assoluto `0`.
 
 ## Hosting approvato
 
+- GitHub Pages.
 - Cloudflare Pages Free.
+- Sottodominio gratuito `*.github.io`.
 - Sottodominio gratuito `*.pages.dev`.
 - Sito statico puro.
 
 ## Vietato
 
 - Workers Paid.
-- Pages Functions se diventano necessarie per funzioni core.
+- Pages Functions o Workers se diventano necessari per funzioni PDF core.
 - R2, D1, KV, Stream, Images, Argo, Load Balancing, Queues.
 - API AI o OCR cloud.
 - API di conversione Office.
@@ -27,6 +29,7 @@ Il progetto deve poter vivere a costo assoluto `0`.
 - Librerie open source caricate dal browser.
 - Librerie frontend vendorizzate come asset statici locali.
 - Elaborazione file locale nel browser.
+- Backend opzionale solo per feature non critiche e con limite free duro.
 - ADS futuri se non richiedono spesa e non bloccano funzioni.
 
 ## Policy prodotto
@@ -42,3 +45,7 @@ Feature privacy-heavy consentite devono girare nel browser. Esempio: la sanitizz
 - Functions: non usare.
 - Environment variables: nessuna.
 - Custom domain: non necessario.
+
+## Backend opzionale
+
+Vedi `FREE_BACKEND_STRATEGY.md`. Nessun PDF utente deve passare da backend free.

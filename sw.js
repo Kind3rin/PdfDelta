@@ -1,4 +1,4 @@
-const CACHE_NAME = "pdfdelta-static-v36";
+const CACHE_NAME = "pdfdelta-static-v37";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ const ASSETS = [
   "./app.js",
   "./manifest.webmanifest",
   "./README.md",
+  "./FREE_BACKEND_STRATEGY.md",
   "./vendor/pdf-lib.min.js",
   "./vendor/jszip.min.js",
   "./vendor/pdf.min.js",

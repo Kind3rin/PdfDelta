@@ -1364,7 +1364,7 @@ function saveFavorites() {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify([...state.favorites]));
 }
 
-const categories = ["Tutti", "Preferiti", "Organizza", "Ottimizza", "Converti", "Modifica", "Privacy", "Analisi", "AI"];
+const categories = ["Tutti", "Preferiti", "Organizza", "Ottimizza", "Converti", "Modifica", "Privacy", "Analisi", "Roadmap", "AI"];
 
 const state = {
   filter: "Tutti",
@@ -1404,6 +1404,9 @@ const clearQueueButton = $("#clearQueue");
 const topbar = $(".topbar");
 const smartSuggestions = $("#smartSuggestions");
 const compatibilityNote = $("#compatibilityNote");
+const queueSummary = $("#queueSummary");
+const toolBrief = $("#toolBrief");
+const catalogInsights = $("#catalogInsights");
 const stepItems = Array.from(document.querySelectorAll(".step"));
 const editorPanel = $("#editorPanel");
 const editorStatus = $("#editorStatus");
@@ -1469,6 +1472,36 @@ function toolRequirementText(tool) {
   return `${accepts} · ${count}`;
 }
 
+function toolOutputText(tool) {
+  const outputHints = {
+    merge: "PDF unico",
+    "merge-mixed": "PDF unico",
+    interleave: "PDF fronte/retro",
+    split: "ZIP con PDF separati",
+    "split-ranges": "ZIP con PDF per range",
+    "split-odd-even": "ZIP pari/dispari",
+    "extract-pages": "PDF con pagine scelte",
+    "remove-pages": "PDF ripulito",
+    "reorder-pages": "PDF riordinato",
+    "rotate": "PDF ruotato",
+    "pdf-to-word": "DOCX testuale editabile",
+    "pdf-to-jpg": "ZIP JPG",
+    "pdf-to-images": "ZIP PNG",
+    "pdf-to-webp": "ZIP WebP",
+    "images-to-pdf": "PDF da immagini",
+    "text-to-pdf": "PDF da TXT",
+    "extract-text": "TXT",
+    "pdf-to-markdown": "Markdown",
+    "edit-pdf": "PDF compilato e firmato",
+    "clean-metadata": "PDF con metadati puliti",
+    "queue-report": "CSV coda",
+    "document-report": "CSV documento",
+    "word-count": "CSV parole",
+    audit: "TXT audit base",
+  };
+  return outputHints[tool.id] || (tool.category === "Analisi" ? "Report locale" : "File scaricabile");
+}
+
 function getFileProfile() {
   const pdf = getPdfFiles().length;
   const images = getImageFiles().length;
@@ -1480,6 +1513,17 @@ function getFileProfile() {
     total: state.files.length,
     mixed: [pdf > 0, images > 0, text > 0].filter(Boolean).length > 1,
   };
+}
+
+function profileSummaryText(profile) {
+  if (!profile.total) return "Nessun file in coda.";
+  const parts = [];
+  if (profile.pdf) parts.push(`${profile.pdf} PDF`);
+  if (profile.images) parts.push(`${profile.images} immagini`);
+  if (profile.text) parts.push(`${profile.text} TXT`);
+  const unsupported = profile.total - profile.pdf - profile.images - profile.text;
+  if (unsupported) parts.push(`${unsupported} non supportati`);
+  return parts.join(", ");
 }
 
 function suggestionIds() {
@@ -1497,6 +1541,34 @@ function firstCompatibleSuggestion() {
   return suggestionIds()
     .map((id) => tools.find((tool) => tool.id === id))
     .find((tool) => tool && tool.status !== "bloccato" && (!state.files.length || isToolCompatible(tool)));
+}
+
+function renderQueueSummary() {
+  if (!queueSummary) return;
+  const profile = getFileProfile();
+  if (!profile.total) {
+    queueSummary.hidden = true;
+    queueSummary.innerHTML = "";
+    return;
+  }
+
+  const recommended = suggestionIds()
+    .map((id) => tools.find((tool) => tool.id === id))
+    .filter((tool) => tool && isToolCompatible(tool))
+    .slice(0, 3);
+
+  queueSummary.hidden = false;
+  queueSummary.innerHTML = `
+    <div>
+      <span>Coda pronta</span>
+      <strong>${profileSummaryText(profile)}</strong>
+    </div>
+    <div class="queue-actions">
+      ${recommended
+        .map((tool) => `<button class="mini-action" type="button" data-tool-shortcut="${tool.id}">${tool.name}</button>`)
+        .join("")}
+    </div>
+  `;
 }
 
 function updateStepStrip() {
@@ -1530,6 +1602,40 @@ function renderSuggestions() {
     .join("");
 }
 
+function renderToolBrief() {
+  if (!toolBrief) return;
+  const tool = state.selectedTool;
+  if (!tool) {
+    toolBrief.hidden = true;
+    toolBrief.innerHTML = "";
+    return;
+  }
+
+  const ready = isToolCompatible(tool);
+  const statusText =
+    tool.status === "bloccato"
+      ? "Non attivo: evitati costi/server"
+      : ready
+        ? "Pronto sul dispositivo"
+        : `Serve ${toolRequirementText(tool).toLowerCase()}`;
+
+  toolBrief.hidden = false;
+  toolBrief.innerHTML = `
+    <div>
+      <span>Risultato</span>
+      <strong>${toolOutputText(tool)}</strong>
+    </div>
+    <div>
+      <span>Input</span>
+      <strong>${toolRequirementText(tool)}</strong>
+    </div>
+    <div>
+      <span>Stato</span>
+      <strong>${statusText}</strong>
+    </div>
+  `;
+}
+
 function compatibilityMessage() {
   const tool = state.selectedTool;
   const profile = getFileProfile();
@@ -1544,9 +1650,12 @@ function compatibilityMessage() {
 
 function matchesTool(tool) {
   const query = state.query.trim().toLowerCase();
+  if (!query && state.filter === "Tutti" && tool.status === "bloccato") return false;
+
   const categoryMatch =
     state.filter === "Tutti" ||
     (state.filter === "Preferiti" && state.favorites.has(tool.id)) ||
+    (state.filter === "Roadmap" && tool.status === "bloccato") ||
     tool.category === state.filter ||
     tool.badge === state.filter ||
     (state.filter === "Attivo" && ["attivo", "parziale"].includes(tool.status));
@@ -1579,6 +1688,8 @@ function renderTools() {
       if (state.files.length && compatibleScore) return compatibleScore;
       return Number(left.status === "bloccato") - Number(right.status === "bloccato");
     });
+
+  renderCatalogInsights(visibleTools);
 
   if (!visibleTools.length) {
     grid.innerHTML =
@@ -1613,6 +1724,21 @@ function renderTools() {
     .join("");
 }
 
+function renderCatalogInsights(visibleTools) {
+  if (!catalogInsights) return;
+  const activeCount = tools.filter((tool) => tool.status !== "bloccato").length;
+  const blockedCount = tools.length - activeCount;
+  const compatibleCount = state.files.length ? visibleTools.filter(isToolCompatible).length : 0;
+  const scope =
+    state.filter === "Roadmap"
+      ? `${blockedCount} funzioni visibili solo se diventano gratis senza costi nascosti.`
+      : state.query
+        ? `${visibleTools.length} risultati per la ricerca.`
+        : `${activeCount} strumenti realmente eseguibili nel browser.`;
+  const compatibility = state.files.length ? `${compatibleCount} compatibili con la coda attuale.` : "Carica file per vedere solo i compatibili.";
+  catalogInsights.textContent = `${scope} ${compatibility}`;
+}
+
 function toggleFavorite(toolId) {
   if (state.favorites.has(toolId)) state.favorites.delete(toolId);
   else state.favorites.add(toolId);
@@ -1626,6 +1752,8 @@ function renderFiles() {
   if (compatibilityNote) compatibilityNote.textContent = compatibilityMessage();
   if (clearQueueButton) clearQueueButton.hidden = !state.files.length;
   renderSuggestions();
+  renderQueueSummary();
+  renderToolBrief();
   updateStepStrip();
 
   if (!state.selectedTool) {
@@ -1748,6 +1876,9 @@ function addFiles(fileCollection) {
 
 function setFilter(filter) {
   state.filter = filter;
+  document.querySelectorAll("[data-filter]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.filter === filter);
+  });
   renderCategories();
   renderTools();
 }
@@ -4603,8 +4734,6 @@ categoryBar.addEventListener("click", (event) => {
 
 document.querySelectorAll("[data-filter]").forEach((button) => {
   button.addEventListener("click", () => {
-    document.querySelectorAll("[data-filter]").forEach((item) => item.classList.remove("active"));
-    button.classList.add("active");
     setFilter(button.dataset.filter);
   });
 });
