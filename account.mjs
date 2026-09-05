@@ -1,5 +1,5 @@
 import { accountConfig } from './account-config.mjs';
-import { createPreferenceSync } from './account-preferences.mjs';
+import { createPreferenceSync, createPreferenceJournal } from './account-preferences.mjs';
 import { tools } from './tool-catalog.mjs';
 
 export async function initAccount(bridge, config = accountConfig) {
@@ -12,7 +12,7 @@ export async function initAccount(bridge, config = accountConfig) {
   dialog.innerHTML = '<button type="button" class="account-close" aria-label="Chiudi account">×</button><h2 id="accountTitle">Il tuo PdfDelta</h2><p>Ritrova tema e strumenti preferiti su ogni dispositivo. I tuoi PDF e le tue firme restano qui.</p><p class="account-identity"></p><button type="button" class="account-login">Continua con Google</button><button type="button" class="account-retry" hidden>Riprova sincronizzazione</button><button type="button" class="account-logout" hidden>Esci dall’account</button><p class="account-status" role="status"></p><small>Puoi usare tutti gli strumenti anche senza account. <a href="privacy.html">Privacy</a></small>';
   document.body.append(dialog);
   const status = text => { dialog.querySelector('.account-status').textContent = text; };
-  const sync = createPreferenceSync(client, new Set(tools.map(tool => tool.id)), status);
+  const sync = createPreferenceSync(client, new Set(tools.map(tool => tool.id)), status, createPreferenceJournal(localStorage));
   let user = null, guest = bridge.getPreferences(), connecting = null;
   try { const saved = JSON.parse(localStorage.getItem('pdfdelta-guest-preferences')); if (saved) guest = saved; } catch { /* Preserve current local defaults. */ }
   open.onclick = () => dialog.showModal(); dialog.querySelector('.account-close').onclick = () => dialog.close();

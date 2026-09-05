@@ -46,3 +46,69 @@ test('failed load never overwrites remote data with local defaults', async () =>
   await sync.connect('one', defaults, () => assert.fail('unexpected apply'));
   await sync.save(defaults); assert.match(messages[0], /non disponibile/);
 });
+
+function storageFixture() {
+  const values = new Map();
+  return { getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) };
+}
+
+test('failed write survives reload and retry instead of applying stale server preferences', async () => {
+  const { createPreferenceJournal } = await import('./account-preferences.mjs');
+  const storage = storageFixture();
+  const changed = { theme: 'dark', favorites: ['split'] };
+  const first = createPreferenceSync(fake(async () => ({ data: defaults }), async () => ({ error: new Error('offline') })), allowed, () => {}, createPreferenceJournal(storage));
+  await first.connect('one', defaults, () => {}); await first.save(changed);
+  const writes = []; let applied;
+  const reloaded = createPreferenceSync(fake(async () => ({ data: defaults }), async row => { writes.push(row); return {}; }), allowed, () => {}, createPreferenceJournal(storage));
+  await reloaded.connect('one', defaults, value => { applied = value; });
+  assert.deepEqual(applied, changed);
+  assert.deepEqual(writes, [{ user_id: 'one', ...changed }]);
+  assert.equal(createPreferenceJournal(storage).read('one'), null);
+});
+
+test('pending preferences cannot be applied to a different account', async () => {
+  const { createPreferenceJournal } = await import('./account-preferences.mjs');
+  const storage = storageFixture(), journal = createPreferenceJournal(storage);
+  journal.write('one', { version: 'pending', preferences: { theme: 'dark', favorites: ['merge'] } });
+  let applied;
+  const sync = createPreferenceSync(fake(async () => ({ data: defaults }), () => assert.fail('cross-account write')), allowed, () => {}, journal);
+  await sync.connect('two', defaults, value => { applied = value; });
+  assert.deepEqual(applied, defaults); assert.equal(journal.read('one').version, 'pending');
+});
+
+test('an older acknowledgement cannot clear a newer pending edit', async () => {
+  const { createPreferenceJournal } = await import('./account-preferences.mjs');
+  const journal = createPreferenceJournal(storageFixture()); let release;
+  let calls = 0;
+  const sync = createPreferenceSync(fake(async () => ({ data: defaults }), async () => {
+    if (++calls === 1) { await new Promise(resolve => { release = resolve; }); return {}; }
+    return { error: new Error('offline') };
+  }), allowed, () => {}, journal);
+  await sync.connect('one', defaults, () => {});
+  const first = sync.save(defaults);
+  await new Promise(resolve => setImmediate(resolve));
+  const second = sync.save({ theme: 'dark', favorites: ['split'] });
+  release(); await first; await second;
+  assert.equal(journal.read('one').preferences.theme, 'dark');
+});
+
+test('storage quota failure still retries from memory without crashing', async () => {
+  const { createPreferenceJournal } = await import('./account-preferences.mjs');
+  const journal = createPreferenceJournal({ getItem() { throw Error('quota'); }, setItem() { throw Error('quota'); }, removeItem() { throw Error('quota'); } });
+  let fail = true, saved;
+  const sync = createPreferenceSync(fake(async () => ({ data: defaults }), async row => { saved = row; return fail ? { error: Error('offline') } : {}; }), allowed, () => {}, journal);
+  await sync.connect('one', defaults, () => {}); await sync.save({ theme: 'dark', favorites: [] });
+  fail = false; await sync.connect('one', defaults, () => {});
+  assert.equal(saved.theme, 'dark'); assert.equal(journal.read('one'), null);
+});
+
+test('quota failure cannot let an older stored draft replace the latest memory edit', async () => {
+  const { createPreferenceJournal } = await import('./account-preferences.mjs');
+  const storage = storageFixture(), journal = createPreferenceJournal(storage);
+  journal.write('one', { version:'old', preferences:defaults });
+  storage.setItem = () => { throw Error('quota'); };
+  journal.write('one', { version:'new', preferences:{ theme:'dark', favorites:[] } });
+  assert.equal(journal.read('one').version, 'new');
+  journal.remove('one', 'old');
+  assert.equal(journal.read('one').version, 'new');
+});

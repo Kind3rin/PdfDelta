@@ -415,6 +415,13 @@ async function main() {
     await send('Emulation.setDeviceMetricsOverride', { width:390, height:844, deviceScaleFactor:1, mobile:true });
     fs.writeFileSync('dist/verification/account-mobile.png', Buffer.from((await send('Page.captureScreenshot', { format:'png' })).data, 'base64'));
     await evaluate("document.querySelector('.account-close').click()");
+    await evaluate(`(async () => {
+      const { createPreferenceSync, createPreferenceJournal } = await import('./account-preferences.mjs');
+      const client = { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { theme:'light', favorites:[] } }) }) }), upsert: async () => ({ error: new Error('offline fixture') }) }) };
+      const sync = createPreferenceSync(client, new Set(['split']), () => {}, createPreferenceJournal(localStorage));
+      await sync.connect('browser-recovery-test', { theme:'light', favorites:[] }, () => {});
+      await sync.save({ theme:'dark', favorites:['split'], pdf:'must-not-persist' });
+    })()`);
     await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
     await send('Page.navigate', { url: site.origin + '/index.html#visualWorkspace' });
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -423,6 +430,14 @@ async function main() {
       while (document.getElementById('visualWorkspace')?.dataset.flow !== 'ready') { if (Date.now() > end) throw new Error('Offline boot failed: ' + location.href + ' ' + document.body.innerText.slice(-600)); await new Promise(r => setTimeout(r, 50)); }
       await document.fonts.ready;
       if (!document.fonts.check('14px Manrope')) throw new Error('Offline font missing');
+      const { createPreferenceSync, createPreferenceJournal } = await import('./account-preferences.mjs');
+      const journal = createPreferenceJournal(localStorage);
+      if ('pdf' in journal.read('browser-recovery-test').preferences) throw new Error('Unexpected persisted document field');
+      let saved, applied;
+      const client = { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data:{ theme:'light', favorites:[] } }) }) }), upsert: async row => { saved = row; return {}; } }) };
+      const sync = createPreferenceSync(client, new Set(['split']), () => {}, journal);
+      await sync.connect('browser-recovery-test', { theme:'light', favorites:[] }, value => { applied = value; });
+      if (applied?.theme !== 'dark' || saved?.favorites[0] !== 'split' || journal.read('browser-recovery-test')) throw new Error('Preference recovery after actual navigation failed');
       document.getElementById('wsDemo').click();
       while (document.querySelectorAll('[data-page]').length !== 3 || document.getElementById('wsExport').disabled) { if (Date.now() > end) throw new Error('Offline PDF failed'); await new Promise(r => setTimeout(r, 50)); }
     })()`);
