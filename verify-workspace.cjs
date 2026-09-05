@@ -313,6 +313,34 @@ async function main() {
       } finally { await task.destroy(); }
       await until(() => !$('wsExport').disabled);
     })()`);
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      const until = async fn => { const end = Date.now() + 20000; while (!fn()) { if (Date.now() > end) throw new Error('Long JPG: ' + fn); await new Promise(r => setTimeout(r, 30)); } };
+      const { workspaceBridge } = await import('./app.js');
+      const huge = await PDFLib.PDFDocument.create(); huge.addPage([14400, 14400]); huge.addPage([14400, 14400]);
+      workspaceBridge.replaceFiles([new File([await huge.save()], 'troppo-grande.jpg.pdf', { type: 'application/pdf' })]);
+      await until(() => $('wsTitle').textContent === 'troppo-grande.jpg.pdf' && !$('wsExport').disabled);
+      workspaceBridge.selectTool('pdf-to-long-jpg');
+      const originalContext = HTMLCanvasElement.prototype.getContext; let rasterized = 0, outputs = 0;
+      HTMLCanvasElement.prototype.getContext = function(type, options) { if (options?.willReadFrequently) rasterized++; return originalContext.call(this, type, options); };
+      const count = () => { outputs++; }; window.addEventListener('pdfdelta-output', count);
+      await workspaceBridge.run();
+      HTMLCanvasElement.prototype.getContext = originalContext; window.removeEventListener('pdfdelta-output', count);
+      if (rasterized || outputs || !$('resultPanel').textContent.includes('immagine per pagina')) throw new Error('Oversized long image not rejected before raster allocation');
+      const doc = await PDFLib.PDFDocument.create();
+      doc.addPage([300, 400]).drawRectangle({ x: 0, y: 0, width: 300, height: 400, color: PDFLib.rgb(1, 0, 0) });
+      doc.addPage([600, 200]).drawRectangle({ x: 0, y: 0, width: 600, height: 200, color: PDFLib.rgb(0, 0, 1) });
+      workspaceBridge.replaceFiles([new File([await doc.save()], 'due-colori.pdf', { type: 'application/pdf' })]);
+      await until(() => $('wsTitle').textContent === 'due-colori.pdf' && !$('wsExport').disabled);
+      workspaceBridge.selectTool('pdf-to-long-jpg');
+      const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
+      await workspaceBridge.run(); const bitmap = await createImageBitmap(await output);
+      if (bitmap.width !== 600 || bitmap.height !== 618) throw new Error('Long JPG dimensions wrong');
+      const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d'); ctx.drawImage(bitmap, 0, 0); bitmap.close();
+      const first = ctx.getImageData(300, 200, 1, 1).data, second = ctx.getImageData(300, 518, 1, 1).data, margin = ctx.getImageData(30, 200, 1, 1).data;
+      if (first[0] < 240 || second[2] < 240 || margin[0] < 240 || margin[1] < 240) throw new Error('Long JPG order, centering or content wrong');
+    })()`);
     await evaluate("document.getElementById('themeToggle').click()");
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");

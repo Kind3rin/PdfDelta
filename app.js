@@ -1593,20 +1593,21 @@ async function pdfToLongJpg(options) {
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
-    const canvases = [];
+    const pages = [];
     let width = 0;
     let height = 0;
 
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
-      const canvas = await renderPdfPageCanvas(page, scale);
-      canvases.push(canvas);
-      width = Math.max(width, canvas.width);
-      height += canvas.height + (pageNumber > 1 ? gap : 0);
-    }
-
-    if (width > 12000 || height > 30000) {
-      throw new Error(`${file.name}: immagine troppo grande. Usa qualità più bassa o dividi il PDF.`);
+      const viewport = window.PdfEngine.viewportAtScale(page, scale);
+      const pageWidth = Math.ceil(viewport.width), pageHeight = Math.ceil(viewport.height);
+      pages.push({ page, width: pageWidth, height: pageHeight });
+      width = Math.max(width, pageWidth);
+      height += pageHeight + (pageNumber > 1 ? gap : 0);
+      const limits = window.PdfEngine.limits;
+      if (width > limits.canvasSide || height > limits.canvasSide || width * height > limits.canvasPixels) {
+        throw new Error(`${file.name}: troppe pagine o dimensioni eccessive per una sola immagine. Usa PDF in JPG per ottenere un'immagine per pagina, oppure scegli meno pagine.`);
+      }
     }
 
     const output = document.createElement("canvas");
@@ -1617,13 +1618,16 @@ async function pdfToLongJpg(options) {
     context.fillRect(0, 0, width, height);
 
     let y = 0;
-    canvases.forEach((canvas, index) => {
+    for (const [index, item] of pages.entries()) {
       if (index > 0) y += gap;
-      context.drawImage(canvas, Math.round((width - canvas.width) / 2), y);
-      y += canvas.height;
-    });
+      const canvas = await renderPdfPageCanvas(item.page, scale);
+      context.drawImage(canvas, Math.round((width - item.width) / 2), y);
+      y += item.height;
+      canvas.width = canvas.height = 0;
+    }
 
     outputs.push({ name: `${sanitizeFileName(file.name)}-immagine-lunga.jpg`, bytes: await canvasToBlob(output, "image/jpeg", quality) });
+    output.width = output.height = 0;
   }
 
   if (outputs.length === 1) downloadBlob(outputs[0].bytes, outputs[0].name);
