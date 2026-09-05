@@ -38,7 +38,23 @@ L'editor mantiene i comandi sopra il foglio.
 Eliminati pulsanti indistinti a tutta larghezza desktop, cornici annidate e nomi
 file ripetuti sotto ogni pagina. Le icone aiutano il riconoscimento ma mantengono
 etichette testuali. Il blu identifica un'azione o una selezione, non decora titoli.
-La pagina iniziale mostra un foglio e l'apertura file, senza una griglia promozionale.
+La home presenta 12 strumenti frequenti, ricerca e filtri per categoria. Ogni
+scheda indica un risultato concreto e apre il caricamento per quella operazione.
+Il documento già aperto può essere ripreso dal catalogo senza perdere la sessione.
+
+## Home e movimento
+
+Titolo ampio, Manrope locale, fondo chiaro e icone colorate per categoria rendono
+riconoscibili le operazioni prima di caricare un file. Quattro colonne desktop,
+tre tablet e due mobile; nessuna funzione futura presentata come disponibile.
+L'illustrazione dei fogli reagisce al puntatore con prospettiva CSS. Non richiede
+WebGL né nuove librerie: il movimento è decorativo, disabilitato con la preferenza
+di movimento ridotto e assente sui dispositivi touch. Hover e focus mantengono
+etichette leggibili. Il documento di esempio permette di provare il flusso.
+
+La revisione visiva ha ridotto l'altezza del blocco introduttivo per anticipare gli
+strumenti. Le schermate desktop e mobile sono prove di rendering, non una
+validazione da parte di utenti non tecnici.
 
 ## Verifica
 

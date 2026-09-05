@@ -14,6 +14,7 @@ Direzione visiva e criteri responsive: [DESIGN.md](DESIGN.md).
 | `workspace.mjs` | Sessione, miniature, selezione, import atomico ed esportazione |
 | `workspace-flow.mjs` | Flusso unico, catalogo su richiesta, editor integrato e sincronizzazione strumenti/documento |
 | `tool-catalog.mjs` | Catalogo dichiarativo degli strumenti |
+| `home.mjs` | Catalogo iniziale, ricerca, categorie, esempio e illustrazione interattiva; workspace-flow conserva l'operazione scelta durante l'import |
 | `app.js` | Coda, opzioni, editor e handler delle operazioni esistenti |
 | `sw.js` | Shell offline versionata e cache limitata agli asset dichiarati |
 | `scripts/vendor-pdfjs.mjs` | Copia riproducibile del pacchetto con verifica integrità |
@@ -97,7 +98,11 @@ La CSP meta non sostituisce header come frame-ancestors o X-Content-Type-Options
 
 L'editor conserva una firma a mano vettoriale in memoria di sessione: il riquadro
 di creazione normalizza i tratti e ogni inserimento ne copia i punti nel documento.
-I tratti sono esportati su ogni pagina selezionata. Le firme digitate conservano
+I tratti sono esportati su ogni pagina selezionata.
+La firma a mano viene scalata alla dimensione scelta e riposizionata entro la
+pagina con un margine. Un ordine progressivo condiviso tra firme, testo e tratti
+permette di rimuovere l'ultimo inserimento senza cancellare gli altri elementi.
+Le firme digitate conservano
 lo stile scelto (Times Italic, Helvetica Oblique, Courier Oblique) nel PDF.
 Vercel usa `vercel.json` e il repository Git collegato; AGENTS.md rende persistenti
 le regole dell'obiettivo. Il collegamento locale `.vercel` e i token sono esclusi da Git.

@@ -13,7 +13,7 @@
   },
   "components": [
     { "id": "files", "type": "external", "label": "File locali", "sublabel": "File API", "pos": [40, 300], "size": [140, 64] },
-    { "id": "workspace", "type": "frontend", "label": "Workspace", "sublabel": "workspace + flow", "pos": [260, 300], "size": [160, 64] },
+    { "id": "workspace", "type": "frontend", "label": "Home / Workspace", "sublabel": "home + workspace + flow", "pos": [260, 300], "size": [160, 64] },
     { "id": "engine", "type": "backend", "label": "Motore locale", "sublabel": "pdf-engine.mjs", "pos": [520, 300], "size": [160, 64] },
     { "id": "output", "type": "external", "label": "Esporta PDF", "sublabel": "Originale o pdf-lib", "pos": [780, 300], "size": [160, 64] },
     { "id": "history", "type": "database", "label": "Cronologia RAM", "sublabel": "workspace-model.mjs", "pos": [250, 130], "size": [180, 64] },

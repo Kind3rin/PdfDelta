@@ -5,6 +5,12 @@ Aggiornato: 2026-09-05. Stato: primo workspace visuale e motore aggiornato; non 
 Le regole persistenti dell'obiettivo sono in AGENTS.md e valgono anche per nuove sessioni.
 Priorità da feedback reale: firma digitata con più stili e firma a mano riutilizzabile.
 
+### Posizionamento firma
+
+- Firma a mano in tre dimensioni, mantenuta entro i bordi della pagina senza taglio dei tratti.
+- Annulla inserimento rimuove l'ultimo testo, firma o tratto libero e ritorna alla pagina relativa; la firma riutilizzabile resta in sessione.
+- Test sul PDF renderizzato: firma rimossa assente, reinserimento grande presso il bordo visibile e senza tratti tagliati.
+
 ### Feedback firma e hosting Vercel
 
 - Tre stili della firma digitata incorporati nel PDF; area per disegno con mouse/touch/penna e riutilizzo in più punti/pagine nella stessa sessione.
@@ -213,3 +219,9 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
+
+### Home orientata agli strumenti
+
+- Catalogo iniziale con 12 operazioni frequenti, ricerca su tutti gli strumenti e categorie; caricamento contestuale alla scelta e ripresa del documento aperto.
+- Nuova gerarchia visiva, icone per categoria, illustrazione dei fogli con prospettiva reattiva al puntatore. Movimento leggero in CSS, rispettando movimento ridotto e touch.
+- Verifica browser di ricerca, scelta, esempio, output e assenza di overflow mobile; schermate desktop/mobile in dist/verification. Validazione con utenti e telefoni reali ancora aperta.
