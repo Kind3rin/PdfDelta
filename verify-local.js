@@ -14,9 +14,14 @@ function wait(ms) {
 }
 
 async function cdpJson(url) {
-  for (let index = 0; index < 50; index += 1) {
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
     try {
-      return await (await fetch(url)).json();
+      const response = await fetch(url, { signal: AbortSignal.timeout(1000) });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const pages = await response.json();
+      if (!pages.some(page => page.type === 'page' && page.webSocketDebuggerUrl)) throw new Error('Chrome sta creando la pagina');
+      return pages;
     } catch {
       await wait(150);
     }
