@@ -4,6 +4,9 @@ Toolkit PDF statico, gratuito e pensato per hosting free senza costi nascosti.
 
 Percorso di evoluzione e criteri di qualità: [PIANO.md](PIANO.md).
 
+Direzione visiva, tipografia e layout desktop/mobile: [design](docs/DESIGN.md).
+Manrope è distribuito localmente con licenza OFL, anche per l'uso offline.
+
 Motore aggiornato: PDF.js 6.3.289 e worker corrispondente, con risorse e licenza
 locali, checksum verificati e valutazione dinamica disabilitata. La cache offline
 conserva solo gli asset dichiarati e non elimina le cache di altre applicazioni.

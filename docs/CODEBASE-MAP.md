@@ -4,6 +4,7 @@
 
 [Apri il diagramma Archify](diagrams/pdfdelta.html).
 Sorgente versionata: `diagrams/pdfdelta.architecture.json`.
+Direzione visiva e criteri responsive: [DESIGN.md](DESIGN.md).
 
 | Modulo | Responsabilità |
 | --- | --- |
@@ -68,6 +69,10 @@ Profilo standard: validazione con zero errori e zero avvisi.
 - Offline: nuova apertura dell'app e rendering del documento di esempio con rete disattivata.
 - Gli stessi controlli workspace/export/offline passano anche su GitHub Pages.
 - Preview 1440×1050 e 390×844, nessun overflow orizzontale; non sono prove su telefono reale.
+- Redesign: aggiunte 768×1024 e 1920×1080, controlli sulle colonne desktop,
+  altezza delle miniature e assenza di scorrimento annidato. Verifica manuale nel browser dell'editor e del tema scuro.
+- Avvio offline da `index.html#visualWorkspace`, font locale incluso; i frammenti URL
+  non escludono più gli asset della shell dalla cache. Query e documenti restano esclusi.
 - Suite strumenti esistenti separata dalla verifica degli output del workspace.
 - Corpus esteso, altri browser, accessibilità completa e performance su file
   complessi restano nel piano; non dichiarare certificazione enterprise.

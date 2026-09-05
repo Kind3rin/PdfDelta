@@ -116,6 +116,17 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 
 ## Chiusura dei cicli
 
+### Redesign del workspace
+
+- Tipografia Manrope locale, nuova gerarchia documento/azioni, icone con etichette,
+  miniature più grandi e nitide, un solo scorrimento su mobile.
+- Desktop 1440/1920 px e tablet 768 px: colonne e dimensioni delle anteprime verificate.
+- Mobile 390 px: apertura, modifica, aggiunta file, editor e download verificati.
+- Tema scuro ed editor provati anche tramite interazione diretta nel browser.
+- Corretta la cache offline per URL con frammento (`index.html#visualWorkspace`);
+  installazione con risorse aggiornate, per evitare CSS vecchio accanto a script nuovi.
+- 13 test unitari/sicurezza e suite strumenti superati localmente; verifica pubblica e CI richieste per chiudere il ciclo.
+
 ### Correzione UX — flusso unico
 
 - Rimossi dalla vista il secondo caricamento, il cockpit duplicato e i passaggi manuali tra strumenti e pagine.
