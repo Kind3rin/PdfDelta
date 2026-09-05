@@ -1,6 +1,6 @@
 importScripts('./vendor/pdfjs-assets.js');
 const CACHE_PREFIX = "pdfdelta-static-";
-const CACHE_NAME = `${CACHE_PREFIX}v40`;
+const CACHE_NAME = `${CACHE_PREFIX}v41`;
 const ASSETS = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const ASSETS = [
   "./workspace-flow.mjs",
   "./workspace-model.mjs",
   "./workspace.css",
+  "./vendor/fonts/manrope-variable.ttf",
   "./vendor/pdfjs-assets.js",
   "./manifest.webmanifest",
   "./README.md",
@@ -27,7 +28,8 @@ const ASSETS = [
 const ASSET_URLS = new Set(ASSETS.map((asset) => new URL(asset, self.registration.scope).href));
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+  const freshAssets = ASSETS.map(asset => new Request(new URL(asset, self.registration.scope), { cache: 'reload' }));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(freshAssets)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
@@ -42,7 +44,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   // Cache only the application shell, never documents or other applications.
-  if (!ASSET_URLS.has(event.request.url)) return;
+  const assetUrl = new URL(event.request.url);
+  assetUrl.hash = '';
+  if (!ASSET_URLS.has(assetUrl.href)) return;
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE_NAME);

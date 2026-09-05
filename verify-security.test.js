@@ -17,14 +17,15 @@ function worker({ cached, response, offline = false, quota = false } = {}) {
   const handlers = {};
   const deleted = [];
   const writes = [];
+  const installed = [];
   let networkCalls = 0;
   const cache = {
     match: async () => cached,
     put: async (...args) => { if (quota) throw new Error('Quota'); writes.push(args); },
-    addAll: async () => {},
+    addAll: async requests => installed.push(...requests),
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'sw.js'), 'utf8'), {
-    URL, Response, importScripts: () => {},
+    URL, Request, Response, importScripts: () => {},
     self: {
       PDFJS_ASSETS: [],
       registration: { scope: 'https://example.com/PdfDelta/' },
@@ -33,14 +34,15 @@ function worker({ cached, response, offline = false, quota = false } = {}) {
       skipWaiting: async () => {},
     },
     caches: {
-      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v40'],
+      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v41'],
       delete: async (key) => deleted.push(key),
       open: async () => cache,
     },
     fetch: async () => { networkCalls++; if (offline) throw new Error('Offline'); return response; },
   });
   return {
-    deleted, writes, networkCalls: () => networkCalls,
+    deleted, writes, installed, networkCalls: () => networkCalls,
+    install: () => { let result; handlers.install({ waitUntil: p => { result = p; } }); return result; },
     activate: () => { let result; handlers.activate({ waitUntil: p => { result = p; } }); return result; },
     request: (url = 'https://example.com/PdfDelta/app.js', method = 'GET') => {
       let result;
@@ -56,6 +58,13 @@ test('activation preserves caches owned by other apps', async () => {
   assert.deepEqual(sw.deleted, ['pdfdelta-static-v37']);
 });
 
+test('install refreshes assets instead of combining cached CSS with new scripts', async () => {
+  const sw = worker(); await sw.install();
+  assert.ok(sw.installed.some(request => request.url.endsWith('/workspace.css')));
+  assert.ok(sw.installed.some(request => request.url.endsWith('/fonts/manrope-variable.ttf')));
+  assert.ok(sw.installed.every(request => request.cache === 'reload' && new URL(request.url).origin === 'https://example.com'));
+});
+
 test('documents, external requests, query strings and mutations bypass cache', () => {
   const sw = worker();
   for (const url of ['https://example.com/PdfDelta/private.pdf', 'https://example.com/other/app.js', 'https://other.com/PdfDelta/app.js', 'https://example.com/PdfDelta/app.js?document=secret']) {
@@ -69,6 +78,7 @@ test('offline shell uses its own version without network', async () => {
   const cached = new Response('versioned shell');
   const sw = worker({ cached, offline: true });
   assert.equal(await sw.request(), cached);
+  assert.equal(await sw.request('https://example.com/PdfDelta/index.html#visualWorkspace'), cached);
   assert.equal(sw.networkCalls(), 0);
 });
 

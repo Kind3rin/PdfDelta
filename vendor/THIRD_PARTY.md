@@ -2,6 +2,10 @@
 
 These files are served as static assets by PdfDelta to avoid runtime CDN dependency.
 
+Manrope variable font: `fonts/manrope-variable.ttf`, SIL Open Font License 1.1
+(`fonts/OFL-Manrope.txt`). Source: https://github.com/google/fonts/tree/main/ofl/manrope.
+Served locally, including offline; no font CDN requests.
+
 | File | Package | Version | License | Source |
 | --- | --- | --- | --- | --- |
 | `pdf-lib.min.js` | pdf-lib | 1.17.1 | MIT | https://pdf-lib.js.org/ |

@@ -85,7 +85,7 @@ export function initWorkspace(bridge) {
       try {
         const page = await source.reader.getPage(item.index + 1);
         if (epoch !== generation) return;
-        const viewport = viewportFor(page, 220, item.rotation);
+        const viewport = viewportFor(page, 440, item.rotation);
         canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
         const task = page.render({ canvasContext: canvas.getContext('2d'), viewport });
         renderTasks.push(task);

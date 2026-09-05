@@ -5,6 +5,19 @@ export function initFlow(bridge, workspace) {
   const sidebar = host.querySelector('.ws-sidebar');
   const same = (a, b) => a.length === b.length && a.every((file, i) => file === b[i]);
   let lastFiles = [], pending = Promise.resolve();
+  const icons = {
+    edit: '<path d="m15 4 5 5M4 20l5-1L20 8a2 2 0 0 0-5-5L4 14z"/>',
+    compress: '<path d="M8 3v5H3m13-5v5h5M8 21v-5H3m13 5v-5h5"/>',
+    image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1"/><path d="m3 16 5-5 4 4 3-3 6 6"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    download: '<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
+    shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/>',
+    undo: '<path d="M8 5 3 10l5 5M3 10h10a7 7 0 0 1 7 7"/>',
+    redo: '<path d="m16 5 5 5-5 5m5-5H11a7 7 0 0 0-7 7"/>'
+  };
+  const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
+  const buttonLabel = (button, name, label) => { button.innerHTML = `${icon(name)}<span>${label}</span>`; };
 
   // Reuse the existing controls and handlers, without keeping a second workflow.
   const actionPanel = document.querySelector('.run-card');
@@ -12,7 +25,7 @@ export function initFlow(bridge, workspace) {
   actionPanel.hidden = true;
   const quick = document.createElement('div');
   quick.className = 'flow-actions';
-  quick.innerHTML = '<h2>Cosa vuoi fare?</h2><button type="button" data-flow-tool="edit-pdf">Compila e firma</button><button type="button" data-flow-tool="compress-scan">Comprimi scansione</button><button type="button" data-flow-tool="pdf-to-jpg">Converti in immagini</button><button id="flowAllTools" type="button">Altri strumenti…</button>';
+  quick.innerHTML = `<h2>Strumenti</h2><button type="button" data-flow-tool="edit-pdf">${icon('edit')}<span>Compila e firma<small>Testo, firma e disegno</small></span></button><button type="button" data-flow-tool="compress-scan">${icon('compress')}<span>Comprimi scansione<small>Riduci il peso del file</small></span></button><button type="button" data-flow-tool="pdf-to-jpg">${icon('image')}<span>Converti in immagini<small>Una JPG per ogni pagina</small></span></button><button id="flowAllTools" type="button">${icon('grid')}<span>Altri strumenti…</span></button>`;
   sidebar.prepend(quick);
   const fileDetails = document.createElement('details');
   fileDetails.className = 'flow-files';
@@ -26,11 +39,15 @@ export function initFlow(bridge, workspace) {
   $('editor').hidden = true;
   const pagesArea = host.querySelector('.ws-canvas-area');
   pagesArea.append($('editor'));
+  const pageBar = document.createElement('div'); pageBar.className = 'ws-page-bar';
+  pageBar.innerHTML = '<div><h2>Le tue pagine</h2><p>Seleziona per modificare. Trascina per riordinare.</p></div>';
+  pageBar.append(host.querySelector('.ws-toolbar')); pagesArea.prepend(pageBar);
   const back = document.createElement('button'); back.id = 'flowBack'; back.type = 'button'; back.textContent = 'Torna alle pagine'; back.hidden = true;
   $('editor').prepend(back);
   function showPages() { $('editor').hidden = true; $('wsPages').hidden = false; back.hidden = true; host.classList.remove('flow-editing'); }
   back.onclick = showPages;
   window.addEventListener('pdfdelta-editor', () => {
+    actionPanel.hidden = true;
     $('editor').hidden = false; $('wsPages').hidden = true; back.hidden = false; host.classList.add('flow-editing');
   });
 
@@ -46,17 +63,29 @@ export function initFlow(bridge, workspace) {
   });
   window.addEventListener('pdfdelta-tool', event => {
     if (event.detail.automatic) return;
+    if (event.detail.tool.id !== 'edit-pdf') showPages();
     picker.close();
     actionPanel.hidden = false;
+    quick.querySelectorAll('[data-flow-tool]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.flowTool === event.detail.tool.id)));
     $('run-title').textContent = event.detail.tool.name;
     $('runTool').focus({ preventScroll: true });
   });
   document.querySelector('.nav-links').replaceChildren();
   document.querySelector('.header-actions > a').hidden = true;
-  $('wsImport').textContent = 'Aggiungi file';
-  $('wsExport').textContent = 'Scarica PDF';
+  buttonLabel($('wsImport'), 'plus', 'Aggiungi file');
+  buttonLabel($('wsExport'), 'download', 'Scarica PDF');
+  buttonLabel($('wsUndo'), 'undo', 'Annulla'); buttonLabel($('wsRedo'), 'redo', 'Ripeti');
+  for (const [id, label] of [['wsUndo', 'Annulla modifica'], ['wsRedo', 'Ripeti modifica']]) { $(id).setAttribute('aria-label', label); $(id).title = label; }
   $('editorSave').textContent = 'Applica modifiche';
-  host.querySelector('.ws-kicker').textContent = '1. Apri i file   /   2. Modifica   /   3. Scarica';
+  $('editor').querySelector('.section-head > p').textContent = 'Scegli Testo, Firma o Disegna, poi seleziona un punto del foglio.';
+  host.querySelector('.ws-kicker').textContent = 'Il tuo spazio PDF';
+  host.querySelector('.ws-heading > div:first-child').append($('wsSummary'));
+  const privacy = document.createElement('span'); privacy.className = 'local-badge'; privacy.innerHTML = `${icon('shield')}<span>I file restano sul tuo dispositivo</span>`;
+  document.querySelector('.nav-links').append(privacy);
+  const emptyUpload = document.createElement('button'); emptyUpload.id = 'flowOpen'; emptyUpload.type = 'button'; buttonLabel(emptyUpload, 'plus', 'Scegli file'); emptyUpload.onclick = () => $('wsFiles').click();
+  $('wsDemo').before(emptyUpload);
+  $('wsDemo').textContent = 'Oppure prova un documento di esempio';
+  host.querySelector('.ws-paper-symbol').innerHTML = '<span>PDF</span><i></i><i></i><i></i>';
   $('wsEmpty').querySelector('h2').textContent = 'Inizia dal tuo documento.';
   $('wsEmpty').querySelector('p').textContent = 'Aggiungi un PDF, un’immagine o un file di testo. Poi scegli cosa fare, qui accanto.';
   $('wsFiles').accept = '.pdf,.jpg,.jpeg,.png,.txt';
@@ -74,6 +103,7 @@ export function initFlow(bridge, workspace) {
   function update(files) {
     const loaded = files.length > 0;
     host.classList.toggle('flow-loaded', loaded);
+    pageBar.hidden = !workspace.getFiles().length;
     sidebar.hidden = !loaded;
     host.querySelector('.ws-toolbar').hidden = !workspace.getFiles().length;
     $('wsExport').hidden = !workspace.getFiles().length;
@@ -83,13 +113,13 @@ export function initFlow(bridge, workspace) {
       $('wsEmpty').querySelector('h2').textContent = 'File pronti per la conversione.';
       $('wsEmpty').querySelector('p').textContent = 'Scegli uno strumento a sinistra per creare il tuo PDF.';
       primary.dataset.flowTool = files.some(file => /\.txt$/i.test(file.name)) ? 'text-to-pdf' : 'images-to-pdf';
-      primary.textContent = 'Crea PDF';
+      buttonLabel(primary, 'plus', 'Crea PDF');
       quick.querySelectorAll('[data-flow-tool]').forEach((button, index) => { button.hidden = index > 0; });
     } else {
-      primary.dataset.flowTool = 'edit-pdf'; primary.textContent = 'Compila e firma';
+      primary.dataset.flowTool = 'edit-pdf'; primary.innerHTML = `${icon('edit')}<span>Compila e firma<small>Testo, firma e disegno</small></span>`;
       quick.querySelectorAll('[data-flow-tool]').forEach(button => { button.hidden = false; });
-      $('wsEmpty').querySelector('h2').textContent = 'Inizia dal tuo documento.';
-      $('wsEmpty').querySelector('p').textContent = 'Aggiungi un PDF, un’immagine o un file di testo. Poi scegli cosa fare, qui accanto.';
+      $('wsEmpty').querySelector('h2').textContent = 'Apri. Modifica. Fatto.';
+      $('wsEmpty').querySelector('p').textContent = 'Trascina qui i tuoi documenti. Unisci pagine, compila e converti, tutto nello stesso spazio.';
     }
   }
   window.addEventListener('pdfdelta-files', event => {

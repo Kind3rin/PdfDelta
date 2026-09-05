@@ -34,6 +34,9 @@ async function main() {
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1050, deviceScaleFactor: 1, mobile: false });
     await send('Page.navigate', { url: site.origin });
     await new Promise(resolve => setTimeout(resolve, 1500));
+    fs.mkdirSync('dist/verification', { recursive: true });
+    await evaluate(`(async () => { const end = Date.now() + 15000; while (document.getElementById('visualWorkspace')?.dataset.flow !== 'ready') { if (Date.now() > end) throw new Error('Flow startup'); await new Promise(r => setTimeout(r, 30)); } await document.fonts.ready; })()`);
+    fs.writeFileSync('dist/verification/workspace-empty.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     const result = await evaluate(`(async () => {
       const $ = id => document.getElementById(id);
       const until = async fn => { const end = Date.now() + 15000; while (!fn()) { if (Date.now() > end) throw new Error('Attesa scaduta: ' + fn); await new Promise(r => setTimeout(r, 50)); } };
@@ -88,11 +91,15 @@ async function main() {
       return { pages: doc.getPageCount(), rotation: doc.getPage(1).getRotation().angle, textPreserved: true, malformedRejected: rejected, version: pdfjsLib.version };
     })()`);
     fs.mkdirSync('dist/verification', { recursive: true });
-    for (const [name, width, height] of [['desktop', 1440, 1050], ['mobile', 390, 844]]) {
+    for (const [name, width, height] of [['desktop', 1440, 1050], ['wide', 1920, 1080], ['tablet', 768, 1024], ['mobile', 390, 844]]) {
       await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
       await evaluate('window.scrollTo(0, 0)');
       const overflow = await evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth');
       if (overflow) throw new Error('Overflow ' + name);
+      const layout = await evaluate(`(() => { const side = document.querySelector('.ws-sidebar').getBoundingClientRect(); const stage = document.querySelector('.ws-canvas-area'); const box = stage.getBoundingClientRect(); const page = document.querySelector('[data-page] canvas').getBoundingClientRect(); return { sideWidth:side.width, sideRight:side.right, stageLeft:box.left, pageHeight:page.height, columns:getComputedStyle(document.querySelector('.ws-pages')).gridTemplateColumns.split(' ').length, nestedScroll:stage.scrollHeight > stage.clientHeight + 1 && ['auto','scroll'].includes(getComputedStyle(stage).overflowY) }; })()`);
+      if (width >= 768 && (layout.sideWidth > 280 || layout.sideRight > layout.stageLeft + 1 || layout.columns < 2)) throw new Error('Desktop columns collapsed: ' + name);
+      if (width >= 1440 && layout.pageHeight < 260) throw new Error('Thumbnails too small: ' + name);
+      if (layout.nestedScroll) throw new Error('Nested document scrollbar: ' + name);
       const shot = await send('Page.captureScreenshot', { format: 'png' });
       fs.writeFileSync(`dist/verification/workspace-${name}.png`, Buffer.from(shot.data, 'base64'));
     }
@@ -115,13 +122,18 @@ async function main() {
       $('flowBack').click();
       if (!$('editor').hidden || $('wsPages').hidden) throw new Error('Return to pages failed');
     })()`);
+    await evaluate("document.getElementById('themeToggle').click()");
+    fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await evaluate("document.getElementById('themeToggle').click()");
     await evaluate('navigator.serviceWorker.ready.then(() => true)');
     await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
-    await send('Page.reload');
+    await send('Page.navigate', { url: site.origin + '/index.html#visualWorkspace' });
     await new Promise(resolve => setTimeout(resolve, 1000));
     await evaluate(`(async () => {
       const end = Date.now() + 15000;
-      while (document.getElementById('visualWorkspace')?.dataset.flow !== 'ready') { if (Date.now() > end) throw new Error('Offline boot failed'); await new Promise(r => setTimeout(r, 50)); }
+      while (document.getElementById('visualWorkspace')?.dataset.flow !== 'ready') { if (Date.now() > end) throw new Error('Offline boot failed: ' + location.href + ' ' + document.body.innerText.slice(-600)); await new Promise(r => setTimeout(r, 50)); }
+      await document.fonts.ready;
+      if (!document.fonts.check('14px Manrope')) throw new Error('Offline font missing');
       document.getElementById('wsDemo').click();
       while (document.querySelectorAll('[data-page]').length !== 3 || document.getElementById('wsExport').disabled) { if (Date.now() > end) throw new Error('Offline PDF failed'); await new Promise(r => setTimeout(r, 50)); }
     })()`);
