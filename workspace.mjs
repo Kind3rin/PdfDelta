@@ -22,10 +22,11 @@ export function initWorkspace(bridge) {
     $('wsFiles').disabled = locked;
     $('wsCancel').hidden = !busy;
     $('wsSummary').textContent = `${history.pages.length} pagine · ${selected.size} selezionate`;
+    window.dispatchEvent(new CustomEvent('pdfdelta-workspace-busy', { detail: busy }));
   }
   window.addEventListener('pdfdelta-busy', controls);
   host.addEventListener('click', event => {
-    if (bridge.isBusy()) { event.preventDefault(); event.stopImmediatePropagation(); }
+    if (bridge.isBusy() || (busy && !event.target.closest('#wsCancel'))) { event.preventDefault(); event.stopImmediatePropagation(); }
   }, true);
   function checkCancelled() { if (cancel) throw new DOMException('Operazione annullata. Il documento precedente è intatto.', 'AbortError'); }
   async function job(action) {
@@ -239,6 +240,7 @@ export function initWorkspace(bridge) {
   });
   void render();
   return {
+    isBusy: () => busy,
     open,
     clear: () => $('wsReset').onclick(),
     getFiles: () => [...new Set(history.pages.map(p => sources.get(p.source).file))],

@@ -109,6 +109,22 @@ async function main() {
       document.querySelector('[data-page]').click(); document.querySelector('[data-edit="rotate"]').click();
       await until(() => document.querySelectorAll('[data-page]').length === 3);
       const extra = await PDFLib.PDFDocument.create(); extra.addPage([300, 400]);
+      const { workspaceBridge } = await import('./app.js');
+      let protectedTransitions = 0, transitionFailure;
+      const probeTransition = event => {
+        if (!event.detail) return;
+        try {
+          if (!$('flowAllTools').parentElement.inert || $('wsCancel').hidden) throw new Error('Import/export controls not protected or cancel unavailable');
+          const before = workspaceBridge.getAllFiles();
+          $('clearQueue').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          document.querySelector('[data-edit="rotate"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          workspaceBridge.addFiles([new File(['ignored'], 'ignored.txt')]);
+          void workspaceBridge.run();
+          if (workspaceBridge.isBusy() || workspaceBridge.getAllFiles().length !== before.length || !workspaceBridge.getAllFiles().every((file, i) => file === before[i])) throw new Error('Conflicting operation during import/export');
+          protectedTransitions++;
+        } catch (error) { transitionFailure = error.message; }
+      };
+      window.addEventListener('pdfdelta-workspace-busy', probeTransition);
       const transfer = new DataTransfer(); transfer.items.add(new File([await extra.save()], 'extra.pdf', { type: 'application/pdf' }));
       $('wsFiles').files = transfer.files; $('wsFiles').dispatchEvent(new Event('change'));
       await until(() => document.querySelectorAll('[data-page]').length === 4 && !$('wsExport').disabled);
@@ -116,6 +132,8 @@ async function main() {
       $('wsExport').click(); const pdf = await PDFLib.PDFDocument.load(await (await output).arrayBuffer());
       if (pdf.getPageCount() !== 4 || pdf.getPage(0).getRotation().angle !== 90) throw new Error('Adding files lost existing edits');
       await until(() => !$('wsExport').disabled);
+      window.removeEventListener('pdfdelta-workspace-busy', probeTransition);
+      if (transitionFailure || protectedTransitions < 2 || $('flowAllTools').parentElement.inert) throw new Error(transitionFailure || 'Import/export transition coverage missing');
       document.querySelector('[data-flow-tool="edit-pdf"]').click();
       await until(() => !$('editor').hidden && $('editorInkCanvas').width > 0 && !$('runTool').disabled);
       if (document.documentElement.scrollWidth > document.documentElement.clientWidth) throw new Error('Mobile editor overflow');

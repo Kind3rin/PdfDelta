@@ -3,6 +3,7 @@ const { PDFDocument, StandardFonts, rgb, degrees, PDFName } = window.PDFLib || {
 
 
 const FAVORITES_KEY = "pdfdelta-favorites";
+let workspaceBusy = () => false;
 
 function loadFavorites() {
   try {
@@ -485,7 +486,7 @@ function getOptions() {
 }
 
 function selectTool(toolId, options = {}) {
-  if (state.busy) return;
+  if (state.busy || workspaceBusy()) return;
   const tool = tools.find((item) => item.id === toolId);
   if (!tool) return;
 
@@ -504,7 +505,7 @@ function selectTool(toolId, options = {}) {
 }
 
 function addFiles(fileCollection) {
-  if (state.busy) return;
+  if (state.busy || workspaceBusy()) return;
   const incoming = Array.from(fileCollection || []);
   const totalBytes = [...state.files, ...incoming].reduce((sum, file) => sum + file.size, 0);
   if (incoming.some(file => file.size > window.PdfEngine.limits.fileBytes) || totalBytes > 200 * 1024 * 1024) {
@@ -3369,7 +3370,7 @@ const handlers = {
 };
 
 async function runSelectedTool() {
-  if (state.busy) return;
+  if (state.busy || workspaceBusy()) return;
   const tool = state.selectedTool;
   if (!tool || !isToolCompatible(tool)) return;
   if (!PDFDocument) throw new Error("pdf-lib non caricato. Controlla la connessione.");
@@ -3462,7 +3463,7 @@ searchInput.addEventListener("input", (event) => {
 fileInput.addEventListener("change", (event) => addFiles(event.target.files));
 
 fileList.addEventListener("click", (event) => {
-  if (state.busy) return;
+  if (state.busy || workspaceBusy()) return;
   const remove = event.target.closest("[data-remove-file]");
   if (!remove) return;
   state.files.splice(Number(remove.dataset.removeFile), 1);
@@ -3496,7 +3497,7 @@ fileList.addEventListener("click", (event) => {
 dropzone.addEventListener("drop", (event) => addFiles(event.dataTransfer.files));
 
 $("#clearQueue").addEventListener("click", () => {
-  if (state.busy) return;
+  if (state.busy || workspaceBusy()) return;
   state.files = [];
   fileInput.value = "";
   resultPanel.textContent = "";
@@ -3609,6 +3610,7 @@ resetEditor();
 renderFiles();
 
 export const workspaceBridge = {
+  setWorkspaceBusy(check) { workspaceBusy = check; },
   beforeRun: async () => null,
   isBusy: () => state.busy,
   getAllFiles: () => [...state.files],

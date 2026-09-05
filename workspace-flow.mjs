@@ -1,5 +1,6 @@
 // One input collection and one current document, shared by pages and tools.
 export function initFlow(bridge, workspace) {
+  bridge.setWorkspaceBusy(workspace.isBusy);
   const $ = id => document.getElementById(id);
   const host = $('visualWorkspace');
   const sidebar = host.querySelector('.ws-sidebar');
@@ -169,9 +170,13 @@ export function initFlow(bridge, workspace) {
     }).catch(error => workspace.status(error.message));
   });
   update(bridge.getAllFiles());
-  window.addEventListener('pdfdelta-busy', event => {
-    host.setAttribute('aria-busy', String(event.detail));
-    for (const panel of [quick, actionPanel, fileDetails, picker, $('editor')]) panel.inert = event.detail;
-  });
+  const reflectBusy = () => {
+    const busy = bridge.isBusy() || workspace.isBusy();
+    host.setAttribute('aria-busy', String(busy));
+    for (const panel of [quick, actionPanel, fileDetails, picker, $('editor')]) panel.inert = busy;
+  };
+  window.addEventListener('pdfdelta-busy', reflectBusy);
+  window.addEventListener('pdfdelta-workspace-busy', reflectBusy);
+  reflectBusy();
   host.dataset.flow = 'ready';
 }
