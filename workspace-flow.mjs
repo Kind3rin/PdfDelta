@@ -150,9 +150,11 @@ export function initFlow(bridge, workspace) {
   bridge.beforeRun = async tool => {
     await pending;
     if (!workspace.hasEdits() || !workspace.getFiles().length) return null;
-    if (tool.minFiles > 1 && !['merge', 'merge-mixed'].includes(tool.id)) throw new Error('Questo strumento richiede documenti separati. Annulla le modifiche alle pagine prima di confrontarli.');
-    const file = await workspace.materialize();
-    lastFiles = [file, ...bridge.getAllFiles().filter(f => !/\.pdf$/i.test(f.name))];
+    const separate = tool.minFiles > 1 && !['merge', 'merge-mixed'].includes(tool.id);
+    const files = separate ? await workspace.materializeFiles() : [await workspace.materialize()];
+    const prepared = [...files, ...bridge.getAllFiles().filter(f => !/\.pdf$/i.test(f.name))];
+    if (separate && prepared.filter(file => tool.accepts.includes(file.name.split('.').pop().toLowerCase())).length < tool.minFiles) throw new Error('Aggiungi un altro file compatibile: questo strumento richiede documenti separati.');
+    lastFiles = prepared;
     return lastFiles;
   };
   window.addEventListener('pdfdelta-output', event => {

@@ -100,25 +100,25 @@ export function initWorkspace(bridge) {
       }
     }
   }
-  async function compose() {
+  async function compose(pages = history.pages, filename = 'pdfdelta-workspace.pdf') {
     // Preserve document-level data when only viewing a file or a tool result.
-    const activeSources = [...new Set(history.pages.map(page => page.source))];
+    const activeSources = [...new Set(pages.map(page => page.source))];
     if (activeSources.length === 1) {
       const source = sources.get(activeSources[0]);
-      if (history.pages.length === source.doc.getPageCount() && history.pages.every((page, index) => page.index === index && page.rotation === source.doc.getPage(index).getRotation().angle)) return source.file;
+      if (pages.length === source.doc.getPageCount() && pages.every((page, index) => page.index === index && page.rotation === source.doc.getPage(index).getRotation().angle)) return source.file;
     }
     const result = await window.PDFLib.PDFDocument.create();
-    for (const [i, item] of history.pages.entries()) {
+    for (const [i, item] of pages.entries()) {
       checkCancelled();
       const [page] = await result.copyPages(sources.get(item.source).doc, [item.index]);
       page.setRotation(window.PDFLib.degrees(item.rotation)); result.addPage(page);
-      status(`Preparazione pagina ${i + 1} di ${history.pages.length}`);
+      status(`Preparazione pagina ${i + 1} di ${pages.length}`);
       if (i % 10 === 0) await new Promise(resolve => setTimeout(resolve, 0));
     }
     checkCancelled();
     const bytes = await result.save();
     checkCancelled();
-    return new File([bytes], 'pdfdelta-workspace.pdf', { type: 'application/pdf' });
+    return new File([bytes], filename, { type: 'application/pdf' });
   }
   $('wsFiles').addEventListener('change', event => { void open(event.target.files); event.target.value = ''; });
   host.addEventListener('dragover', event => { if ([...event.dataTransfer.types].includes('Files')) event.preventDefault(); });
@@ -238,6 +238,15 @@ export function initWorkspace(bridge) {
     getFiles: () => [...new Set(history.pages.map(p => sources.get(p.source).file))],
     hasEdits: () => JSON.stringify(history.pages) !== baseline,
     async materialize() { if (busy) throw new Error('Attendi il caricamento del documento.'); cancel = false; return compose(); },
+    async materializeFiles() {
+      if (busy) throw new Error('Attendi il caricamento del documento.');
+      cancel = false;
+      const files = [];
+      for (const source of new Set(history.pages.map(page => page.source))) {
+        files.push(await compose(history.pages.filter(page => page.source === source), sources.get(source).file.name));
+      }
+      return files;
+    },
     status,
   };
 }

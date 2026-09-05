@@ -171,6 +171,35 @@ async function main() {
       if (destroyedTasks.has(retainedTasks[0])) throw new Error('Released a document still needed by undo');
       pdfjsLib.getDocument = originalLoader;
     })()`);
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      const until = async fn => { const end = Date.now() + 15000; while (!fn()) { if (Date.now() > end) throw new Error('Multi-document timeout: ' + fn); await new Promise(r => setTimeout(r, 30)); } };
+      const { workspaceBridge } = await import('./app.js');
+      const files = [];
+      for (const name of ['Versione-A', 'Versione-B']) {
+        const doc = await PDFLib.PDFDocument.create(); doc.addPage().drawText(name); doc.addPage().drawText(name + ' fine');
+        files.push(new File([await doc.save()], name + '.pdf', { type: 'application/pdf' }));
+      }
+      workspaceBridge.replaceFiles(files);
+      await until(() => document.querySelectorAll('[data-page]').length === 4 && !$('wsExport').disabled);
+      document.querySelector('[data-page]').click(); document.querySelector('[data-edit="rotate"]').click();
+      const originalBeforeRun = workspaceBridge.beforeRun;
+      let checked = false;
+      workspaceBridge.beforeRun = async tool => {
+        const prepared = await originalBeforeRun(tool);
+        if (prepared?.length !== 2 || prepared[0].name !== files[0].name || prepared[1] !== files[1]) throw new Error('Comparison inputs were merged or an untouched document was rewritten');
+        const edited = await PDFLib.PDFDocument.load(await prepared[0].arrayBuffer());
+        if (edited.getPageCount() !== 2 || edited.getPage(0).getRotation().angle !== 90) throw new Error('Comparison lost edited pages');
+        checked = true; return prepared;
+      };
+      workspaceBridge.selectTool('compare-visual');
+      const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail), { once: true }));
+      await workspaceBridge.run();
+      if (!checked) throw new Error('Comparison preparation failed: ' + $('resultPanel')?.textContent);
+      const report = await output;
+      if (!report.filename.endsWith('.html') || !(await report.blob.text()).includes('Versione-A')) throw new Error('Comparison report missing');
+      workspaceBridge.beforeRun = originalBeforeRun;
+    })()`);
     await evaluate("document.getElementById('themeToggle').click()");
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");

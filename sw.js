@@ -1,6 +1,6 @@
 importScripts('./vendor/pdfjs-assets.js');
 const CACHE_PREFIX = "pdfdelta-static-";
-const CACHE_NAME = `${CACHE_PREFIX}v44`;
+const CACHE_NAME = `${CACHE_PREFIX}v45`;
 const ASSETS = [
   "./",
   "./index.html",
