@@ -68,3 +68,18 @@ test('preview surfaces current errors and permits retry', async () => {
   await render({ getPage: async () => ({ getViewport: () => ({}), render: () => ({ promise: Promise.resolve(), cancel() {} }) }) }, 1, 10);
   assert.equal(commits, 1);
 });
+
+import { annotationGeometry } from './editor-geometry.mjs';
+test('annotation mapping reverses rotated, cropped and scaled viewports', () => {
+  for (const [matrix,height,expected,angle] of [
+    [[1,0,0,-1,0,400],400,{x:30,y:80},0],
+    [[0,1,1,0,-20,-10],300,{x:230,y:50},90],
+    [[-1,0,0,1,300,0],400,{x:270,y:320},180],
+    [[0,-1,-1,0,400,300],300,{x:80,y:370},-90],
+    [[2,0,0,-2,-20,840],800,{x:25,y:60},0],
+  ]) {
+    const g = annotationGeometry({ transform:matrix,height });
+    assert.deepEqual(g.point({x:30,y:80}), expected);
+    assert.ok(Math.abs(Math.abs(g.angle)-Math.abs(angle)) < .0001);
+  }
+});

@@ -1,5 +1,6 @@
 import { tools } from "./tool-catalog.mjs";
 import { createPageRenderer } from './editor-renderer.mjs';
+import { annotationGeometry } from './editor-geometry.mjs';
 const { PDFDocument, StandardFonts, rgb, degrees, PDFName } = window.PDFLib || {};
 
 
@@ -734,22 +735,28 @@ async function openPdfEditorTool() {
 async function saveEditedPdf() {
   if (!state.editor.file || !state.editor.pdfBytes) throw new Error("Apri un PDF nell'editor.");
   const fileName = state.editor.file.name;
+  const sourcePdf = state.editor.pdf;
   const { marks, strokes } = structuredClone({ marks: state.editor.marks, strokes: state.editor.strokes });
   const pdfDoc = await PDFDocument.load(state.editor.pdfBytes.slice(0), { ignoreEncryption: true });
   const textFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const signatureFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
   const signatureFonts = { TimesRomanItalic: signatureFont, HelveticaOblique: await pdfDoc.embedFont(StandardFonts.HelveticaOblique), CourierOblique: await pdfDoc.embedFont(StandardFonts.CourierOblique) };
+  const geometry = new Map();
+  for (const number of new Set([...marks, ...strokes].map(item => item.page))) {
+    geometry.set(number, annotationGeometry((await sourcePdf.getPage(number)).getViewport({ scale: 1 })));
+  }
 
   marks.forEach((mark) => {
     const page = pdfDoc.getPage(mark.page - 1);
+    const transform = geometry.get(mark.page);
     if (mark.type === 'signature-drawing') {
-      for (const stroke of mark.strokes) for (let i = 1; i < stroke.length; i++) page.drawLine({ start: { x: mark.x + stroke[i - 1].x, y: mark.y - stroke[i - 1].y }, end: { x: mark.x + stroke[i].x, y: mark.y - stroke[i].y }, thickness: 1.5, color: rgb(.07, .25, .55) });
+      for (const stroke of mark.strokes) for (let i = 1; i < stroke.length; i++) page.drawLine({ start: transform.point({ x: mark.x + stroke[i - 1].x, y: mark.y - stroke[i - 1].y }), end: transform.point({ x: mark.x + stroke[i].x, y: mark.y - stroke[i].y }), thickness: 1.5 / transform.scale, color: rgb(.07, .25, .55) });
       return;
     }
     page.drawText(safePdfText(mark.text), {
-      x: mark.x,
-      y: mark.y,
-      size: mark.size,
+      ...transform.point(mark),
+      size: mark.size / transform.scale,
+      rotate: degrees(transform.angle),
       font: mark.type === "signature" ? (signatureFonts[mark.font] || signatureFont) : textFont,
       color: mark.type === "signature" ? rgb(0.07, 0.25, 0.55) : rgb(0.09, 0.13, 0.12),
     });
@@ -757,11 +764,12 @@ async function saveEditedPdf() {
 
   strokes.forEach((stroke) => {
     const page = pdfDoc.getPage(stroke.page - 1);
+    const transform = geometry.get(stroke.page);
     for (let index = 1; index < stroke.points.length; index += 1) {
       page.drawLine({
-        start: stroke.points[index - 1],
-        end: stroke.points[index],
-        thickness: stroke.thickness,
+        start: transform.point(stroke.points[index - 1]),
+        end: transform.point(stroke.points[index]),
+        thickness: stroke.thickness / transform.scale,
         color: rgb(0.07, 0.25, 0.55),
       });
     }

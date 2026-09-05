@@ -176,3 +176,7 @@ cancellazione del render precedente e disegno su canvas temporaneo. Solo l'ultim
 richiesta può pubblicare il risultato; ogni canvas temporaneo viene liberato nel
 finally. app.js aggiorna dimensioni e overlay insieme alla pagina completata e
 impedisce nuovi inserimenti finché l'anteprima non è pronta.
+
+editor-geometry.mjs inverte la matrice del viewport PDF.js per esportare le
+annotazioni visuali. Rotazione, origine del ritaglio e scala della pagina vengono
+applicate a punti, dimensioni e orientamento, senza ricreare o rasterizzare pagine.

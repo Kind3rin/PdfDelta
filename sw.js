@@ -1,6 +1,6 @@
 importScripts('./vendor/pdfjs-assets.js');
 const CACHE_PREFIX = "pdfdelta-static-";
-const CACHE_NAME = `${CACHE_PREFIX}v57`;
+const CACHE_NAME = `${CACHE_PREFIX}v58`;
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const ASSETS = [
   "./styles.css",
   "./app.js",
   "./editor-renderer.mjs",
+  "./editor-geometry.mjs",
   "./tool-catalog.mjs",
   "./bootstrap.mjs",
   "./pdf-engine.mjs",

@@ -353,6 +353,37 @@ async function main() {
       const first = ctx.getImageData(300, 200, 1, 1).data, second = ctx.getImageData(300, 518, 1, 1).data, margin = ctx.getImageData(30, 200, 1, 1).data;
       if (first[0] < 240 || second[2] < 240 || margin[0] < 240 || margin[1] < 240) throw new Error('Long JPG order, centering or content wrong');
     })()`);
+    await evaluate(`(async () => {
+      const { workspaceBridge } = await import('./app.js');
+      const $ = id => document.getElementById(id);
+      const until = async predicate => { const end=Date.now()+10000; while (!predicate()) { if(Date.now()>end) throw new Error('Rotated editor timeout'); await new Promise(r=>setTimeout(r,20)); } };
+      const doc = await PDFLib.PDFDocument.create();
+      for (const angle of [0,90,180,270]) { const p=doc.addPage([400,500]); p.setCropBox(20,30,300,400); p.setRotation(PDFLib.degrees(angle)); }
+      workspaceBridge.replaceFiles([new File([await doc.save()], 'rotazioni-editor.pdf', {type:'application/pdf'})]);
+      await until(() => $('wsTitle').textContent==='rotazioni-editor.pdf' && !$('wsExport').disabled);
+      workspaceBridge.selectTool('edit-pdf'); await workspaceBridge.run();
+      document.querySelector('[data-editor-mode="text"]').click(); $('editorTextInput').value='Orientamento';
+      for (let n=1;n<=4;n++) {
+        await until(() => $('editorPageInfo').textContent===n+' / 4');
+        const r=$('editorInkCanvas').getBoundingClientRect();
+        $('editorInkCanvas').dispatchEvent(new PointerEvent('pointerdown',{clientX:r.x+r.width*.25,clientY:r.y+r.height*.35,bubbles:true}));
+        if(n<4) $('editorNext').click();
+      }
+      const output=new Promise(resolve=>window.addEventListener('pdfdelta-output',e=>resolve(e.detail.blob),{once:true}));
+      $('editorSave').click();
+      const task=pdfjsLib.getDocument({data:new Uint8Array(await (await output).arrayBuffer()),owner:'workspace'});
+      try {
+        const pdf=await task.promise;
+        for(let n=1;n<=4;n++) {
+          const page=await pdf.getPage(n), viewport=page.getViewport({scale:1});
+          const item=(await page.getTextContent()).items.find(i=>i.str==='Orientamento');
+          if(!item) throw new Error('Rotated annotation missing');
+          const m=pdfjsLib.Util.transform(viewport.transform,item.transform);
+          if(Math.abs(m[4]-viewport.width*.25)>1 || Math.abs(m[5]-viewport.height*.35)>1 || m[0]<=0 || Math.abs(m[1])>.01) throw new Error('Annotation moved or rotated on page '+n);
+        }
+      } finally { await task.destroy(); }
+      await until(() => $('wsTitle').textContent==='rotazioni-editor-compilato-firmato.pdf' && !$('wsExport').disabled);
+    })()`);
     const padRect = await evaluate(`(async () => {
       const { workspaceBridge } = await import('./app.js');
       const doc = await PDFLib.PDFDocument.create(); doc.addPage([600, 800]); doc.addPage([600, 800]);

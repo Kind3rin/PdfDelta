@@ -268,3 +268,10 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - Dimensionamento con viewportFor del motore: adattamento alla larghezza disponibile e limiti comuni su pixel/lato, anche per pagine molto grandi.
 - Durante il caricamento si sospende l'inserimento sul foglio; una pagina fallita non riceve annotazioni con coordinate dell'anteprima precedente. Cambio pagina o resize permettono retry.
 - Test: letture fuori ordine, render cancellato, rilascio canvas, errore e retry; browser con cambio pagina rapido e dodici resize consecutivi, firme esportate e offline. Le prove su telefoni fisici restano aperte.
+
+### Coordinate editor su pagine ruotate e ritagliate
+
+- editor-geometry.mjs converte le coordinate visuali nella geometria PDF usando la matrice del viewport, inclusi rotazione, CropBox e scala UserUnit.
+- Testo e firme digitate mantengono orientamento e dimensione; firme disegnate e tratti liberi trasformano ogni punto e lo spessore.
+- Test geometrico delle quattro rotazioni, offset e scala; browser con inserimento su quattro pagine ritagliate e verifica posizione/orientamento del testo nell'output riaperto. Restano le regressioni delle firme vettoriali su due pagine.
+- Nessun invio dei documenti; test desktop e viewport mobile non equivalgono a telefoni fisici.
