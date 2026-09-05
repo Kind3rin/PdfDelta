@@ -1,2 +1,3 @@
 # Preserve downloaded bytes across Windows/Linux checkouts for checksum verification.
 vendor/pdfjs/** -text
+vendor/qpdf/** -text

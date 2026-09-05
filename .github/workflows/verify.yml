@@ -16,8 +16,33 @@ jobs:
       - run: node verify-local.js
       - run: node scripts/report-output-verification.mjs
       - run: node verify-workspace.cjs
+  browsers:
+    name: Browser ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:browsers:install -- --with-deps ${{ matrix.browser }}
+      - run: npm run test:browsers -- --project=${{ matrix.browser }}-desktop --project=${{ matrix.browser }}-mobile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-${{ matrix.browser }}
+          path: |
+            dist/browser-results
+            dist/browser-report
+          retention-days: 14
   deploy:
-    needs: verify
+    needs: [verify, browsers]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10

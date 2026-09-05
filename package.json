@@ -4,6 +4,8 @@
   "description": "Toolkit PDF statico, gratuito e pensato per hosting free senza costi nascosti.",
   "scripts": {
     "test": "node --test verify-model.test.mjs verify-security.test.js verify-account.test.mjs",
+    "test:browsers": "node verify-browsers.mjs",
+    "test:browsers:install": "node verify-browsers.mjs install",
     "vendor:account": "node scripts/vendor-account.mjs"
   },
   "repository": {
@@ -21,6 +23,7 @@
     "@supabase/supabase-js": "2.115.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "esbuild": "0.28.2"
   },
   "private": true
