@@ -7,3 +7,7 @@
 dist/
 node_modules/
 graphify-out/
+.vercel/
+
+.vercel
+.env*

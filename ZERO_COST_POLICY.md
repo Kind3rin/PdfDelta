@@ -8,6 +8,7 @@ Il progetto deve poter vivere a costo assoluto `0`.
 
 - GitHub Pages.
 - Cloudflare Pages Free.
+- Vercel Hobby, hosting statico collegato a GitHub (autorizzato dall'utente).
 - Sottodominio gratuito `*.github.io`.
 - Sottodominio gratuito `*.pages.dev`.
 - Sito statico puro.
