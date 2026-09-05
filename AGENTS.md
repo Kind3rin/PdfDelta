@@ -35,4 +35,6 @@ enterprise o superiorità competitiva senza evidenze.
 File PDF elaborati sul dispositivo; nessun invio dei documenti a servizi esterni.
 Hosting statico e nessuna spesa senza autorizzazione. Il deploy su Vercel collegato
 a GitHub è autorizzato dall'utente e non cambia il trattamento locale dei PDF.
+Supabase Free è autorizzato per account facoltativi, tema e preferiti. PDF e firme
+restano sul dispositivo; nessun archivio documenti cloud.
 Non versionare credenziali o configurazioni locali di autenticazione.

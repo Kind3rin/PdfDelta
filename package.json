@@ -1,0 +1,27 @@
+{
+  "name": "pdfdelta",
+  "version": "1.0.0",
+  "description": "Toolkit PDF statico, gratuito e pensato per hosting free senza costi nascosti.",
+  "scripts": {
+    "test": "node --test verify-model.test.mjs verify-security.test.js verify-account.test.mjs",
+    "vendor:account": "node scripts/vendor-account.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kind3rin/PdfDelta.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/Kind3rin/PdfDelta/issues"
+  },
+  "homepage": "https://github.com/Kind3rin/PdfDelta#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "2.115.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "private": true
+}

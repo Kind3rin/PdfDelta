@@ -19,6 +19,7 @@ function loadFavorites() {
 
 function saveFavorites() {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify([...state.favorites]));
+  window.dispatchEvent(new Event('pdfdelta-preferences'));
 }
 
 const categories = ["Tutti", "Preferiti", "Organizza", "Ottimizza", "Converti", "Modifica", "Privacy", "Analisi", "Roadmap", "AI"];
@@ -3666,6 +3667,7 @@ $("#themeToggle").addEventListener("click", () => {
   const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
   root.dataset.theme = nextTheme;
   localStorage.setItem("pdfdelta-theme", nextTheme);
+  window.dispatchEvent(new Event('pdfdelta-preferences'));
 });
 
 window.addEventListener("scroll", () => {
@@ -3686,6 +3688,14 @@ resetEditor();
 renderFiles();
 
 export const workspaceBridge = {
+  getPreferences() { return { theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light', favorites: [...state.favorites] }; },
+  applyPreferences(value) {
+    state.favorites = new Set(value.favorites);
+    document.documentElement.dataset.theme = value.theme;
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(value.favorites));
+    localStorage.setItem('pdfdelta-theme', value.theme);
+    renderTools();
+  },
   setWorkspaceBusy(check) { workspaceBusy = check; },
   beforeRun: async () => null,
   isBusy: () => state.busy,

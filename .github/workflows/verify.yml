@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: '22'
       - run: node audit-zero-cost.js
-      - run: node --test verify-security.test.js verify-model.test.mjs
+      - run: node --test verify-security.test.js verify-model.test.mjs verify-account.test.mjs
       - run: node verify-local.js
       - run: node scripts/report-output-verification.mjs
       - run: node verify-workspace.cjs

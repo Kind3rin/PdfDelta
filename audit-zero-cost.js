@@ -10,6 +10,9 @@ const runtimeFiles = new Set([
   "workspace.mjs",
   "workspace-flow.mjs",
   "home.mjs",
+  "account.mjs",
+  "account-config.mjs",
+  "account-preferences.mjs",
   "workspace-model.mjs",
   "tool-catalog.mjs",
   "workspace.css",
@@ -60,7 +63,9 @@ for (const file of files) {
   if (!textExtensions.has(path.extname(file))) continue;
   const content = fs.readFileSync(file, "utf8");
   for (const pattern of blockedRuntimePatterns) {
-    if (pattern.test(content)) failures.push(`${rel}: pattern bloccato ${pattern}`);
+    const accountBoundary = ['account-config.mjs', 'index.html', '_headers'].includes(rel) && pattern.source === 'supabase';
+    const checked = accountBoundary ? content.replaceAll('https://vpkctxqeopuxqedhyzia.supabase.co', '') : content;
+    if (pattern.test(checked)) failures.push(`${rel}: pattern bloccato ${pattern}`);
   }
 }
 

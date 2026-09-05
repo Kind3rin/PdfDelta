@@ -34,7 +34,7 @@ function worker({ cached, response, offline = false, quota = false } = {}) {
       skipWaiting: async () => {},
     },
     caches: {
-      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v52'],
+      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v53'],
       delete: async (key) => deleted.push(key),
       open: async () => cache,
     },

@@ -20,11 +20,13 @@ Il progetto deve poter vivere a costo assoluto `0`.
 - R2, D1, KV, Stream, Images, Argo, Load Balancing, Queues.
 - API AI o OCR cloud.
 - API di conversione Office.
-- Database.
+- Database a pagamento o contenenti documenti utente.
 - Storage file.
 - Dominio custom finche l'obiettivo e zero euro.
 
 ## Consentito
+
+- Supabase Free facoltativo per autenticazione, tema e strumenti preferiti (autorizzato il 5 settembre 2026). Nessun PDF, firma o nome di documento nel database. Nessun upgrade automatico a piani a pagamento.
 
 - HTML/CSS/JS statico.
 - Librerie open source caricate dal browser.

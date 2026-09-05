@@ -1,6 +1,6 @@
 importScripts('./vendor/pdfjs-assets.js');
 const CACHE_PREFIX = "pdfdelta-static-";
-const CACHE_NAME = `${CACHE_PREFIX}v52`;
+const CACHE_NAME = `${CACHE_PREFIX}v53`;
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,6 +13,10 @@ const ASSETS = [
   "./workspace.mjs",
   "./workspace-flow.mjs",
   "./home.mjs",
+  "./account.mjs",
+  "./account-config.mjs",
+  "./account-preferences.mjs",
+  "./vendor/account-client.mjs",
   "./workspace-model.mjs",
   "./workspace.css",
   "./vendor/fonts/manrope-variable.ttf",

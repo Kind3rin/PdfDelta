@@ -403,6 +403,18 @@ async function main() {
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");
     await evaluate('navigator.serviceWorker.ready.then(() => true)');
+    await evaluate(`(async () => {
+      const { initAccount } = await import('./account.mjs');
+      const { accountConfig } = await import('./account-config.mjs');
+      const { workspaceBridge } = await import('./app.js');
+      await initAccount(workspaceBridge, { ...accountConfig, enabled: true });
+      document.querySelector('.account-open').click();
+      document.querySelector('.account-login').click();
+      if (!document.querySelector('.account-status').textContent.includes('Scarica il documento')) throw new Error('OAuth must not discard an open PDF');
+    })()`);
+    await send('Emulation.setDeviceMetricsOverride', { width:390, height:844, deviceScaleFactor:1, mobile:true });
+    fs.writeFileSync('dist/verification/account-mobile.png', Buffer.from((await send('Page.captureScreenshot', { format:'png' })).data, 'base64'));
+    await evaluate("document.querySelector('.account-close').click()");
     await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
     await send('Page.navigate', { url: site.origin + '/index.html#visualWorkspace' });
     await new Promise(resolve => setTimeout(resolve, 1000));

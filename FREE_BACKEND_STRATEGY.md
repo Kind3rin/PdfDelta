@@ -52,3 +52,9 @@ Le conversioni PDF pesanti richiedono CPU, RAM, storage temporaneo e spesso bina
 4. Pages statico con asset ottimizzati e service worker.
 
 Tutto il resto deve restare client-side o bloccato.
+
+## Account facoltativi (5 settembre 2026)
+
+Supabase Free, progetto pdfdelta in eu-central-1: autenticazione e tabella account_preferences con tema e identificatori degli strumenti preferiti. RLS per proprietario, nessun accesso anonimo alla tabella, nessun bucket documenti. Il database è un'eccezione autorizzata al divieto precedente: non elabora PDF e non condiziona gli strumenti locali.
+
+L'accesso pubblico è disattivato fino alla configurazione e verifica del provider OAuth. Nessuna promessa di SLA enterprise sul piano gratuito; limiti e sospensione del servizio opzionale non devono impedire le operazioni PDF.

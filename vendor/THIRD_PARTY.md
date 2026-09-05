@@ -18,3 +18,7 @@ PDF.js local auxiliary assets: `pdfjs/cmaps`, `pdfjs/standard_fonts`, `pdfjs/was
 `pdfjs/iccs`. License files are preserved in those directories and `pdfjs/LICENSE`.
 Pinned archive integrity and per-file SHA-256: `pdfjs-manifest.json`.
 Rebuild: `node scripts/vendor-pdfjs.mjs` (Node 22 and tar; network only at vendoring time).
+
+## Account SDK
+
+@supabase/supabase-js 2.115.0, MIT; SDK e dipendenze sono inclusi nel bundle locale account-client.mjs. Licenza principale in ACCOUNT-LICENSE.txt; commenti di licenza conservati nel bundle. Riproduzione: npm ci, npm run vendor:account (esbuild 0.28.2). Le versioni transitive sono fissate in package-lock.json. Nessun CDN runtime.
