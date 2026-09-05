@@ -276,6 +276,43 @@ async function main() {
       await until(() => $('wsStatus').textContent.includes('1000 pagine') && !$('wsExport').disabled);
       if (!$('wsSummary').textContent.startsWith('120 pagine') || workspaceBridge.getFiles()[0] !== original) throw new Error('Rejected page-limit import replaced current document');
     })()`);
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      const until = async fn => { const end = Date.now() + 20000; while (!fn()) { if (Date.now() > end) throw new Error('Raster limit: ' + fn); await new Promise(r => setTimeout(r, 30)); } };
+      const { workspaceBridge } = await import('./app.js');
+      const scan = document.createElement('canvas'); scan.width = 2480; scan.height = 3508;
+      const ctx = scan.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, scan.width, scan.height);
+      ctx.fillStyle = '#152844'; ctx.fillRect(600, 900, 1280, 1700);
+      const blob = await new Promise(resolve => scan.toBlob(resolve, 'image/jpeg', .9));
+      const doc = await PDFLib.PDFDocument.create();
+      const jpg = await doc.embedJpg(await blob.arrayBuffer());
+      doc.addPage([14400, 14400]).drawImage(jpg, { x: 0, y: 0, width: 14400, height: 14400 });
+      scan.width = scan.height = 0;
+      workspaceBridge.replaceFiles([new File([await doc.save()], 'scansione-grande.pdf', { type: 'application/pdf' })]);
+      await until(() => $('wsTitle').textContent === 'scansione-grande.pdf' && !$('wsExport').disabled);
+      const normal = PdfEngine.viewportAtScale({ rotate: 0, getViewport: ({ scale }) => ({ width: 600 * scale, height: 800 * scale }) }, 2);
+      if (normal.width !== 1200 || normal.height !== 1600) throw new Error('Normal resolution changed');
+      const strip = PdfEngine.viewportAtScale({ rotate: 0, getViewport: ({ scale }) => ({ width: 100000 * scale, height: 10 * scale }) }, 2);
+      if (Math.ceil(strip.width) > 8192 || Math.ceil(strip.width) * Math.ceil(strip.height) > 16000000) throw new Error('Extreme aspect ratio exceeds raster limit');
+      const originalViewport = PdfEngine.viewportAtScale; let largest = 0;
+      PdfEngine.viewportAtScale = (...args) => { const v = originalViewport(...args); largest = Math.max(largest, Math.ceil(v.width) * Math.ceil(v.height)); return v; };
+      workspaceBridge.selectTool('compress-scan');
+      const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
+      await workspaceBridge.run(); const bytes = await (await output).arrayBuffer();
+      PdfEngine.viewportAtScale = originalViewport;
+      if (largest > 16000000 || largest < 15000000) throw new Error('Tool did not use the shared raster cap');
+      const saved = await PDFLib.PDFDocument.load(bytes);
+      if (saved.getPage(0).getWidth() !== 14400 || saved.getPage(0).getHeight() !== 14400) throw new Error('Raster cap changed physical page size');
+      const task = pdfjsLib.getDocument({ data: new Uint8Array(bytes), owner: 'workspace' });
+      try {
+        const page = await (await task.promise).getPage(1), viewport = PdfEngine.viewportFor(page, 200);
+        const canvas = document.createElement('canvas'); canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext('2d'); await page.render({ canvasContext: context, viewport }).promise;
+        const pixel = context.getImageData(100, 100, 1, 1).data;
+        if (pixel[0] > 50 || pixel[2] < 40 || pixel[3] !== 255) throw new Error('Large scan output is blank or corrupted');
+      } finally { await task.destroy(); }
+      await until(() => !$('wsExport').disabled);
+    })()`);
     await evaluate("document.getElementById('themeToggle').click()");
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");

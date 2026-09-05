@@ -3,7 +3,7 @@ import * as pdfjs from './vendor/pdfjs/build/pdf.min.mjs';
 const base = new URL('./vendor/pdfjs/', import.meta.url);
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('build/pdf.worker.min.mjs', base).href;
 const tasks = new Set();
-export const limits = Object.freeze({ fileBytes: 100 * 1024 * 1024, pages: 1000, canvasPixels: 16_000_000 });
+export const limits = Object.freeze({ fileBytes: 100 * 1024 * 1024, pages: 1000, canvasPixels: 16_000_000, canvasSide: 8192 });
 
 export function loadTask(options) {
   const { owner, ...parameters } = options;
@@ -49,11 +49,22 @@ export async function readEditable(file) {
   }
 }
 
+export function viewportAtScale(page, scale, rotation = page.rotate) {
+  if (!Number.isFinite(scale) || scale <= 0) throw new Error('La risoluzione deve essere un numero positivo.');
+  let viewport = page.getViewport({ scale, rotation });
+  if (![viewport.width, viewport.height].every(value => Number.isFinite(value) && value > 0)) throw new Error('Dimensioni pagina non valide.');
+  // Account for rounding to integer canvas dimensions, including extreme aspect ratios.
+  while (Math.ceil(viewport.width) * Math.ceil(viewport.height) > limits.canvasPixels || Math.max(viewport.width, viewport.height) > limits.canvasSide) {
+    scale *= Math.min(.99, limits.canvasSide / Math.max(viewport.width, viewport.height), Math.sqrt(limits.canvasPixels / (Math.ceil(viewport.width) * Math.ceil(viewport.height))));
+    viewport = page.getViewport({ scale, rotation });
+  }
+  return viewport;
+}
+
 export function viewportFor(page, width, rotation = page.rotate) {
   const original = page.getViewport({ scale: 1, rotation });
-  const scale = Math.min(width / original.width, Math.sqrt(limits.canvasPixels / (original.width * original.height)));
-  return page.getViewport({ scale, rotation });
+  return viewportAtScale(page, width / original.width, rotation);
 }
 
 window.pdfjsLib = { ...pdfjs, getDocument: loadTask };
-window.PdfEngine = { readBytes, readEditable, releaseReaders, viewportFor, limits };
+window.PdfEngine = { readBytes, readEditable, releaseReaders, viewportFor, viewportAtScale, limits };

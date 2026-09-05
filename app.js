@@ -1446,7 +1446,7 @@ async function canvasToImageBytes(canvas, type, quality) {
 }
 
 async function renderPdfPageCanvas(page, scale) {
-  const viewport = page.getViewport({ scale });
+  const viewport = window.PdfEngine.viewportAtScale(page, scale);
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d", { willReadFrequently: true });
   canvas.width = Math.ceil(viewport.width);
@@ -2647,6 +2647,7 @@ async function compressScan(options) {
       const viewport = sourcePage.getViewport({ scale: 1 });
       const canvas = await renderPdfPageCanvas(sourcePage, scale);
       const image = await output.embedJpg(await canvasToImageBytes(canvas, "image/jpeg", quality));
+      canvas.width = canvas.height = 0;
       const page = output.addPage([viewport.width, viewport.height]);
       page.drawImage(image, { x: 0, y: 0, width: page.getWidth(), height: page.getHeight() });
     }
