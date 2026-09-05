@@ -2,6 +2,13 @@
 
 Toolkit PDF statico, gratuito e pensato per hosting free senza costi nascosti.
 
+Percorso di evoluzione e criteri di qualità: [PIANO.md](PIANO.md).
+
+Hardening iniziale: PDF.js usa `isEvalSupported: false` in tutti i caricamenti
+per mitigare CVE-2024-4367; la libreria resta da aggiornare. La cache offline
+conserva solo gli asset dichiarati e non elimina le cache di altre applicazioni.
+Queste verifiche non costituiscono una certificazione enterprise.
+
 ## Stack
 
 - HTML, CSS e JavaScript vanilla.
@@ -67,10 +74,12 @@ Servirle localmente riduce rischi di downtime, tracking esterno e dipendenze run
 
 ## Verifica automatica locale
 
-Con server locale attivo su `4173`:
+Con Node.js 22 e Chrome nel percorso previsto da `verify-local.js`.
+Il test avvia autonomamente un server locale su una porta libera:
 
 ```powershell
 node audit-zero-cost.js
+node --test verify-security.test.js
 node verify-local.js
 ```
 
