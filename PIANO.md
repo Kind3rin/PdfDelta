@@ -225,3 +225,12 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - Catalogo iniziale con 12 operazioni frequenti, ricerca su tutti gli strumenti e categorie; caricamento contestuale alla scelta e ripresa del documento aperto.
 - Nuova gerarchia visiva, icone per categoria, illustrazione dei fogli con prospettiva reattiva al puntatore. Movimento leggero in CSS, rispettando movimento ridotto e touch.
 - Verifica browser di ricerca, scelta, esempio, output e assenza di overflow mobile; schermate desktop/mobile in dist/verification. Validazione con utenti e telefoni reali ancora aperta.
+
+### Account facoltativi — infrastruttura e client
+
+- [x] Scelta utente: solo preferenze e preferiti, documenti e firme locali.
+- [x] Progetto Supabase Free dedicato, costo 0 EUR/mese confermato; schema con RLS applicato e verificato sul database reale.
+- [x] Client OAuth Google predisposto, sincronizzazione seriale di tema/preferiti, ripristino preferenze ospite e protezione documento aperto.
+- [x] Test controller, isolamento database e dialog mobile. Dettagli in docs/ACCOUNTS.md.
+- [ ] Configurare provider Google (o SMTP), completare accesso reale e prova tra due browser, quindi abilitare accesso pubblico. Flag disattivato finché queste prove mancano.
+- [ ] Validazione utenti non tecnici e dispositivi fisici; non sostituita da CI o viewport.

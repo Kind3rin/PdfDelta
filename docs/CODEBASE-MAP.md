@@ -153,3 +153,10 @@ canvas finali oltre i limiti e non conserva tutte le pagine raster in memoria.
 Dopo il controllo, renderizza e copia una pagina alla volta, liberandola subito.
 Test browser dedicati verificano il rifiuto prima delle allocazioni e un JPG
 con pagine di dimensioni diverse (ordine, centratura, colori e altezza con separatore).
+
+## Account opzionali
+
+account.mjs coordina il dialog e Supabase Auth; account-preferences.mjs filtra il
+payload e serializza le scritture. account-config.mjs contiene solo identificatori
+pubblici e flag di attivazione. bootstrap carica l'integrazione separatamente dal
+motore: un errore account non ferma PDF e workspace. Vedi [ACCOUNTS.md](ACCOUNTS.md).

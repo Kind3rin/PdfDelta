@@ -20,7 +20,8 @@
     { "id": "tools", "type": "frontend", "label": "Strumenti", "sublabel": "app.js + catalogo", "pos": [260, 470], "size": [160, 64] },
     { "id": "worker", "type": "backend", "label": "PDF.js worker", "sublabel": "6.3.289 / locale", "pos": [520, 130], "size": [160, 64] },
     { "id": "cache", "type": "database", "label": "Cache asset", "sublabel": "sw.js / allowlist", "pos": [40, 130], "size": [140, 64] },
-    { "id": "hosting", "type": "cloud", "label": "Pages / Vercel", "sublabel": "Hosting statico", "pos": [40, 10], "size": [140, 64] }
+    { "id": "hosting", "type": "cloud", "label": "Pages / Vercel", "sublabel": "Hosting statico", "pos": [40, 10], "size": [140, 64] },
+    { "id": "account", "type": "cloud", "label": "Account opzionale", "sublabel": "Supabase / solo preferenze", "pos": [780, 470], "size": [190, 64] }
   ],
   "connections": [
     { "id": "open-files", "from": "files", "to": "workspace", "variant": "emphasis" },
@@ -29,7 +30,8 @@
     { "id": "undo-redo", "from": "workspace", "to": "history", "fromSide": "top", "toSide": "bottom" },
     { "id": "continue-tools", "from": "workspace", "to": "tools", "fromSide": "bottom", "toSide": "top" },
     { "id": "render-pages", "from": "engine", "to": "worker", "fromSide": "top", "toSide": "bottom" },
-    { "id": "download-shell", "from": "hosting", "to": "cache", "fromSide": "bottom", "toSide": "top" }
+    { "id": "download-shell", "from": "hosting", "to": "cache", "fromSide": "bottom", "toSide": "top" },
+    { "id": "sync-preferences", "from": "tools", "to": "account", "fromSide": "right", "toSide": "left" }
   ],
   "cards": [
     { "dot": "cyan", "title": "Flusso", "items": ["Aggiungi, seleziona, riordina e ruota pagine", "Scegli azioni nello stesso workspace", "Risultati applicati automaticamente; scarica alla fine"] },
