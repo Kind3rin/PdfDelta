@@ -96,6 +96,9 @@ export function initWorkspace(bridge) {
     }
   }
   async function compose() {
+    // Preserve document-level data when only viewing a file or a tool result.
+    const activeSources = [...new Set(history.pages.map(page => page.source))];
+    if (activeSources.length === 1 && JSON.stringify(history.pages) === baseline) return sources.get(activeSources[0]).file;
     const result = await window.PDFLib.PDFDocument.create();
     for (const [i, item] of history.pages.entries()) {
       checkCancelled();

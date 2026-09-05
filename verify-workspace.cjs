@@ -122,6 +122,29 @@ async function main() {
       $('flowBack').click();
       if (!$('editor').hidden || $('wsPages').hidden) throw new Error('Return to pages failed');
     })()`);
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      const until = async fn => { const end = Date.now() + 15000; while (!fn()) { if (Date.now() > end) throw new Error('Document preservation timeout'); await new Promise(r => setTimeout(r, 25)); } };
+      $('clearQueue').click(); await until(() => $('wsSummary').textContent.startsWith('0 pagine'));
+      const rich = await PDFLib.PDFDocument.create(); const page = rich.addPage([300, 400]);
+      const field = rich.getForm().createTextField('nome'); field.setText('Nome di prova'); field.addToPage(page, { x: 20, y: 100, width: 200, height: 30 });
+      await rich.attach(new TextEncoder().encode('allegato conservato'), 'note.txt');
+      const files = new DataTransfer(); files.items.add(new File([await rich.save()], 'rich.pdf', { type: 'application/pdf' }));
+      $('wsFiles').files = files.files; $('wsFiles').dispatchEvent(new Event('change'));
+      await until(() => document.querySelectorAll('[data-page]').length === 1 && !$('wsExport').disabled);
+      $('flowAllTools').click(); document.querySelector('[data-tool="set-metadata"]').click();
+      document.querySelector('[data-option="title"]').value = 'Titolo conservato';
+      const applied = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
+      $('runTool').click(); const appliedBytes = new Uint8Array(await (await applied).arrayBuffer());
+      await until(() => $('wsStatus').textContent.startsWith('Modifica applicata.') && !$('wsExport').disabled);
+      const exported = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
+      $('wsExport').click(); const saved = new Uint8Array(await (await exported).arrayBuffer());
+      if (saved.length !== appliedBytes.length || !saved.every((byte, i) => byte === appliedBytes[i])) throw new Error('Unedited result was rewritten during export');
+      const finalDoc = await PDFLib.PDFDocument.load(saved);
+      if (finalDoc.getTitle() !== 'Titolo conservato' || finalDoc.getForm().getFields().length !== 1) throw new Error('Metadata or forms lost on final download');
+      const task = pdfjsLib.getDocument({ data: saved.slice(), owner: 'workspace' });
+      try { if ((await (await task.promise).getAttachments())?.size !== 1) throw new Error('Attachment lost on final download'); } finally { await task.destroy(); }
+    })()`);
     await evaluate("document.getElementById('themeToggle').click()");
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");

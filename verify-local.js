@@ -150,9 +150,28 @@ async function main() {
       });
 
       const PDFLib = window.PDFLib;
+      const { validateOutput } = await import('./tests/output-validator.mjs');
+      const { workspaceBridge } = await import('./app.js');
+      const emitted = [], outputChecks = {};
+      window.addEventListener('pdfdelta-output', event => emitted.push(event.detail));
+      async function until(predicate, label) {
+        const deadline = Date.now() + 20000;
+        while (!predicate()) {
+          if (Date.now() > deadline) throw new Error(label + ': timeout; ' + document.querySelector('#resultPanel').textContent);
+          await new Promise(resolve => setTimeout(resolve, 25));
+        }
+      }
+      async function outputReady(before) {
+        await until(() => emitted.length > before && !workspaceBridge.isBusy() && (!emitted[before].apply || (!document.querySelector('#wsExport').disabled && document.querySelector('#fileList').textContent.includes(emitted[before].filename))), 'Risultato non pronto');
+      }
+      async function checkOutput(tool, before) {
+        if (emitted.length !== before + 1) throw new Error(tool + ': atteso un nuovo risultato, ricevuti ' + (emitted.length - before));
+        outputChecks[tool] = await validateOutput(tool, emitted[before]);
+      }
 
       async function makePdf(text) {
         const doc = await PDFLib.PDFDocument.create();
+        doc.setTitle('Titolo di prova'); doc.setAuthor('Autore di prova');
         const page = doc.addPage([300, 200]);
         const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
         page.drawText(text, { x: 32, y: 100, size: 18, font });
@@ -278,6 +297,7 @@ async function main() {
       }
 
       async function runTool(toolId, fileBytes, fileName, options = {}) {
+        const before = emitted.length;
         const input = document.querySelector('#fileInput');
         document.querySelector('#clearQueue').click();
         const dt = new DataTransfer();
@@ -297,11 +317,13 @@ async function main() {
           }
         });
         document.querySelector('#runTool').click();
-        await new Promise(resolve => setTimeout(resolve, 1800));
+        await outputReady(before);
+        await checkOutput(toolId, before);
         return document.querySelector('#resultPanel').textContent.trim();
       }
 
       async function runEditor(fileBytes) {
+        const before = emitted.length;
         const input = document.querySelector('#fileInput');
         document.querySelector('#clearQueue').click();
         const dt = new DataTransfer();
@@ -310,7 +332,7 @@ async function main() {
         input.dispatchEvent(new Event('change', { bubbles: true }));
         document.querySelector('[data-tool="edit-pdf"]').click();
         document.querySelector('#runTool').click();
-        await new Promise(resolve => setTimeout(resolve, 2200));
+        await until(() => document.querySelector('#editorInkCanvas').width > 0 && !workspaceBridge.isBusy(), 'Editor non pronto');
 
         const canvas = document.querySelector('#editorInkCanvas');
         const rect = canvas.getBoundingClientRect();
@@ -331,7 +353,8 @@ async function main() {
           clientY: rect.top + rect.height * 0.55
         }));
         document.querySelector('#editorSave').click();
-        await new Promise(resolve => setTimeout(resolve, 1600));
+        await outputReady(before);
+        await checkOutput('edit-pdf', before);
         return {
           result: document.querySelector('#resultPanel').textContent.trim(),
           status: document.querySelector('#editorStatus').textContent.trim(),
@@ -366,8 +389,9 @@ async function main() {
       };
       document.querySelector('[data-tool="merge"]').click();
       document.querySelector('#runTool').click();
-      await new Promise(resolve => setTimeout(resolve, 1400));
+      await outputReady(0);
       const merge = document.querySelector('#resultPanel').textContent.trim();
+      await checkOutput('merge', 0);
 
       localStorage.removeItem('pdfdelta-favorites');
       document.querySelector('[data-category="Tutti"]').click();
@@ -454,12 +478,34 @@ async function main() {
       const compressScan = await runTool('compress-scan', pdf, 'scan.pdf');
       const enhanceScan = await runTool('enhance-scan', pdf, 'enhance.pdf');
       const grayscale = await runTool('grayscale-raster', pdf, 'gray.pdf');
+      const threePages = await makeMultiPagePdf();
+      const formDoc = await PDFLib.PDFDocument.create(); const formPage = formDoc.addPage([300, 200]);
+      const field = formDoc.getForm().createTextField('nome'); field.setText('Nome di prova'); field.addToPage(formPage, { x: 20, y: 80, width: 200, height: 30 });
+      const additionalCases = [
+        ['split', threePages], ['extract-pages', threePages, { ranges: '2-3' }],
+        ['remove-pages', threePages, { ranges: '2' }], ['reorder-pages', threePages, { order: '3,1,2' }],
+        ['rotate', threePages, { angle: '90' }], ['reverse-pages', threePages], ['optimize', pdf],
+        ['images-to-pdf', [{ bytes: await makeLogoPng(), name: 'image.png', type: 'image/png' }]],
+        ['text-to-pdf', [{ bytes: new TextEncoder().encode('Testo di prova'), name: 'test.txt', type: 'text/plain' }]],
+        ['pdf-to-images', pdf], ['watermark', pdf, { text: 'Copia di prova' }], ['page-numbers', threePages],
+        ['sign-text', pdf, { signature: 'Firma di prova' }], ['nup', threePages, { layout: '2' }],
+        ['add-margins', pdf], ['flatten-forms', await formDoc.save()], ['sanitize-raster', pdf],
+        ['compare-text', [{ bytes: pdf, name: 'first.pdf' }, { bytes: secondPdf, name: 'second.pdf' }]],
+        ['audit', pdf], ['remove-blank-pages', await makeBlankSeparatorPdf()]
+      ];
+      for (const [id, bytes, options] of additionalCases) await runTool(id, bytes, id + '.pdf', options);
       document.querySelector('#clearQueue').click();
       document.querySelector('[data-tool="blank-pdf"]').click();
+      const beforeBlank = emitted.length;
       document.querySelector('#runTool').click();
-      await new Promise(resolve => setTimeout(resolve, 900));
+      await outputReady(beforeBlank);
       const blank = document.querySelector('#resultPanel').textContent.trim();
+      await checkOutput('blank-pdf', beforeBlank);
+      const { tools: catalog } = await import('./tool-catalog.mjs');
+      const untested = catalog.filter(tool => tool.status !== 'bloccato' && !outputChecks[tool.id]).map(tool => tool.id);
+      if (untested.length) throw new Error('Strumenti senza verifica output: ' + untested.join(', '));
       return {
+        outputChecks,
         libs: { pdfLib: !!window.PDFLib, jszip: !!window.JSZip, pdfjs: !!window.pdfjsLib, qrcode: typeof window.qrcode === 'function' },
         worker: window.pdfjsLib?.GlobalWorkerOptions?.workerSrc,
         initialUx,
@@ -610,7 +656,10 @@ async function main() {
       return;
     }
 
-    console.log(JSON.stringify({ ok: true, value, external }, null, 2));
+    const report = JSON.stringify({ ok: true, value, external }, null, 2);
+    fs.mkdirSync(path.join(rootDir, 'dist/verification'), { recursive: true });
+    fs.writeFileSync(path.join(rootDir, 'dist/verification/output-report.json'), report);
+    console.log(report);
   } finally {
     chrome.kill();
     staticSite.server.close();

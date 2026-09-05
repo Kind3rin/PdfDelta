@@ -1956,7 +1956,7 @@ async function batesNumbering(options) {
 
 async function signText(options) {
   const outputs = [];
-  const signature = options.signature || "Firmato digitalmente";
+  const signature = options.signature || "Firma testuale";
   for (const file of getPdfFiles()) {
     const pdfDoc = await loadPdf(file);
     const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);

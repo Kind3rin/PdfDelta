@@ -693,7 +693,7 @@ export const tools = [
     status: "attivo",
     accepts: ["pdf"],
     description: "Inserisce una firma testuale sull'ultima pagina.",
-    options: [{ id: "signature", label: "Firma", type: "text", value: "Firmato digitalmente", hint: "Nome o testo firma" }],
+    options: [{ id: "signature", label: "Firma", type: "text", value: "Firma testuale", hint: "Nome o testo firma" }],
   },
   {
     id: "nup",
@@ -1343,4 +1343,3 @@ export const tools = [
     description: "RAG e LLM richiedono compute/API. Non compatibile con zero costi nascosti.",
   },
 ];
-
