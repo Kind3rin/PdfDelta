@@ -166,5 +166,12 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Confronti tra documenti modificati: preparazione separata delle sorgenti, con ordine e rotazioni correnti. Verificato report visuale tra due PDF dopo rotazione, conservando byte e nome del PDF non modificato.
 - Restano aperte le verifiche estese di rimozioni/riordini tra sorgenti e delle operazioni concorrenti.
 
+### Operazioni concorrenti — protezione dell'elaborazione
+
+- Durante l'esecuzione di uno strumento, comandi delle pagine, selezione strumenti e gestione file non sono interattivi; il workspace espone lo stato occupato alle tecnologie assistive.
+- Guardie sui gestori impediscono anche cancellazioni, aggiunte e cambi strumento durante l'elaborazione.
+- Test browser con elaborazione sospesa: tentativi di svuotare/rimuovere/aggiungere file, ruotare e cambiare strumento non alterano gli input. Verificato ripristino dei comandi dopo successo ed errore.
+- Restano da verificare tutte le transizioni durante importazione ed esportazione, oltre all'annullamento generalizzato degli strumenti.
+
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

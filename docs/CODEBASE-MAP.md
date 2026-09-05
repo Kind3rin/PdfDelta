@@ -105,3 +105,10 @@ separatamente tramite `materializeFiles()`. Ogni sorgente mantiene nome,
 ordine relativo e rotazioni delle pagine; una sorgente intatta restituisce il
 File originale. Immagini e TXT restano disponibili agli strumenti misti.
 Il confronto visuale viene verificato su due documenti, uno ruotato e uno intatto.
+
+`pdfdelta-busy` comunica inizio/fine elaborazione: il workspace aggiorna i
+comandi delle pagine, mentre il coordinatore rende temporaneamente inerti
+strumenti, editor e gestione file, impostando `aria-busy`. I gestori di
+aggiunta, cancellazione e cambio strumento proteggono anche lo stato applicativo.
+La regressione browser sospende la preparazione per tentare azioni concorrenti
+e verifica lo sblocco sia dopo un report riuscito sia dopo un errore controllato.

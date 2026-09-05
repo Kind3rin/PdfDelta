@@ -9,7 +9,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `72f5b2cc`
+- Built from commit: `7bc2ae0b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -27,7 +27,7 @@
 - audit-zero-cost.js
 - verify-security.test.js
 - escapeHtml
-- docxDocumentXml
+- documentReport
 - report-output-verification.mjs
 - vendor-pdfjs.mjs
 - pageSizeReport
@@ -93,8 +93,8 @@ Cohesion: 0.27
 Nodes (10): attachmentsReport(), collectPdfNameTreeNames(), deletePdfKeys(), embeddedFileNames(), lookupPdfKey(), pdfArrayItem(), pdfName(), pdfObjectText() (+2 more)
 
 ### Community 8 - "extractTextFromPdfFile"
-Cohesion: 0.18
-Nodes (12): auditAccessibility(), csvCell(), csvDate(), documentReport(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), pdfTextItemsToLines() (+4 more)
+Cohesion: 0.20
+Nodes (10): auditAccessibility(), docxDocumentXml(), docxParagraph(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), makeDocxBlob(), pdfTextItemsToLines() (+2 more)
 
 ### Community 9 - "fileExt"
 Cohesion: 0.27
@@ -112,9 +112,9 @@ Nodes (6): assert, { createHash }, fs, path, { test }, vm
 Cohesion: 0.40
 Nodes (6): compareCanvases(), compareText(), compareVisual(), diffLines(), escapeHtml(), renderPageForCompare()
 
-### Community 13 - "docxDocumentXml"
-Cohesion: 0.50
-Nodes (4): docxDocumentXml(), docxParagraph(), makeDocxBlob(), xmlEscape()
+### Community 13 - "documentReport"
+Cohesion: 0.33
+Nodes (6): csvCell(), csvDate(), documentReport(), readPdfMetadata(), wordCountFromText(), wordCountReport()
 
 ### Community 14 - "report-output-verification.mjs"
 Cohesion: 0.40
@@ -140,9 +140,9 @@ Nodes (3): getTextFiles(), textToPdf(), wrapText()
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `extractTextFromPdfFile`, `fileExt`, `escapeHtml`, `pageSizeReport`, `textToPdf`, `blankPdf`?**
+- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `extractTextFromPdfFile`, `fileExt`, `escapeHtml`, `documentReport`, `pageSizeReport`, `textToPdf`, `blankPdf`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `extractTextFromPdfFile`, `fileExt`, `escapeHtml`, `pageSizeReport`?**
+- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `extractTextFromPdfFile`, `fileExt`, `escapeHtml`, `documentReport`, `pageSizeReport`?**
   _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **Why does `tools` connect `report-output-verification.mjs` to `app.js`?**
   _High betweenness centrality (0.010) - this node is a cross-community bridge._
