@@ -261,3 +261,10 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - Nome file, testo, firme e tratti sono acquisiti prima delle attese: modifiche successive non cambiano l'output in corso.
 - Un errore sblocca l'editor e lascia gli inserimenti disponibili per riprovare.
 - Prova browser: errore di caricamento simulato, retry, attesa controllata, modifica sintetica durante il salvataggio e verifica delle firme nel PDF prodotto. Suite desktop/mobile e offline superata; dispositivi fisici restano da verificare.
+
+### Anteprima editor senza sovrapposizioni
+
+- Rendering isolato in editor-renderer.mjs: solo l'ultima richiesta aggiorna il canvas visibile. I render superati vengono cancellati e le superfici temporanee liberate.
+- Dimensionamento con viewportFor del motore: adattamento alla larghezza disponibile e limiti comuni su pixel/lato, anche per pagine molto grandi.
+- Durante il caricamento si sospende l'inserimento sul foglio; una pagina fallita non riceve annotazioni con coordinate dell'anteprima precedente. Cambio pagina o resize permettono retry.
+- Test: letture fuori ordine, render cancellato, rilascio canvas, errore e retry; browser con cambio pagina rapido e dodici resize consecutivi, firme esportate e offline. Le prove su telefoni fisici restano aperte.

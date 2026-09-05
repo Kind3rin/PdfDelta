@@ -35,7 +35,7 @@
   ],
   "cards": [
     { "dot": "cyan", "title": "Flusso", "items": ["Aggiungi, seleziona, riordina e ruota pagine", "Scegli azioni nello stesso workspace", "Risultati applicati automaticamente; scarica alla fine"] },
-    { "dot": "emerald", "title": "Memoria locale", "items": ["Cronologia fino a 50 modifiche", "100 MB per file, 200 MB per sessione workspace", "Nessuna persistenza dei documenti"] },
+    { "dot": "emerald", "title": "Memoria locale", "items": ["Cronologia fino a 50 modifiche", "100 MB per file, 200 MB per sessione workspace", "Anteprima editor: solo ultima richiesta, canvas limitato", "Nessuna persistenza dei documenti"] },
     { "dot": "rose", "title": "Limiti dichiarati", "items": ["Nessuna firma digitale o censura sicura", "Ricreare pagine può perdere campi e firme", "Desktop Chrome verificato; altri browser da provare"] }
   ]
 }

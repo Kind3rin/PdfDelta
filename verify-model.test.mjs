@@ -36,3 +36,35 @@ test('drag reorders only the intended page and rotation wraps', () => {
   for (let i = 0; i < 4; i++) h.rotate(new Set(['d']));
   assert.equal(h.pages[1].rotation, 0);
 });
+
+import { createPageRenderer } from './editor-renderer.mjs';
+
+test('preview ignores stale page loads and releases cancelled canvases', async () => {
+  let firstPage, finish;
+  const canvases = [], commits = [];
+  const page = { getViewport: () => ({ width: 100, height: 200 }), render: () => ({ promise: Promise.resolve(), cancel() {} }) };
+  const render = createPageRenderer({ createCanvas: () => { const c = { getContext: () => ({}) }; canvases.push(c); return c; }, viewportFor: () => ({ width:100, height:200 }), commit: (_,__,n) => commits.push(n) });
+  const pdf = { getPage: n => n === 1 ? new Promise(r => { firstPage = r; }) : Promise.resolve(page) };
+  const stale = render(pdf, 1, 100);
+  await render(pdf, 2, 100);
+  firstPage(page); await stale;
+  assert.deepEqual(commits, [2]);
+  assert.equal(canvases[0].width, 0);
+  let cancelled = false;
+  const slow = { ...page, render: () => ({ promise: new Promise((_, reject) => { finish = reject; }), cancel() { cancelled = true; finish(new Error('cancelled')); } }) };
+  const rendering = render({ getPage: async () => slow }, 1, 100);
+  await Promise.resolve();
+  await render({ getPage: async () => page }, 3, 100);
+  await rendering;
+  assert.equal(cancelled, true);
+  assert.deepEqual(commits, [2,3]);
+  assert.ok(canvases.every(c => c.width === 0 && c.height === 0));
+});
+
+test('preview surfaces current errors and permits retry', async () => {
+  let commits = 0;
+  const render = createPageRenderer({ createCanvas: () => ({ getContext: () => ({}) }), viewportFor: () => ({ width:10,height:10 }), commit: () => commits++ });
+  await assert.rejects(render({ getPage: async () => { throw new Error('broken'); } }, 1, 10), /broken/);
+  await render({ getPage: async () => ({ getViewport: () => ({}), render: () => ({ promise: Promise.resolve(), cancel() {} }) }) }, 1, 10);
+  assert.equal(commits, 1);
+});

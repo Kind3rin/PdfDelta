@@ -379,6 +379,11 @@ async function main() {
       for (const [i,font] of ['TimesRomanItalic','HelveticaOblique','CourierOblique'].entries()) { $('signatureFont').value = font; place(.1,.1+i*.08); }
       $('editorNext').click();
       const end = Date.now()+10000; while ($('editorPageInfo').textContent !== '2 / 2') { if (Date.now()>end) throw new Error('Signature page navigation'); await new Promise(r=>setTimeout(r,20)); }
+      $('editorPrev').click(); $('editorNext').click();
+      for (let i=0;i<12;i++) window.dispatchEvent(new Event('resize'));
+      const settled = Date.now()+10000;
+      while ($('editorPageInfo').textContent !== '2 / 2') { if (Date.now()>settled) throw new Error('Latest editor preview did not settle'); await new Promise(r=>setTimeout(r,20)); }
+      if ($('pdfEditorCanvas').width > 920 || $('pdfEditorCanvas').width * $('pdfEditorCanvas').height > PdfEngine.limits.canvasPixels) throw new Error('Editor preview exceeds render budget');
       $('signatureDraw').click(); $('signaturePadUse').click(); place(.2,.4);
       const { workspaceBridge } = await import('./app.js');
       const originalLoad = PDFLib.PDFDocument.load;

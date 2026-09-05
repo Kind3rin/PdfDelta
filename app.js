@@ -1,4 +1,5 @@
 import { tools } from "./tool-catalog.mjs";
+import { createPageRenderer } from './editor-renderer.mjs';
 const { PDFDocument, StandardFonts, rgb, degrees, PDFName } = window.PDFLib || {};
 
 
@@ -6,6 +7,7 @@ const FAVORITES_KEY = "pdfdelta-favorites";
 let workspaceBusy = () => false;
 let reusableSignature = null;
 let editorSequence = 0;
+let editorRendering = false, editorPreviewReady = false, editorRenderRevision = 0;
 let signatureDraft = [], signatureStroke = null;
 const signatureFaces = { TimesRomanItalic: 'italic Georgia', HelveticaOblique: 'italic Arial', CourierOblique: 'italic Courier New' };
 
@@ -663,30 +665,49 @@ function drawEditorOverlay() {
     });
 }
 
-async function renderEditorPage() {
-  if (!state.editor.pdf || !pdfEditorCanvas || !editorInkCanvas) return;
-  const page = await state.editor.pdf.getPage(state.editor.pageNumber);
-  const base = page.getViewport({ scale: 1 });
-  const maxWidth = Math.max(300, Math.min(920, (editorStage?.clientWidth || 760) - 36));
-  const scale = Math.min(1.8, Math.max(0.6, maxWidth / base.width));
-  const viewport = page.getViewport({ scale });
-
-  pdfEditorCanvas.width = Math.ceil(viewport.width);
-  pdfEditorCanvas.height = Math.ceil(viewport.height);
+const renderEditorPreview = createPageRenderer({
+  createCanvas: () => document.createElement('canvas'),
+  viewportFor: (page, width) => window.PdfEngine.viewportFor(page, width),
+  commit(canvas, base, number) {
+  editorPreviewReady = true;
+  pdfEditorCanvas.width = canvas.width;
+  pdfEditorCanvas.height = canvas.height;
   editorInkCanvas.width = pdfEditorCanvas.width;
   editorInkCanvas.height = pdfEditorCanvas.height;
   state.editor.pageSize = { width: base.width, height: base.height };
   state.editor.canvasSize = { width: pdfEditorCanvas.width, height: pdfEditorCanvas.height };
 
-  const context = pdfEditorCanvas.getContext("2d");
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, pdfEditorCanvas.width, pdfEditorCanvas.height);
-  await page.render({ canvasContext: context, viewport }).promise;
+  pdfEditorCanvas.getContext('2d').drawImage(canvas, 0, 0);
 
-  editorPageInfo.textContent = `${state.editor.pageNumber} / ${state.editor.pageCount}`;
+  editorPageInfo.textContent = `${number} / ${state.editor.pageCount}`;
   editorPrev.disabled = state.editor.pageNumber <= 1;
   editorNext.disabled = state.editor.pageNumber >= state.editor.pageCount;
   drawEditorOverlay();
+  }
+});
+
+async function renderEditorPage() {
+  if (!state.editor.pdf || !pdfEditorCanvas || !editorInkCanvas) return;
+  const revision = ++editorRenderRevision;
+  editorRendering = true;
+  editorPreviewReady = false;
+  state.editor.drawing = false;
+  state.editor.currentStroke = null;
+  editorStage.setAttribute('aria-busy', 'true');
+  editorPageInfo.textContent = `Caricamento pagina ${state.editor.pageNumber}…`;
+  editorPrev.disabled = state.editor.pageNumber <= 1;
+  editorNext.disabled = state.editor.pageNumber >= state.editor.pageCount;
+  try {
+    await renderEditorPreview(state.editor.pdf, state.editor.pageNumber, Math.max(100, Math.min(920, (editorStage.clientWidth || 760) - 36)));
+  } catch (error) {
+    editorPageInfo.textContent = `Pagina ${state.editor.pageNumber} non disponibile`;
+    setEditorStatus('Anteprima non disponibile. Cambia pagina o ridimensiona la finestra per riprovare.');
+  } finally {
+    if (revision === editorRenderRevision) {
+      editorRendering = false;
+      editorStage.setAttribute('aria-busy', 'false');
+    }
+  }
 }
 
 async function openPdfEditorTool() {
@@ -3569,6 +3590,7 @@ document.getElementById('signaturePadUse').onclick = () => {
 };
 
 editorInkCanvas?.addEventListener("pointerdown", (event) => {
+  if (editorRendering || !editorPreviewReady || state.busy || workspaceBusy()) return;
   if (!state.editor.pdf) {
     setEditorStatus("Apri un PDF nell'editor.");
     return;

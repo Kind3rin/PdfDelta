@@ -170,3 +170,9 @@ Il salvataggio dell'editor usa lo stato busy condiviso con strumenti e workspace
 L'evento pdfdelta-busy rende inerti i pannelli durante la preparazione; il finally
 ripristina le azioni anche dopo un errore. Le annotazioni sono copiate prima del
 primo await, così l'output corrisponde agli inserimenti presenti al clic.
+
+editor-renderer.mjs isola la concorrenza delle anteprime: revisione crescente,
+cancellazione del render precedente e disegno su canvas temporaneo. Solo l'ultima
+richiesta può pubblicare il risultato; ogni canvas temporaneo viene liberato nel
+finally. app.js aggiorna dimensioni e overlay insieme alla pagina completata e
+impedisce nuovi inserimenti finché l'anteprima non è pronta.
