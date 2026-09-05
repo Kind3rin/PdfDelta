@@ -4,35 +4,37 @@
 - cluster-only mode — file stats not available
 
 ## Summary
-- 351 nodes · 923 edges · 24 communities (21 shown, 3 thin omitted)
+- 356 nodes · 930 edges · 26 communities (22 shown, 4 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 90 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `05b82761`
+- Built from commit: `8b3880ee`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - downloadBlob
 - app.js
-- isToolCompatible
 - PageHistory
+- verify-account.test.mjs
+- isToolCompatible
 - package.json
-- account.mjs
 - verify-local.js
-- renderPdfPageCanvas
-- extractTextFromPdfFile
+- fileExt
 - setEditorStatus
+- removeAttachments
+- extractTextFromPdfFile
 - audit-zero-cost.js
 - verify-security.test.js
-- escapeHtml
 - vendor-pdfjs.mjs
 - vercel.json
-- collectPdfNameTreeNames
 - pageSizeReport
 - toggleFavorite
+- compareVisual
+- textToPdf
 - sw.js
+- blankPageIndicesFromRenderDoc
 - blankPdf
 - enhanceCanvas
 
@@ -49,6 +51,8 @@
 10. `renderFiles()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `initAccount()` --calls--> `createPreferenceJournal()`  [EXTRACTED]
+  account.mjs → account-preferences.mjs
 - `initAccount()` --calls--> `createPreferenceSync()`  [EXTRACTED]
   account.mjs → account-preferences.mjs
 - `initFlow()` --calls--> `createHome()`  [EXTRACTED]
@@ -57,65 +61,63 @@
   workspace.mjs → pdf-engine.mjs
 - `main()` --calls--> `cdpJson()`  [EXTRACTED]
   verify-workspace.cjs → verify-local.js
-- `main()` --calls--> `startStaticServer()`  [EXTRACTED]
-  verify-workspace.cjs → verify-local.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (24 total, 3 thin omitted)
+## Communities (26 total, 4 thin omitted)
 
 ### Community 0 - "downloadBlob"
 Cohesion: 0.14
-Nodes (66): addBlankPages(), addMargins(), attachFilesToPdf(), attachmentsReport(), autoTrim(), batesNumbering(), booklet(), cleanActions() (+58 more)
+Nodes (70): addBlankPages(), addMargins(), attachFilesToPdf(), autoTrim(), batesNumbering(), booklet(), canvasToBlob(), canvasToImageBytes() (+62 more)
 
 ### Community 1 - "app.js"
-Cohesion: 0.04
-Nodes (49): catalogInsights, categories, categoryBar, clearQueueButton, compatibilityNote, drawCropMarkLines(), dropzone, editorClear (+41 more)
+Cohesion: 0.03
+Nodes (52): canvasToGrayscale(), catalogInsights, categories, categoryBar, clearQueueButton, compatibilityNote, drawCropMarkLines(), dropzone (+44 more)
 
-### Community 2 - "isToolCompatible"
-Cohesion: 0.11
-Nodes (33): addFiles(), compatibilityMessage(), fileExt(), firstCompatibleSuggestion(), formatBytes(), getFileProfile(), getImageFiles(), getOptions() (+25 more)
-
-### Community 3 - "PageHistory"
+### Community 2 - "PageHistory"
 Cohesion: 0.12
 Nodes (10): base, limits, readBytes(), readEditable(), tasks, viewportAtScale(), viewportFor(), make() (+2 more)
 
-### Community 4 - "package.json"
+### Community 3 - "verify-account.test.mjs"
+Cohesion: 0.11
+Nodes (13): accountConfig, initAccount(), cleanPreferences(), createPreferenceJournal(), createPreferenceSync(), createHome(), active, report (+5 more)
+
+### Community 4 - "isToolCompatible"
+Cohesion: 0.15
+Nodes (25): addFiles(), compareText(), compatibilityMessage(), diffLines(), escapeHtml(), firstCompatibleSuggestion(), getFileProfile(), getOptions() (+17 more)
+
+### Community 5 - "package.json"
 Cohesion: 0.09
 Nodes (22): esbuild, author, bugs, url, dependencies, @supabase/supabase-js, description, devDependencies (+14 more)
-
-### Community 5 - "account.mjs"
-Cohesion: 0.14
-Nodes (12): accountConfig, initAccount(), cleanPreferences(), createPreferenceSync(), createHome(), active, report, rows (+4 more)
 
 ### Community 6 - "verify-local.js"
 Cohesion: 0.16
 Nodes (17): cdpJson(), fs, http, main(), mimeType(), os, path, { spawn } (+9 more)
 
-### Community 7 - "renderPdfPageCanvas"
-Cohesion: 0.16
-Nodes (18): blankPageIndicesFromRenderDoc(), canvasHasVisibleInk(), canvasToBlob(), canvasToGrayscale(), canvasToImageBytes(), canvasToPngBytes(), contactSheet(), enhanceScan() (+10 more)
+### Community 7 - "fileExt"
+Cohesion: 0.18
+Nodes (14): csvCell(), csvDate(), documentReport(), fileExt(), formatBytes(), getImageFiles(), imageStamp(), imageStampPosition() (+6 more)
 
-### Community 8 - "extractTextFromPdfFile"
-Cohesion: 0.13
-Nodes (16): auditAccessibility(), csvCell(), csvDate(), documentReport(), docxDocumentXml(), docxParagraph(), extractedTextBody(), extractTextFromPdfFile() (+8 more)
-
-### Community 9 - "setEditorStatus"
+### Community 8 - "setEditorStatus"
 Cohesion: 0.24
 Nodes (11): clearCurrentEditorPage(), drawEditorOverlay(), editorCanvasPoint(), openPdfEditorTool(), renderEditorPage(), resetEditor(), safePdfText(), saveEditedPdf() (+3 more)
 
-### Community 10 - "audit-zero-cost.js"
+### Community 9 - "removeAttachments"
+Cohesion: 0.27
+Nodes (10): attachmentsReport(), collectPdfNameTreeNames(), deletePdfKeys(), embeddedFileNames(), lookupPdfKey(), pdfArrayItem(), pdfName(), pdfObjectText() (+2 more)
+
+### Community 10 - "extractTextFromPdfFile"
+Cohesion: 0.15
+Nodes (14): auditAccessibility(), docxDocumentXml(), docxParagraph(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), makeDocxBlob(), markdownFromExtractedText() (+6 more)
+
+### Community 11 - "audit-zero-cost.js"
 Cohesion: 0.20
 Nodes (8): blockedRuntimePatterns, failures, files, fs, ignoredDirs, path, runtimeFiles, textExtensions
 
-### Community 11 - "verify-security.test.js"
+### Community 12 - "verify-security.test.js"
 Cohesion: 0.25
 Nodes (6): assert, { createHash }, fs, path, { test }, vm
-
-### Community 12 - "escapeHtml"
-Cohesion: 0.40
-Nodes (6): compareCanvases(), compareText(), compareVisual(), diffLines(), escapeHtml(), renderPageForCompare()
 
 ### Community 13 - "vendor-pdfjs.mjs"
 Cohesion: 0.33
@@ -125,11 +127,7 @@ Nodes (5): archive, dest, files, manifest, root
 Cohesion: 0.33
 Nodes (5): buildCommand, framework, headers, outputDirectory, $schema
 
-### Community 15 - "collectPdfNameTreeNames"
-Cohesion: 0.50
-Nodes (5): collectPdfNameTreeNames(), embeddedFileNames(), lookupPdfKey(), pdfArrayItem(), pdfObjectText()
-
-### Community 16 - "pageSizeReport"
+### Community 15 - "pageSizeReport"
 Cohesion: 0.40
 Nodes (5): csvValue(), detectPageFormat(), getPageSizeInfo(), pageSizeReport(), pointsToMm()
 
@@ -137,25 +135,33 @@ Nodes (5): csvValue(), detectPageFormat(), getPageSizeInfo(), pageSizeReport(), 
 Cohesion: 0.50
 Nodes (4): renderCategories(), saveFavorites(), setFilter(), toggleFavorite()
 
+### Community 18 - "compareVisual"
+Cohesion: 0.67
+Nodes (3): compareCanvases(), compareVisual(), renderPageForCompare()
+
+### Community 19 - "textToPdf"
+Cohesion: 0.67
+Nodes (3): getTextFiles(), textToPdf(), wrapText()
+
 ## Knowledge Gaps
 - **99 isolated node(s):** `signatureDraft`, `signatureFaces`, `categories`, `state`, `grid` (+94 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `tools` connect `account.mjs` to `app.js`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
-- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `extractTextFromPdfFile`, `setEditorStatus`, `escapeHtml`, `pageSizeReport`, `blankPdf`?**
+- **Why does `tools` connect `verify-account.test.mjs` to `app.js`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `fileExt`, `setEditorStatus`, `removeAttachments`, `extractTextFromPdfFile`, `pageSizeReport`, `compareVisual`, `textToPdf`, `blankPdf`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
-- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `extractTextFromPdfFile`, `setEditorStatus`, `escapeHtml`, `pageSizeReport`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **What connects `signatureDraft`, `signatureFaces`, `categories` to the rest of the system?**
   _99 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `downloadBlob` be split into smaller, more focused modules?**
-  _Cohesion score 0.14032634032634034 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.13830227743271223 - nodes in this community are weakly interconnected._
 - **Should `app.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.03636363636363636 - nodes in this community are weakly interconnected._
-- **Should `isToolCompatible` be split into smaller, more focused modules?**
-  _Cohesion score 0.11174242424242424 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.034482758620689655 - nodes in this community are weakly interconnected._
+- **Should `PageHistory` be split into smaller, more focused modules?**
+  _Cohesion score 0.1164021164021164 - nodes in this community are weakly interconnected._
+- **Should `verify-account.test.mjs` be split into smaller, more focused modules?**
+  _Cohesion score 0.11384615384615385 - nodes in this community are weakly interconnected._

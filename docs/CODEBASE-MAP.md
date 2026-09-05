@@ -160,3 +160,8 @@ account.mjs coordina il dialog e Supabase Auth; account-preferences.mjs filtra i
 payload e serializza le scritture. account-config.mjs contiene solo identificatori
 pubblici e flag di attivazione. bootstrap carica l'integrazione separatamente dal
 motore: un errore account non ferma PDF e workspace. Vedi [ACCOUNTS.md](ACCOUNTS.md).
+
+Il controller account include un journal delle preferenze non confermate: versione
+per modifica, chiave per proprietario, cancellazione solo dopo conferma corrente.
+La coda HTTP resta seriale; il journal sopravvive alla navigazione, quando lo storage
+locale è disponibile. I test di recupero non richiedono credenziali o rete cloud.

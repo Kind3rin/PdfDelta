@@ -245,3 +245,12 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 
 - [x] Accesso su Vercel, recupero tema e preferito da sessione con storage separato, reload e logout verificati. Redirect temporaneo rimosso. CI e suite pubblica superate.
 
+
+### Recupero preferenze dopo errori di rete
+
+- Le modifiche non confermate sono conservate in localStorage sotto una chiave per account, con soli tema e identificatori preferiti.
+- Retry e riapertura recuperano la modifica pendente prima dei dati remoti; una conferma vecchia non cancella una modifica successiva.
+- Logout non applica le modifiche pendenti all'ospite o a un account diverso. Il recupero avviene al successivo accesso al proprietario.
+- Test aggiunti: errore di scrittura e nuova istanza, isolamento account, conferme fuori tempo, quota locale e vecchio dato ancora leggibile dopo errore quota.
+- Browser: navigazione reale in modalità offline, recupero del journal e successiva scrittura tramite trasporto simulato. OAuth reale già verificato nel ciclo precedente; questo test isola il recupero e non invia dati a Supabase.
+- Con storage bloccato o pieno il recupero resta in memoria fino alla chiusura: messaggio esplicito, nessuna garanzia di persistenza dopo reload in quel caso. Il merge simultaneo tra dispositivi resta aperto.

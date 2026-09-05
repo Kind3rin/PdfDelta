@@ -71,3 +71,19 @@ https://supabase.com/docs/guides/database/postgres/row-level-security.
 
 - Collaudo pubblico riuscito su https://pdfdelta.vercel.app/; CI e deploy Pages verdi al commit 2e36451.
 - Redirect locale rimosso dopo il collaudo: resta solo Vercel. Preferenze di prova ripristinate.
+
+## Modifiche non ancora sincronizzate
+
+Il journal locale conserva il solo payload filtrato (tema e preferiti), con chiave
+per account e versione della modifica. Rimane finché il server non conferma il
+salvataggio; logout lo separa dalle preferenze ospite. Al nuovo accesso dello stesso
+account, retry o reload, il controller riprende il payload pendente senza sostituirlo
+con la copia remota precedente. Nessun token, firma o documento nel journal.
+
+Una conferma precedente non può cancellare una versione più recente. Lo storage
+pieno/bloccato usa la memoria della pagina e segnala di mantenerla aperta; in quel
+caso il recupero dopo chiusura non è garantito. La sincronizzazione conserva la
+politica ultima scrittura: non risolve conflitti simultanei tra dispositivi.
+
+Verifica: test del controller con rete simulata, quota e cambio account; test Chrome
+con navigazione reale offline e journal persistente, trasporto simulato al recupero.
