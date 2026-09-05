@@ -16,6 +16,7 @@ export async function initAccount(bridge, config = accountConfig) {
   let user = null, guest = bridge.getPreferences(), connecting = null;
   try { const saved = JSON.parse(localStorage.getItem('pdfdelta-guest-preferences')); if (saved) guest = saved; } catch { /* Preserve current local defaults. */ }
   open.onclick = () => dialog.showModal(); dialog.querySelector('.account-close').onclick = () => dialog.close();
+  window.addEventListener('pdfdelta-preferences', () => { if (user) void sync.save(bridge.getPreferences()); });
   const load = async () => {
     try { await sync.connect(user?.id, bridge.getPreferences(), value => bridge.applyPreferences(value)); }
     catch { status('Sincronizzazione non disponibile. Riprova quando sei online.'); }
@@ -53,5 +54,5 @@ export async function initAccount(bridge, config = accountConfig) {
     const { error } = await client.auth.signOut({ scope: 'local' });
     if (error) status('Disconnessione non riuscita. Riprova.'); else await setSession(null);
   };
-  window.addEventListener('pdfdelta-preferences', () => { if (user) void sync.save(bridge.getPreferences()); });
+
 }
