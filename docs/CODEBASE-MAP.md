@@ -125,3 +125,11 @@ immediatamente prima del download, coprendo anche il ritorno del File originale.
 La suite browser usa inoltre 120 pagine sintetiche per verificare anteprime,
 interruzione della ricostruzione e nuovo export; una fixture da 1001 pagine
 verifica il rifiuto oltre il limite senza sostituire la sessione.
+
+`viewportAtScale()` centralizza il limite raster (16 milioni di pixel, 8192
+per lato) anche per gli strumenti che usano `renderPdfPageCanvas()`. Il limite
+include l'arrotondamento alle dimensioni intere del canvas e mantiene le
+proporzioni; riduce la risoluzione richiesta solo quando necessario. Le
+dimensioni fisiche delle pagine esportate non cambiano. La compressione libera
+il canvas dopo aver incorporato ogni immagine. Una scansione sintetica ad alta
+risoluzione verifica cap e contenuto dell'output, senza sostituire test su telefoni reali.

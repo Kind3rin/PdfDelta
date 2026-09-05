@@ -181,5 +181,12 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Fixture sintetica di 120 pagine: anteprime iniziali limitate a 60, caricamento delle successive, annullamento prima dell'export e durante la ricostruzione, nuovo tentativo con conteggio pagine/rotazione e testo delle pagine 1/60/120 verificati.
 - Importazione di 1001 pagine rifiutata senza sostituire il documento corrente. Non equivale a uno stress test di scansioni pesanti o telefoni reali.
 
+### Memoria delle operazioni raster
+
+- Il renderer condiviso degli strumenti applica gli stessi limiti delle anteprime: 16 milioni di pixel e 8192 pixel per lato, includendo gli arrotondamenti del canvas. Le dimensioni fisiche del PDF restano invariate.
+- Compressione: il canvas della pagina viene liberato dopo l'incorporamento dell'immagine.
+- Test browser con scansione sintetica 2480×3508 su pagina 14400×14400 punti: verificati cap, output non vuoto, dimensioni PDF; controllate anche risoluzione normale invariata e proporzioni estreme.
+- Nessun telefono collegato rilevato tramite ADB. La verifica su hardware mobile resta aperta, come i carichi con molte scansioni pesanti.
+
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
