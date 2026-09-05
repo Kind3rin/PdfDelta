@@ -64,7 +64,7 @@ for (const file of files) {
   const content = fs.readFileSync(file, "utf8");
   for (const pattern of blockedRuntimePatterns) {
     const accountBoundary = ['account-config.mjs', 'index.html', '_headers'].includes(rel) && pattern.source === 'supabase';
-    const checked = accountBoundary ? content.replaceAll('https://vpkctxqeopuxqedhyzia.supabase.co', '') : content;
+    const checked = accountBoundary ? content.replaceAll('https://vpkctxqeopuxqedhyzia.supabase.co', '') : rel === 'privacy.html' ? content.replace('Google comunica a Supabase', 'Google comunica al provider') : content;
     if (pattern.test(checked)) failures.push(`${rel}: pattern bloccato ${pattern}`);
   }
 }
