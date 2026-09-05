@@ -341,6 +341,37 @@ async function main() {
       const first = ctx.getImageData(300, 200, 1, 1).data, second = ctx.getImageData(300, 518, 1, 1).data, margin = ctx.getImageData(30, 200, 1, 1).data;
       if (first[0] < 240 || second[2] < 240 || margin[0] < 240 || margin[1] < 240) throw new Error('Long JPG order, centering or content wrong');
     })()`);
+    const padRect = await evaluate(`(async () => {
+      const { workspaceBridge } = await import('./app.js');
+      const doc = await PDFLib.PDFDocument.create(); doc.addPage([600, 800]); doc.addPage([600, 800]);
+      workspaceBridge.replaceFiles([new File([await doc.save()], 'firma-test.pdf', { type: 'application/pdf' })]);
+      const end = Date.now() + 15000; while (document.getElementById('wsTitle').textContent !== 'firma-test.pdf' || document.getElementById('wsExport').disabled) { if (Date.now() > end) throw new Error('Signature input'); await new Promise(r => setTimeout(r, 30)); }
+      workspaceBridge.selectTool('edit-pdf'); await workspaceBridge.run();
+      document.getElementById('signatureDraw').click(); document.getElementById('signaturePad').scrollIntoView({ block: 'center', behavior: 'instant' });
+      const r = document.getElementById('signaturePad').getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height };
+    })()`);
+    await send('Input.dispatchMouseEvent', { type:'mousePressed', x:padRect.x+20, y:padRect.y+40, button:'left', clickCount:1 });
+    for (const [x,y] of [[40,15],[60,65],[90,30],[130,50]]) await send('Input.dispatchMouseEvent', { type:'mouseMoved', x:padRect.x+x, y:padRect.y+y, button:'left', buttons:1 });
+    await send('Input.dispatchMouseEvent', { type:'mouseReleased', x:padRect.x+130, y:padRect.y+50, button:'left', clickCount:1 });
+    fs.writeFileSync('dist/verification/signature-pad-mobile.png', Buffer.from((await send('Page.captureScreenshot', { format:'png' })).data, 'base64'));
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      if ($('signaturePadUse').disabled) throw new Error('Drawn signature not captured');
+      $('signaturePadUse').click();
+      const place = (x,y) => { const r = $('editorInkCanvas').getBoundingClientRect(); $('editorInkCanvas').dispatchEvent(new PointerEvent('pointerdown', { clientX:r.x+r.width*x, clientY:r.y+r.height*y, bubbles:true })); };
+      place(.1,.35); place(.5,.55);
+      document.querySelector('[data-editor-mode="signature"]').click(); $('editorTextInput').value = 'Firma test';
+      for (const [i,font] of ['TimesRomanItalic','HelveticaOblique','CourierOblique'].entries()) { $('signatureFont').value = font; place(.1,.1+i*.08); }
+      $('editorNext').click();
+      const end = Date.now()+10000; while ($('editorPageInfo').textContent !== '2 / 2') { if (Date.now()>end) throw new Error('Signature page navigation'); await new Promise(r=>setTimeout(r,20)); }
+      $('signatureDraw').click(); $('signaturePadUse').click(); place(.2,.4);
+      const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e=>resolve(e.detail.blob), { once:true }));
+      $('editorSave').click(); const task = pdfjsLib.getDocument({ data:new Uint8Array(await (await output).arrayBuffer()), owner:'workspace' });
+      try { const pdf = await task.promise, page = await pdf.getPage(1); const text = await page.getTextContent();
+        if (new Set(text.items.filter(i=>i.str==='Firma test').map(i=>i.fontName)).size !== 3) throw new Error('Signature font styles lost in PDF');
+        for (const number of [1,2]) { const ops = await (await pdf.getPage(number)).getOperatorList(); if (ops.fnArray.filter(op=>op===pdfjsLib.OPS.constructPath).length < 4) throw new Error('Reusable signature missing from PDF page '+number); }
+      } finally { await task.destroy(); }
+    })()`);
     await evaluate("document.getElementById('themeToggle').click()");
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");

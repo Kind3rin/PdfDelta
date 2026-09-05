@@ -78,7 +78,7 @@ export function initFlow(bridge, workspace) {
   buttonLabel($('wsUndo'), 'undo', 'Annulla'); buttonLabel($('wsRedo'), 'redo', 'Ripeti');
   for (const [id, label] of [['wsUndo', 'Annulla modifica'], ['wsRedo', 'Ripeti modifica']]) { $(id).setAttribute('aria-label', label); $(id).title = label; }
   $('editorSave').textContent = 'Applica modifiche';
-  $('editor').querySelector('.section-head > p').textContent = 'Scegli Testo, Firma o Disegna, poi seleziona un punto del foglio.';
+  $('editor').querySelector('.section-head > p').textContent = 'Scrivi il testo o crea una firma. Puoi inserire la stessa firma in più punti del documento.';
   host.querySelector('.ws-kicker').textContent = 'Il tuo spazio PDF';
   host.querySelector('.ws-heading > div:first-child').append($('wsSummary'));
   const privacy = document.createElement('span'); privacy.className = 'local-badge'; privacy.innerHTML = `${icon('shield')}<span>I file restano sul tuo dispositivo</span>`;

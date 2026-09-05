@@ -4,6 +4,9 @@ const { PDFDocument, StandardFonts, rgb, degrees, PDFName } = window.PDFLib || {
 
 const FAVORITES_KEY = "pdfdelta-favorites";
 let workspaceBusy = () => false;
+let reusableSignature = null;
+let signatureDraft = [], signatureStroke = null;
+const signatureFaces = { TimesRomanItalic: 'italic Georgia', HelveticaOblique: 'italic Arial', CourierOblique: 'italic Courier New' };
 
 function loadFavorites() {
   try {
@@ -580,6 +583,8 @@ function setEditorMode(mode) {
     button.classList.toggle("active", button.dataset.editorMode === mode);
   });
   if (editorInkCanvas) editorInkCanvas.style.cursor = mode === "draw" ? "crosshair" : "copy";
+  document.getElementById('signatureFontField').hidden = mode !== 'signature';
+  if (mode === 'signature') setEditorStatus('Scegli uno stile e clicca nei punti dove inserire la firma. Per firmare a mano, scegli Disegna una firma.');
 }
 
 function editorPdfPoint(event) {
@@ -636,9 +641,19 @@ function drawEditorOverlay() {
   state.editor.marks
     .filter((mark) => mark.page === state.editor.pageNumber)
     .forEach((mark) => {
+      if (mark.type === 'signature-drawing') {
+        context.strokeStyle = '#123f8c'; context.lineWidth = 1.5 * state.editor.canvasSize.width / state.editor.pageSize.width;
+        for (const stroke of mark.strokes) {
+          context.beginPath();
+          stroke.forEach((p, i) => { const c = editorCanvasPoint({ x: mark.x + p.x, y: mark.y - p.y }); if (i) context.lineTo(c.x, c.y); else context.moveTo(c.x, c.y); });
+          context.stroke();
+        }
+        return;
+      }
       const point = editorCanvasPoint(mark);
       const size = Math.round(mark.size * (state.editor.canvasSize.width / state.editor.pageSize.width));
-      context.font = `${mark.type === "signature" ? "italic " : ""}${size}px Georgia, serif`;
+      const face = mark.type === 'signature' ? (signatureFaces[mark.font] || signatureFaces.TimesRomanItalic) : 'Arial';
+      context.font = face.startsWith('italic ') ? `italic ${size}px "${face.slice(7)}"` : `${size}px ${face}`;
       context.fillStyle = mark.type === "signature" ? "#123f8c" : "#17211f";
       context.fillText(mark.text, point.x, point.y);
     });
@@ -696,14 +711,19 @@ async function saveEditedPdf() {
   const pdfDoc = await PDFDocument.load(state.editor.pdfBytes.slice(0), { ignoreEncryption: true });
   const textFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const signatureFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+  const signatureFonts = { TimesRomanItalic: signatureFont, HelveticaOblique: await pdfDoc.embedFont(StandardFonts.HelveticaOblique), CourierOblique: await pdfDoc.embedFont(StandardFonts.CourierOblique) };
 
   state.editor.marks.forEach((mark) => {
     const page = pdfDoc.getPage(mark.page - 1);
+    if (mark.type === 'signature-drawing') {
+      for (const stroke of mark.strokes) for (let i = 1; i < stroke.length; i++) page.drawLine({ start: { x: mark.x + stroke[i - 1].x, y: mark.y - stroke[i - 1].y }, end: { x: mark.x + stroke[i].x, y: mark.y - stroke[i].y }, thickness: 1.5, color: rgb(.07, .25, .55) });
+      return;
+    }
     page.drawText(safePdfText(mark.text), {
       x: mark.x,
       y: mark.y,
       size: mark.size,
-      font: mark.type === "signature" ? signatureFont : textFont,
+      font: mark.type === "signature" ? (signatureFonts[mark.font] || signatureFont) : textFont,
       color: mark.type === "signature" ? rgb(0.07, 0.25, 0.55) : rgb(0.09, 0.13, 0.12),
     });
   });
@@ -3517,6 +3537,31 @@ editorModes?.addEventListener("click", (event) => {
   if (button) setEditorMode(button.dataset.editorMode);
 });
 
+const signaturePad = document.getElementById('signaturePad');
+function paintSignaturePad() {
+  const ctx = signaturePad.getContext('2d'); ctx.clearRect(0, 0, 600, 200);
+  ctx.strokeStyle = '#123f8c'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const stroke of signatureDraft) { ctx.beginPath(); stroke.forEach((p, i) => { if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); }); ctx.stroke(); }
+  document.getElementById('signaturePadUse').disabled = !signatureDraft.some(stroke => stroke.length > 1);
+}
+document.getElementById('signatureDraw').onclick = () => { document.getElementById('signaturePadPanel').hidden = false; paintSignaturePad(); };
+document.getElementById('signaturePadClose').onclick = () => { document.getElementById('signaturePadPanel').hidden = true; };
+document.getElementById('signaturePadClear').onclick = () => { signatureDraft = []; signatureStroke = null; paintSignaturePad(); };
+const padPoint = event => { const r = signaturePad.getBoundingClientRect(); return { x: Math.max(0, Math.min(600, (event.clientX - r.left) * 600 / r.width)), y: Math.max(0, Math.min(200, (event.clientY - r.top) * 200 / r.height)) }; };
+signaturePad.onpointerdown = event => { event.preventDefault(); signatureStroke = [padPoint(event)]; signatureDraft.push(signatureStroke); signaturePad.setPointerCapture(event.pointerId); };
+signaturePad.onpointermove = event => { if (!signatureStroke) return; signatureStroke.push(padPoint(event)); paintSignaturePad(); };
+signaturePad.onpointerup = signaturePad.onpointercancel = () => { signatureStroke = null; };
+document.getElementById('signaturePadUse').onclick = () => {
+  const strokes = signatureDraft.filter(stroke => stroke.length > 1);
+  if (!strokes.length) return;
+  const points = strokes.flat(), minX = Math.min(...points.map(p => p.x)), minY = Math.min(...points.map(p => p.y));
+  const scale = Math.min(160 / Math.max(1, Math.max(...points.map(p => p.x)) - minX), 65 / Math.max(1, Math.max(...points.map(p => p.y)) - minY));
+  reusableSignature = strokes.map(stroke => stroke.map(p => ({ x: (p.x - minX) * scale, y: (p.y - minY) * scale })));
+  setEditorMode('signature-drawing');
+  document.getElementById('signaturePadPanel').hidden = true;
+  setEditorStatus('Firma pronta. Clicca sulla pagina per inserirla, anche in più punti o su altre pagine. La firma resta solo in questa sessione.');
+};
+
 editorInkCanvas?.addEventListener("pointerdown", (event) => {
   if (!state.editor.pdf) {
     setEditorStatus("Apri un PDF nell'editor.");
@@ -3542,10 +3587,12 @@ editorInkCanvas?.addEventListener("pointerdown", (event) => {
     x: point.x,
     y: point.y,
     size: state.editor.mode === "signature" ? 18 : 11,
+    font: document.getElementById('signatureFont').value,
+    ...(state.editor.mode === 'signature-drawing' ? { strokes: reusableSignature.map(stroke => stroke.map(p => ({ ...p }))) } : {}),
   };
   state.editor.marks.push(mark);
   drawEditorOverlay();
-  setEditorStatus(`${state.editor.mode === "signature" ? "Firma" : "Testo"} aggiunto a pagina ${state.editor.pageNumber}.`);
+  setEditorStatus(`${state.editor.mode.startsWith("signature") ? "Firma" : "Testo"} aggiunto a pagina ${state.editor.pageNumber}.`);
 });
 
 editorInkCanvas?.addEventListener("pointermove", (event) => {

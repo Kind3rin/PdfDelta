@@ -144,3 +144,16 @@ button,input,select { font-family:inherit; }
   #flowToolPicker { width:96vw; padding:16px; } #flowToolPicker .tools-grid { grid-template-columns:1fr; } #flowToolPicker .tool-card { min-height:0; }
 }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .visual-workspace button { transition:none; } }
+#signaturePadPanel { padding:18px; border-bottom:1px solid var(--line); background:var(--surface); }
+#signaturePadPanel p { font-size:13px; color:var(--muted); margin:8px 0 12px; }
+#signaturePad { display:block; width:min(100%,600px); height:auto; background:#fff; border:1px solid var(--line); border-radius:10px; touch-action:none; }
+#signaturePadPanel > div { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+#signaturePadPanel button { min-height:44px; padding:10px 14px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); }
+#signaturePadUse { background:var(--blue)!important; color:white!important; }
+#signatureFont { max-width:100%; min-height:44px; padding:8px; }
+@media (max-width:700px) {
+  .flow-editing .editor-toolbar { display:grid; grid-template-columns:1fr 1fr; align-items:end; }
+  #editorModes, .editor-toolbar > .editor-field, #signatureDraw { grid-column:1/-1; }
+  #editorModes button { font-size:11px; padding:8px; }
+  #editorSave { grid-column:1/-1; }
+}

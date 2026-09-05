@@ -194,12 +194,14 @@
             <div class="segmented-control" id="editorModes">
               <button class="active" type="button" data-editor-mode="text">Testo</button>
               <button type="button" data-editor-mode="signature">Firma</button>
-              <button type="button" data-editor-mode="draw">Disegna</button>
+              <button type="button" data-editor-mode="draw">Disegno libero</button>
             </div>
             <label class="editor-field">
               <span>Testo</span>
               <input id="editorTextInput" type="text" value="Firmato da PdfDelta" />
             </label>
+            <label class="editor-field" id="signatureFontField" hidden><span>Stile firma</span><select id="signatureFont"><option value="TimesRomanItalic">Classica</option><option value="HelveticaOblique">Essenziale</option><option value="CourierOblique">Dattiloscritta</option></select></label>
+            <button type="button" id="signatureDraw" class="text-button">Disegna una firma</button>
             <div class="editor-pages">
               <button class="icon-button" id="editorPrev" type="button" aria-label="Pagina precedente">‹</button>
               <span id="editorPageInfo">0 / 0</span>
@@ -210,6 +212,12 @@
           </div>
 
           <div class="editor-status" id="editorStatus">Carica un PDF e scegli Compila e firma.</div>
+          <div id="signaturePadPanel" hidden>
+            <strong>La tua firma a mano</strong>
+            <p>Firma nel riquadro con mouse, dito o penna. Poi inseriscila nei punti del documento che vuoi.</p>
+            <canvas id="signaturePad" width="600" height="200" aria-label="Disegna qui la tua firma"></canvas>
+            <div><button type="button" id="signaturePadClear">Ricomincia</button><button type="button" id="signaturePadUse" disabled>Usa questa firma</button><button type="button" id="signaturePadClose">Chiudi</button></div>
+          </div>
           <div class="editor-stage" id="editorStage">
             <div class="editor-empty-state" id="editorEmptyState">
               <strong>Carica un PDF per iniziare.</strong>
