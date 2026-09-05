@@ -122,7 +122,10 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Azioni contestuali accanto al documento, catalogo in dialogo e download finale esplicito.
 - Desktop e viewport mobile verificati visivamente; suite strumenti e workspace superate localmente.
 - Test del passaggio riordino/rotazione → numerazione → risultato applicato, oltre a export e offline.
-- Pubblicazione del ciclo in corso; verifica pubblica richiesta prima della chiusura.
+- Pubblicato su GitHub Pages: verifica pubblica workspace, editor mobile, export e offline superata.
+- Aggiungere un file conserva le modifiche alle pagine esistenti, verificato nell'output PDF.
+- Attesa di avvio Chrome estesa a 30 secondi per i runner CI; suite locale completa superata.
+- CI obbligatoria prima di dichiarare chiuso il ciclo: https://github.com/Kind3rin/PdfDelta/actions/workflows/verify.yml
 
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
