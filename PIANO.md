@@ -41,15 +41,16 @@ La firma disegnata attuale non equivale a un servizio di firma digitale.
 - [x] Aggiornare PDF.js e worker insieme, verificando advisory e compatibilità: 6.3.289 con risorse locali e checksum.
 - [ ] Separare catalogo, motore PDF, stato e UI dall'attuale `app.js` monolitico.
   Catalogo, motore e modello workspace estratti; handler storici ed editor ancora in app.js.
-- [ ] Riaprire gli output PDF/ZIP/DOCX nei test e verificarne contenuto e struttura.
+- [x] Riaprire gli output PDF/ZIP/DOCX nei test e verificarne contenuto e struttura.
+  Tutti i 74 strumenti attivi hanno un caso sintetico. Validazione PDF/ZIP/DOCX/immagini e controlli semantici mirati; varianti, corpus complesso e tutti i report restano da ampliare.
 - [ ] CI riproducibile, timeout dei test e verifiche Firefox/WebKit/mobile.
   Workflow Windows/Node 22 aggiunto; Chrome locale e viewport mobile verificati. Altri browser restano da provare.
 - [ ] Limiti risorse, rilascio canvas/documenti, file malformati/cifrati e concorrenza.
 - [ ] Verificare header in hosting: `_headers` non configura GitHub Pages.
 
 Uscita: regressioni verdi, dipendenze aggiornate e nessun problema critico noto
-aperto nelle aree verificate. I test esistenti controllano soprattutto stato UI
-e nomi dei risultati; non certificano fedeltà e integrità di ogni output.
+aperto nelle aree verificate. I test riaprono i risultati dei 74 strumenti attivi;
+non certificano ogni opzione, documento complesso o proprietà semantica dei report.
 
 ## Fase 2 — semplicità e identità visiva
 
@@ -115,6 +116,17 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Le restanti caselle del piano rimangono aperte; nessuna dichiarazione enterprise-ready.
 
 ## Chiusura dei cicli
+
+### Integrità dei risultati
+
+- 74/74 strumenti attivi con almeno un caso sintetico: output riaperti e verificati,
+  incluse struttura DOCX, immagini, archivi ZIP e controlli semantici mirati.
+- Attese dei test legate al risultato e al completamento delle operazioni.
+- Download senza modifiche alle pagine: byte originali conservati. Test con metadati,
+  campo compilabile e allegato dopo un'operazione nel workspace.
+- Firma testuale distinta dalla firma digitale anche nei valori predefiniti.
+- Dettagli e limiti: docs/OUTPUT-VERIFICATION.md. Varianti, altri browser e prova
+  di ogni strumento su telefono restano aperti.
 
 ### Redesign del workspace
 

@@ -19,8 +19,9 @@ Direzione visiva e criteri responsive: [DESIGN.md](DESIGN.md).
 | `scripts/vendor-pdfjs.mjs` | Copia riproducibile del pacchetto con verifica integrità |
 
 I descrittori conservano sorgente, indice e rotazione: annullare non richiede
-ricomprimere il PDF. Durante l'export pdf-lib copia le pagine nell'ordine attuale;
-PDF.js serve per le anteprime e la lettura. Non è un backend.
+ricomprimere il PDF. Se cambia l'organizzazione, l'export copia le pagine con pdf-lib;
+un singolo documento senza modifiche alle pagine viene scaricato senza riscrittura,
+conservando moduli, metadati e allegati. PDF.js serve per anteprime e lettura.
 
 Il coordinatore prepara un File dalle pagine modificate prima di eseguire uno strumento.
 L'evento `pdfdelta-output` applica automaticamente il risultato PDF al workspace;
@@ -62,6 +63,10 @@ Il diagramma descrive i componenti attuali. Non include servizi cloud ipotetici.
 Profilo standard: validazione con zero errori e zero avvisi.
 
 ## Verifiche e limiti
+
+[Copertura degli output](OUTPUT-VERIFICATION.md): 74 strumenti attivi, un caso
+sintetico per ciascuno. La CI fallisce se uno strumento attivo manca dalla verifica.
+Il validatore dei risultati è separato dagli handler in `tests/output-validator.mjs`.
 
 - Modello: ordine, selezioni non contigue, undo/redo, cancellazione e rotazioni.
 - Workspace Chrome: PDF esportato riaperto e controllato per pagine, ordine,

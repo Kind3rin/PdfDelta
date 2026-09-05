@@ -15,7 +15,7 @@
     { "id": "files", "type": "external", "label": "File locali", "sublabel": "File API", "pos": [40, 300], "size": [140, 64] },
     { "id": "workspace", "type": "frontend", "label": "Workspace", "sublabel": "workspace + flow", "pos": [260, 300], "size": [160, 64] },
     { "id": "engine", "type": "backend", "label": "Motore locale", "sublabel": "pdf-engine.mjs", "pos": [520, 300], "size": [160, 64] },
-    { "id": "output", "type": "external", "label": "Esporta PDF", "sublabel": "pdf-lib + Blob", "pos": [780, 300], "size": [160, 64] },
+    { "id": "output", "type": "external", "label": "Esporta PDF", "sublabel": "Originale o pdf-lib", "pos": [780, 300], "size": [160, 64] },
     { "id": "history", "type": "database", "label": "Cronologia RAM", "sublabel": "workspace-model.mjs", "pos": [250, 130], "size": [180, 64] },
     { "id": "tools", "type": "frontend", "label": "Strumenti", "sublabel": "app.js + catalogo", "pos": [260, 470], "size": [160, 64] },
     { "id": "worker", "type": "backend", "label": "PDF.js worker", "sublabel": "6.3.289 / locale", "pos": [520, 130], "size": [160, 64] },
@@ -34,7 +34,8 @@
   "cards": [
     { "dot": "cyan", "title": "Flusso", "items": ["Aggiungi, seleziona, riordina e ruota pagine", "Scegli azioni nello stesso workspace", "Risultati applicati automaticamente; scarica alla fine"] },
     { "dot": "emerald", "title": "Memoria locale", "items": ["Cronologia fino a 50 modifiche", "100 MB per file, 200 MB per sessione workspace", "Nessuna persistenza dei documenti"] },
-    { "dot": "rose", "title": "Limiti dichiarati", "items": ["Nessuna firma digitale o censura sicura", "Campi e firme possono perdersi ricreando pagine", "Desktop Chrome verificato; altri browser da provare"] }
+    { "dot": "rose", "title": "Limiti dichiarati", "items": ["Nessuna firma digitale o censura sicura", "Ricreare pagine può perdere campi e firme", "Desktop Chrome verificato; altri browser da provare"] }
   ]
 }
+
 

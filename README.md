@@ -88,8 +88,11 @@ la versione fissata dal registro npm, verifica SHA-512 e registra i checksum dei
 
 Limiti: 100 MB per file, 200 MB per sessione, 1000 pagine; miniature mostrate a
 gruppi di 60. Sessione solo in memoria: esportare prima di chiudere la pagina.
-Il workspace ricrea le pagine e non garantisce conservazione di moduli interattivi,
-firme digitali, segnalibri o allegati. La firma disegnata non è firma digitale.
+Il download di un singolo documento senza modifiche alle pagine conserva il file
+esattamente, inclusi moduli, metadati e allegati aggiunti dagli strumenti.
+Riordino, rotazione, rimozione o unione ricreano invece le pagine e non garantiscono
+conservazione di moduli interattivi, firme digitali, segnalibri o allegati.
+La firma disegnata e la firma testuale non sono firme digitali.
 
 ## Verifica automatica locale
 
@@ -107,6 +110,8 @@ node verify-workspace.cjs
 Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie locali, preferiti localStorage, zero richieste esterne, merge PDF, merge PDF+immagini, editor compila/firma, intercalazione PDF, split per range, split pari/dispari, split per testo, split su pagine bianche, carta intestata, copertina, logo immagine, QR su PDF, PDF in TXT/Markdown/Word testo/JPG/WebP/social, JPG lungo, scheda anteprime, crop, margine stampabile, segni di taglio, normalizzazione formato, separazione orientamento, report documento, report coda, report/separazione formati pagina, header/footer, Bates, timbro nome file, auto-trim, confronto visuale, conteggio parole, lettura/scrittura/pulizia metadati, annotazioni, azioni PDF, allegati PDF, aggiunta/rimozione allegati, estrazione/rimozione per testo, duplicati, booklet, poster multipagina, compressione scansioni, miglioramento scansioni, scala di grigi, pagine vuote, PDF vuoto e overflow desktop.
 
 ## Feature attive
+
+Copertura degli output di tutti gli strumenti attivi: [verifica dettagliata](docs/OUTPUT-VERIFICATION.md).
 
 - Workspace unico con anteprime, riordino, selezione, rotazione, rimozione, undo/redo e strumenti integrati.
 - Unisci PDF e intercala due PDF fronte/retro.

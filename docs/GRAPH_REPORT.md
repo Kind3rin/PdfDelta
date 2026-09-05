@@ -4,12 +4,12 @@
 - cluster-only mode — file stats not available
 
 ## Summary
-- 294 nodes · 856 edges · 23 communities (20 shown, 3 thin omitted)
+- 300 nodes · 862 edges · 23 communities (21 shown, 2 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 89 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6270bece`
+- Built from commit: `157f2430`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -17,24 +17,23 @@
 - downloadBlob
 - app.js
 - PageHistory
-- isToolCompatible
 - verify-local.js
-- renderPdfPageCanvas
+- isToolCompatible
 - extractTextFromPdfFile
+- renderPdfPageCanvas
 - openPdfEditorTool
 - removeAttachments
 - fileExt
 - audit-zero-cost.js
-- escapeHtml
 - verify-security.test.js
+- renderTools
+- escapeHtml
+- report-output-verification.mjs
 - vendor-pdfjs.mjs
 - pageSizeReport
-- toggleFavorite
-- docxDocumentXml
 - textToPdf
 - sw.js
 - blankPdf
-- tool-catalog.mjs
 
 ## God Nodes (most connected - your core abstractions)
 1. `downloadBlob()` - 77 edges
@@ -59,35 +58,35 @@
 ## Import Cycles
 - None detected.
 
-## Communities (23 total, 3 thin omitted)
+## Communities (23 total, 2 thin omitted)
 
 ### Community 0 - "downloadBlob"
 Cohesion: 0.16
-Nodes (60): addBlankPages(), addMargins(), attachFilesToPdf(), autoTrim(), batesNumbering(), booklet(), cleanActions(), cleanMetadata() (+52 more)
+Nodes (61): addBlankPages(), addMargins(), attachFilesToPdf(), autoTrim(), batesNumbering(), booklet(), cleanActions(), cleanMetadata() (+53 more)
 
 ### Community 1 - "app.js"
 Cohesion: 0.04
-Nodes (47): catalogInsights, categories, categoryBar, clearQueueButton, compatibilityNote, drawCropMarkLines(), dropzone, editorClear (+39 more)
+Nodes (48): canvasToGrayscale(), catalogInsights, categories, categoryBar, clearQueueButton, compatibilityNote, drawCropMarkLines(), dropzone (+40 more)
 
 ### Community 2 - "PageHistory"
 Cohesion: 0.13
 Nodes (9): base, limits, readBytes(), readEditable(), tasks, viewportFor(), make(), initWorkspace() (+1 more)
 
-### Community 3 - "isToolCompatible"
-Cohesion: 0.20
-Nodes (19): addFiles(), compatibilityMessage(), firstCompatibleSuggestion(), getFileProfile(), isToolCompatible(), matchesTool(), profileSummaryText(), renderCatalogInsights() (+11 more)
-
-### Community 4 - "verify-local.js"
+### Community 3 - "verify-local.js"
 Cohesion: 0.16
 Nodes (17): cdpJson(), fs, http, main(), mimeType(), os, path, { spawn } (+9 more)
 
-### Community 5 - "renderPdfPageCanvas"
-Cohesion: 0.16
-Nodes (18): blankPageIndicesFromRenderDoc(), canvasHasVisibleInk(), canvasToBlob(), canvasToGrayscale(), canvasToImageBytes(), canvasToPngBytes(), clampChannel(), enhanceCanvas() (+10 more)
+### Community 4 - "isToolCompatible"
+Cohesion: 0.20
+Nodes (18): addFiles(), compatibilityMessage(), firstCompatibleSuggestion(), getFileProfile(), getOptions(), isToolCompatible(), profileSummaryText(), renderFiles() (+10 more)
 
-### Community 6 - "extractTextFromPdfFile"
+### Community 5 - "extractTextFromPdfFile"
+Cohesion: 0.13
+Nodes (16): auditAccessibility(), csvCell(), csvDate(), documentReport(), docxDocumentXml(), docxParagraph(), extractedTextBody(), extractTextFromPdfFile() (+8 more)
+
+### Community 6 - "renderPdfPageCanvas"
 Cohesion: 0.17
-Nodes (13): auditAccessibility(), csvCell(), csvDate(), documentReport(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), makeDocxBlob() (+5 more)
+Nodes (16): blankPageIndicesFromRenderDoc(), canvasHasVisibleInk(), canvasToBlob(), canvasToImageBytes(), canvasToPngBytes(), clampChannel(), enhanceCanvas(), enhanceScan() (+8 more)
 
 ### Community 7 - "openPdfEditorTool"
 Cohesion: 0.22
@@ -105,51 +104,53 @@ Nodes (10): fileExt(), formatBytes(), getImageFiles(), imageStamp(), imageStampP
 Cohesion: 0.20
 Nodes (8): blockedRuntimePatterns, failures, files, fs, ignoredDirs, path, runtimeFiles, textExtensions
 
-### Community 11 - "escapeHtml"
-Cohesion: 0.29
-Nodes (8): compareCanvases(), compareText(), compareVisual(), diffLines(), escapeHtml(), getOptions(), renderPageForCompare(), runSelectedTool()
-
-### Community 12 - "verify-security.test.js"
+### Community 11 - "verify-security.test.js"
 Cohesion: 0.25
 Nodes (6): assert, { createHash }, fs, path, { test }, vm
 
-### Community 13 - "vendor-pdfjs.mjs"
+### Community 12 - "renderTools"
+Cohesion: 0.33
+Nodes (7): matchesTool(), renderCatalogInsights(), renderCategories(), renderTools(), saveFavorites(), setFilter(), toggleFavorite()
+
+### Community 13 - "escapeHtml"
+Cohesion: 0.40
+Nodes (6): compareCanvases(), compareText(), compareVisual(), diffLines(), escapeHtml(), renderPageForCompare()
+
+### Community 14 - "report-output-verification.mjs"
+Cohesion: 0.40
+Nodes (4): active, report, rows, tools
+
+### Community 15 - "vendor-pdfjs.mjs"
 Cohesion: 0.33
 Nodes (5): archive, dest, files, manifest, root
 
-### Community 14 - "pageSizeReport"
+### Community 16 - "pageSizeReport"
 Cohesion: 0.40
 Nodes (5): csvValue(), detectPageFormat(), getPageSizeInfo(), pageSizeReport(), pointsToMm()
-
-### Community 15 - "toggleFavorite"
-Cohesion: 0.50
-Nodes (4): renderCategories(), saveFavorites(), setFilter(), toggleFavorite()
-
-### Community 16 - "docxDocumentXml"
-Cohesion: 0.67
-Nodes (3): docxDocumentXml(), docxParagraph(), xmlEscape()
 
 ### Community 17 - "textToPdf"
 Cohesion: 0.67
 Nodes (3): getTextFiles(), textToPdf(), wrapText()
 
 ## Knowledge Gaps
-- **71 isolated node(s):** `categories`, `state`, `grid`, `categoryBar`, `searchInput` (+66 more)
+- **74 isolated node(s):** `categories`, `state`, `grid`, `categoryBar`, `searchInput` (+69 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `extractTextFromPdfFile`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `escapeHtml`, `pageSizeReport`, `textToPdf`, `blankPdf`?**
+- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `extractTextFromPdfFile`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `escapeHtml`, `pageSizeReport`, `textToPdf`, `blankPdf`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `extractTextFromPdfFile`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `escapeHtml`, `pageSizeReport`?**
+- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `extractTextFromPdfFile`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `escapeHtml`, `pageSizeReport`?**
   _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `savePdfBytes()` connect `downloadBlob` to `app.js`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `textToPdf`, `blankPdf`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
+- **Why does `tools` connect `report-output-verification.mjs` to `app.js`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **What connects `categories`, `state`, `grid` to the rest of the system?**
-  _71 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _74 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `app.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.0392156862745098 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.038461538461538464 - nodes in this community are weakly interconnected._
 - **Should `PageHistory` be split into smaller, more focused modules?**
   _Cohesion score 0.13230769230769232 - nodes in this community are weakly interconnected._
+- **Should `extractTextFromPdfFile` be split into smaller, more focused modules?**
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
