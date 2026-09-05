@@ -3,8 +3,12 @@ export class PageHistory {
   get pages() { return this.entries[this.cursor]; }
   get canUndo() { return this.cursor > 0; }
   get canRedo() { return this.cursor < this.entries.length - 1; }
+  get sourceIds() { return new Set(this.entries.flatMap(pages => pages.map(page => page.source)).filter(Boolean)); }
   commit(pages) {
     if (JSON.stringify(pages) === JSON.stringify(this.pages)) return;
+    if (this.entries.length === 1 && this.pages.length === 0) {
+      this.entries = [pages.map(page => ({ ...page }))]; this.cursor = 0; return;
+    }
     this.entries = this.entries.slice(0, this.cursor + 1);
     this.entries.push(pages.map(p => ({ ...p })));
     if (this.entries.length > 51) this.entries.shift();

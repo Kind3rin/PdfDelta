@@ -14,7 +14,7 @@ export function initWorkspace(bridge) {
   function controls() {
     host.dataset.selected = String(selected.size > 0);
     host.querySelectorAll('[data-edit]').forEach(button => { button.disabled = busy || !selected.size; });
-    $('wsUndo').disabled = busy || !history.canUndo || history.cursor <= 1;
+    $('wsUndo').disabled = busy || !history.canUndo;
     $('wsRedo').disabled = busy || !history.canRedo;
     for (const id of ['wsExport', 'wsContinue', 'wsSelectAll', 'wsCompare']) $(id).disabled = busy || !history.pages.length;
     for (const id of ['wsImport', 'wsDemo', 'wsFromQueue', 'wsUseOutput', 'wsReset']) $(id).disabled = busy;
@@ -63,6 +63,11 @@ export function initWorkspace(bridge) {
   async function render() {
     const epoch = ++generation;
     renderTasks.forEach(task => task.cancel()); renderTasks = [];
+    const retained = history.sourceIds;
+    const obsolete = [...sources.entries()].filter(([id]) => !retained.has(id));
+    obsolete.forEach(([id]) => sources.delete(id));
+    await Promise.allSettled(obsolete.map(([, source]) => source.task.destroy()));
+    if (epoch !== generation) return;
     const grid = $('wsPages');
     grid.replaceChildren();
     $('wsEmpty').hidden = history.pages.length > 0;
@@ -98,7 +103,10 @@ export function initWorkspace(bridge) {
   async function compose() {
     // Preserve document-level data when only viewing a file or a tool result.
     const activeSources = [...new Set(history.pages.map(page => page.source))];
-    if (activeSources.length === 1 && JSON.stringify(history.pages) === baseline) return sources.get(activeSources[0]).file;
+    if (activeSources.length === 1) {
+      const source = sources.get(activeSources[0]);
+      if (history.pages.length === source.doc.getPageCount() && history.pages.every((page, index) => page.index === index && page.rotation === source.doc.getPage(index).getRotation().angle)) return source.file;
+    }
     const result = await window.PDFLib.PDFDocument.create();
     for (const [i, item] of history.pages.entries()) {
       checkCancelled();
@@ -121,7 +129,7 @@ export function initWorkspace(bridge) {
   $('wsImport').onclick = () => $('wsFiles').click();
   $('wsFromQueue').onclick = () => void open(bridge.getFiles());
   $('wsCancel').onclick = () => { cancel = true; status('Annullamento in corso…'); };
-  $('wsUndo').onclick = () => { if (history.cursor > 1) history.undo(); selected.clear(); void render(); status('Modifica annullata.'); };
+  $('wsUndo').onclick = () => { history.undo(); selected.clear(); void render(); status('Modifica annullata.'); };
   $('wsRedo').onclick = () => { history.redo(); selected.clear(); void render(); status('Modifica ripristinata.'); };
   $('wsSelectAll').onclick = () => {
     if (selected.size === history.pages.length) selected.clear();
@@ -209,7 +217,7 @@ export function initWorkspace(bridge) {
   host.addEventListener('keydown', event => {
     if (busy || /INPUT|SELECT|TEXTAREA/.test(event.target.tagName)) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-      event.preventDefault(); if (event.shiftKey) history.redo(); else if (history.cursor > 1) history.undo(); selected.clear(); void render();
+      event.preventDefault(); if (event.shiftKey) history.redo(); else history.undo(); selected.clear(); void render();
     }
   });
   void render();
