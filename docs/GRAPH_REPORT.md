@@ -9,7 +9,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `78ca9a59`
+- Built from commit: `72f5b2cc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,17 +20,17 @@
 - isToolCompatible
 - verify-local.js
 - renderPdfPageCanvas
-- extractTextFromPdfFile
 - openPdfEditorTool
 - removeAttachments
+- extractTextFromPdfFile
 - fileExt
 - audit-zero-cost.js
 - verify-security.test.js
 - escapeHtml
+- docxDocumentXml
 - report-output-verification.mjs
 - vendor-pdfjs.mjs
 - pageSizeReport
-- documentReport
 - textToPdf
 - sw.js
 - blankPdf
@@ -84,17 +84,17 @@ Nodes (17): cdpJson(), fs, http, main(), mimeType(), os, path, { spawn } (+9 mor
 Cohesion: 0.17
 Nodes (16): blankPageIndicesFromRenderDoc(), canvasHasVisibleInk(), canvasToBlob(), canvasToImageBytes(), canvasToPngBytes(), clampChannel(), enhanceCanvas(), enhanceScan() (+8 more)
 
-### Community 6 - "extractTextFromPdfFile"
-Cohesion: 0.20
-Nodes (10): auditAccessibility(), docxDocumentXml(), docxParagraph(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), makeDocxBlob(), pdfTextItemsToLines() (+2 more)
-
-### Community 7 - "openPdfEditorTool"
+### Community 6 - "openPdfEditorTool"
 Cohesion: 0.22
 Nodes (11): clearCurrentEditorPage(), drawEditorOverlay(), editorCanvasPoint(), openPdfEditorTool(), renderEditorPage(), resetEditor(), safePdfText(), saveEditedPdf() (+3 more)
 
-### Community 8 - "removeAttachments"
+### Community 7 - "removeAttachments"
 Cohesion: 0.27
 Nodes (10): attachmentsReport(), collectPdfNameTreeNames(), deletePdfKeys(), embeddedFileNames(), lookupPdfKey(), pdfArrayItem(), pdfName(), pdfObjectText() (+2 more)
+
+### Community 8 - "extractTextFromPdfFile"
+Cohesion: 0.18
+Nodes (12): auditAccessibility(), csvCell(), csvDate(), documentReport(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), pdfTextItemsToLines() (+4 more)
 
 ### Community 9 - "fileExt"
 Cohesion: 0.27
@@ -112,21 +112,21 @@ Nodes (6): assert, { createHash }, fs, path, { test }, vm
 Cohesion: 0.40
 Nodes (6): compareCanvases(), compareText(), compareVisual(), diffLines(), escapeHtml(), renderPageForCompare()
 
-### Community 13 - "report-output-verification.mjs"
+### Community 13 - "docxDocumentXml"
+Cohesion: 0.50
+Nodes (4): docxDocumentXml(), docxParagraph(), makeDocxBlob(), xmlEscape()
+
+### Community 14 - "report-output-verification.mjs"
 Cohesion: 0.40
 Nodes (4): active, report, rows, tools
 
-### Community 14 - "vendor-pdfjs.mjs"
+### Community 15 - "vendor-pdfjs.mjs"
 Cohesion: 0.33
 Nodes (5): archive, dest, files, manifest, root
 
-### Community 15 - "pageSizeReport"
+### Community 16 - "pageSizeReport"
 Cohesion: 0.40
 Nodes (5): csvValue(), detectPageFormat(), getPageSizeInfo(), pageSizeReport(), pointsToMm()
-
-### Community 16 - "documentReport"
-Cohesion: 0.33
-Nodes (6): csvCell(), csvDate(), documentReport(), readPdfMetadata(), wordCountFromText(), wordCountReport()
 
 ### Community 17 - "textToPdf"
 Cohesion: 0.67
@@ -140,9 +140,9 @@ Nodes (3): getTextFiles(), textToPdf(), wrapText()
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `extractTextFromPdfFile`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `escapeHtml`, `pageSizeReport`, `documentReport`, `textToPdf`, `blankPdf`?**
+- **Why does `downloadBlob()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `extractTextFromPdfFile`, `fileExt`, `escapeHtml`, `pageSizeReport`, `textToPdf`, `blankPdf`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `extractTextFromPdfFile`, `openPdfEditorTool`, `removeAttachments`, `fileExt`, `escapeHtml`, `pageSizeReport`, `documentReport`?**
+- **Why does `getPdfFiles()` connect `downloadBlob` to `app.js`, `isToolCompatible`, `renderPdfPageCanvas`, `openPdfEditorTool`, `removeAttachments`, `extractTextFromPdfFile`, `fileExt`, `escapeHtml`, `pageSizeReport`?**
   _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **Why does `tools` connect `report-output-verification.mjs` to `app.js`?**
   _High betweenness centrality (0.010) - this node is a cross-community bridge._

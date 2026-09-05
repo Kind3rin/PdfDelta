@@ -163,7 +163,8 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Annulla/Ripeti sincronizzano i file di input e il relativo elenco con le sorgenti ripristinate, senza reimportare e perdere le modifiche alle pagine.
 - La scorciatoia da tastiera usa lo stesso percorso; il ripristino viene ignorato durante un'elaborazione attiva.
 - Regressione browser: risultato con metadati → annulla → ripeti → annulla da tastiera → download integro → nuovo strumento.
-- Restano aperte le verifiche dei confronti tra più documenti dopo modifiche strutturali e delle operazioni concorrenti.
+- Confronti tra documenti modificati: preparazione separata delle sorgenti, con ordine e rotazioni correnti. Verificato report visuale tra due PDF dopo rotazione, conservando byte e nome del PDF non modificato.
+- Restano aperte le verifiche estese di rimozioni/riordini tra sorgenti e delle operazioni concorrenti.
 
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

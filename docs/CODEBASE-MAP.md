@@ -99,3 +99,9 @@ sorgenti ripristinate, preservando gli input non PDF. Non riapre i PDF:
 ordine e rotazioni restano quelli della cronologia. Il ripristino è bloccato
 mentre uno strumento sta elaborando. La suite browser verifica entrambe le
 direzioni della cronologia e il download del documento originale completo.
+
+Gli strumenti con più input (esclusa l'unione) ricevono i PDF modificati
+separatamente tramite `materializeFiles()`. Ogni sorgente mantiene nome,
+ordine relativo e rotazioni delle pagine; una sorgente intatta restituisce il
+File originale. Immagini e TXT restano disponibili agli strumenti misti.
+Il confronto visuale viene verificato su due documenti, uno ruotato e uno intatto.
