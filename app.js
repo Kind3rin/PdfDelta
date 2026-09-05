@@ -2017,7 +2017,7 @@ async function openPdfEditorTool() {
 
   state.editor.file = file;
   state.editor.pdfBytes = await file.arrayBuffer();
-  state.editor.pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(state.editor.pdfBytes.slice(0)) }).promise;
+  state.editor.pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: new Uint8Array(state.editor.pdfBytes.slice(0)) }).promise;
   state.editor.pageNumber = 1;
   state.editor.pageCount = state.editor.pdf.numPages;
   state.editor.marks = [];
@@ -2542,7 +2542,7 @@ function extractedTextBody(text) {
 async function extractTextFromPdfFile(file) {
   if (!window.pdfjsLib) throw new Error("PDF.js non caricato. Controlla la connessione.");
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+  const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
   const pages = [];
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
     const page = await pdf.getPage(pageNumber);
@@ -2800,7 +2800,7 @@ async function pdfToImages(options) {
   const scale = Number.parseFloat(options.scale || "1.5");
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
       const canvas = await renderPdfPageCanvas(page, scale);
@@ -2821,7 +2821,7 @@ async function pdfToJpg(options) {
 
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
       const canvas = await renderPdfPageCanvas(page, scale);
@@ -2843,7 +2843,7 @@ async function pdfToWebp(options) {
 
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
       const canvas = await renderPdfPageCanvas(page, scale);
@@ -2884,7 +2884,7 @@ async function pdfToSocialImages(options) {
 
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
 
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
@@ -2929,7 +2929,7 @@ async function pdfToLongJpg(options) {
 
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
     const canvases = [];
     let width = 0;
     let height = 0;
@@ -2987,7 +2987,7 @@ async function contactSheet(options) {
 
   for (const file of getPdfFiles()) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const source = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+    const source = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
     const output = await PDFDocument.create();
     const font = await output.embedFont(StandardFonts.Helvetica);
     let sheetPage;
@@ -3667,7 +3667,7 @@ async function autoTrim(options) {
   const padding = Number.parseInt(options.padding || "12", 10);
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const renderDoc = await window.pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    const renderDoc = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes.slice() }).promise;
     const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const pages = pdfDoc.getPages();
     for (let pageNumber = 1; pageNumber <= renderDoc.numPages; pageNumber += 1) {
@@ -3976,7 +3976,7 @@ async function compressScan(options) {
 
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const source = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    const source = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes }).promise;
     const output = await PDFDocument.create();
 
     for (let pageNumber = 1; pageNumber <= source.numPages; pageNumber += 1) {
@@ -4005,7 +4005,7 @@ async function sanitizeRaster(options) {
   const scale = Number.parseFloat(options.scale || "1.25");
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const source = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    const source = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes }).promise;
     const output = await PDFDocument.create();
     for (let pageNumber = 1; pageNumber <= source.numPages; pageNumber += 1) {
       const sourcePage = await source.getPage(pageNumber);
@@ -4079,7 +4079,7 @@ async function enhanceScan(options) {
 
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const source = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    const source = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes }).promise;
     const output = await PDFDocument.create();
 
     for (let pageNumber = 1; pageNumber <= source.numPages; pageNumber += 1) {
@@ -4113,7 +4113,7 @@ async function grayscaleRaster(options) {
   const scale = Number.parseFloat(options.scale || "1.25");
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const source = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    const source = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes }).promise;
     const output = await PDFDocument.create();
     for (let pageNumber = 1; pageNumber <= source.numPages; pageNumber += 1) {
       const sourcePage = await source.getPage(pageNumber);
@@ -4221,8 +4221,8 @@ async function compareVisual(options) {
   const threshold = Number.parseInt(options.sensitivity || "32", 10);
   const firstBytes = new Uint8Array(await firstFile.arrayBuffer());
   const secondBytes = new Uint8Array(await secondFile.arrayBuffer());
-  const first = await window.pdfjsLib.getDocument({ data: firstBytes }).promise;
-  const second = await window.pdfjsLib.getDocument({ data: secondBytes }).promise;
+  const first = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: firstBytes }).promise;
+  const second = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: secondBytes }).promise;
   const maxPages = Math.max(first.numPages, second.numPages);
   const rows = [];
   let changedPages = 0;
@@ -4293,7 +4293,7 @@ async function pageIndicesContainingText(file, query) {
   if (!normalizedQuery) throw new Error("Inserisci un testo da cercare.");
 
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+  const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: bytes }).promise;
   const matches = [];
 
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
@@ -4406,7 +4406,7 @@ async function removeBlankPages(options) {
   const threshold = Number.parseFloat(options.threshold || "0.003");
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const sourceForRender = await window.pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    const sourceForRender = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes.slice() }).promise;
     const sourceForCopy = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const blank = new Set(await blankPageIndicesFromRenderDoc(sourceForRender, threshold));
     const keep = sourceForCopy.getPageIndices().filter((index) => !blank.has(index));
@@ -4445,7 +4445,7 @@ async function splitBlankPages(options) {
 
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const sourceForRender = await window.pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    const sourceForRender = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes.slice() }).promise;
     const sourceForCopy = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const blank = await blankPageIndicesFromRenderDoc(sourceForRender, threshold);
     const ranges = rangesBetweenBlankPages(blank, sourceForCopy.getPageCount());
@@ -4607,7 +4607,7 @@ async function removeDuplicates() {
   const outputs = [];
   for (const file of getPdfFiles()) {
     const pdfBytes = new Uint8Array(await file.arrayBuffer());
-    const renderDoc = await window.pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    const renderDoc = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: pdfBytes.slice() }).promise;
     const source = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const seen = new Set();
     const keep = [];

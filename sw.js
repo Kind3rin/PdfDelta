@@ -1,4 +1,5 @@
-const CACHE_NAME = "pdfdelta-static-v37";
+const CACHE_PREFIX = "pdfdelta-static-";
+const CACHE_NAME = `${CACHE_PREFIX}v38`;
 const ASSETS = [
   "./",
   "./index.html",
@@ -15,6 +16,7 @@ const ASSETS = [
   "./vendor/qrcode-generator.js",
   "./vendor/THIRD_PARTY.md",
 ];
+const ASSET_URLS = new Set(ASSETS.map((asset) => new URL(asset, self.registration.scope).href));
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -24,20 +26,37 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // Cache only the application shell, never documents or other applications.
+  if (!ASSET_URLS.has(event.request.url)) return;
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(event.request);
+      // Keep each deployed shell coherent: activation switches the entire version.
+      if (cached) return cached;
+      try {
+        const response = await fetch(event.request);
+        if (response.status === 200 && response.type === "basic" && !response.redirected) {
+          try {
+            await cache.put(event.request, response.clone());
+          } catch {
+            // Storage quota must not prevent an online response from being served.
+          }
+        }
         return response;
-      })
-      .catch(() => caches.match(event.request))
+      } catch {
+        return new Response("Risorsa non disponibile offline. Riconnettiti e riprova.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
+      }
+    })()
   );
 });
