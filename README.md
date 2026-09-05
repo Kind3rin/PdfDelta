@@ -77,11 +77,11 @@ la versione fissata dal registro npm, verifica SHA-512 e registra i checksum dei
 
 ## Workspace visuale
 
-1. Premi **Aggiungi PDF**, trascina documenti o prova il documento dimostrativo.
+1. Premi **Aggiungi file**, trascina documenti o prova il documento dimostrativo.
 2. Seleziona le miniature: ruota, sposta prima/dopo o trascina per riordinare.
 3. **Annulla/Ripeti** conserva fino a 50 modifiche; **Prima / dopo** confronta la pagina selezionata.
-4. **Esporta PDF** crea il documento; **Continua negli strumenti** lo rende disponibile al catalogo.
-5. **Apri ultimo risultato** riporta un PDF prodotto nel workspace, senza upload ripetuto.
+4. Scegli un'azione accanto alle pagine; **Altri strumenti…** apre il catalogo con ricerca.
+5. Le modifiche PDF tornano automaticamente nel documento. **Scarica PDF** salva il risultato finale; immagini, ZIP e altri formati vengono scaricati direttamente.
 
 Limiti: 100 MB per file, 200 MB per sessione, 1000 pagine; miniature mostrate a
 gruppi di 60. Sessione solo in memoria: esportare prima di chiudere la pagina.
@@ -105,11 +105,11 @@ Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie local
 
 ## Feature attive
 
-- Workspace visuale con anteprime, riordino, selezione, rotazione, rimozione, undo/redo e ponte verso gli strumenti.
+- Workspace unico con anteprime, riordino, selezione, rotazione, rimozione, undo/redo e strumenti integrati.
 - Unisci PDF e intercala due PDF fronte/retro.
 - Unisci PDF e immagini nello stesso documento mantenendo l'ordine della coda.
 - Editor visuale per compilare, firmare e disegnare su PDF nel browser.
-- Cockpit applicativo ridisegnato da zero: carica file, scegli azione, scarica.
+- Percorso unico: apri i file, modifica, scarica. Editor nello stesso spazio e catalogo su richiesta.
 - Suggerimenti automatici in base ai file caricati e auto-selezione dell'azione piu probabile.
 - Coda intelligente con riepilogo file e azioni compatibili.
 - Catalogo pulito: le funzioni bloccate non confondono il flusso principale e restano in Roadmap/ricerca.

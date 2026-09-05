@@ -54,10 +54,10 @@ e nomi dei risultati; non certificano fedeltà e integrità di ogni output.
 ## Fase 2 — semplicità e identità visiva
 
 - [x] Workspace centrato sul documento: miniature, selezione e riordino pagine.
-- [ ] Azioni principali evidenti; impostazioni avanzate solo quando necessarie.
+- [x] Azioni principali evidenti; impostazioni avanzate solo quando necessarie.
 - [ ] Anteprima risultato, confronto prima/dopo, undo/redo e azioni concatenate.
-  Disponibili anteprima pagine, confronto rotazione, cronologia e ponte esplicito agli strumenti.
-  Confronto completo delle trasformazioni e integrazione diretta dell'editor restano da ampliare.
+  Disponibili anteprima pagine, confronto rotazione, cronologia, editor integrato e risultati applicati automaticamente.
+  Confronto completo e annullamento delle trasformazioni degli strumenti restano da ampliare.
 - [ ] Avanzamento reale, annullamento e messaggi di recupero utilizzabili.
   Disponibili in import/export workspace; da estendere agli strumenti storici.
 - [ ] Tastiera, focus, contrasto, touch e layout mobile verificati.
@@ -115,6 +115,14 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Le restanti caselle del piano rimangono aperte; nessuna dichiarazione enterprise-ready.
 
 ## Chiusura dei cicli
+
+### Correzione UX — flusso unico
+
+- Rimossi dalla vista il secondo caricamento, il cockpit duplicato e i passaggi manuali tra strumenti e pagine.
+- Azioni contestuali accanto al documento, catalogo in dialogo e download finale esplicito.
+- Desktop e viewport mobile verificati visivamente; suite strumenti e workspace superate localmente.
+- Test del passaggio riordino/rotazione → numerazione → risultato applicato, oltre a export e offline.
+- Pubblicazione del ciclo in corso; verifica pubblica richiesta prima della chiusura.
 
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

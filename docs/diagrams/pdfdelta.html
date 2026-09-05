@@ -3771,7 +3771,7 @@
       <p class="subtitle">Workspace visuale, strumenti PDF e distribuzione statica</p>
     </div>
 
-    <script id="archify-guided-views-data" type="application/json">[{"id":"edit","label":"Modifica locale","focus":["files","workspace","engine","output"],"note":"I documenti vengono letti e trasformati nella memoria del browser."},{"id":"history","label":"Stato e strumenti","focus":["workspace","history","tools"],"note":"Cronologia di descrittori pagina e ponte esplicito verso gli strumenti."},{"id":"delivery","label":"Distribuzione","focus":["hosting","cache","workspace"],"note":"GitHub Pages distribuisce codice e librerie. La cache conserva solo asset statici."}]</script>
+    <script id="archify-guided-views-data" type="application/json">[{"id":"edit","label":"Modifica locale","focus":["files","workspace","engine","output"],"note":"I documenti vengono letti e trasformati nella memoria del browser."},{"id":"history","label":"Stato e strumenti","focus":["workspace","history","tools"],"note":"Cronologia pagine e coordinamento automatico tramite workspace-flow.mjs."},{"id":"delivery","label":"Distribuzione","focus":["hosting","cache","workspace"],"note":"GitHub Pages distribuisce codice e librerie. La cache conserva solo asset statici."}]</script>
     <div class="guided-views no-print" id="guided-views" hidden aria-label="Guided diagram views">
       <button id="guided-view-prev" type="button" aria-label="Previous guided view" title="Previous guided view ([)">&#8592;</button>
       <div class="guided-view-copy">
@@ -3863,8 +3863,8 @@
         <text data-detail="context" x="110" y="346" class="t-muted" font-size="9" text-anchor="middle">File API</text>
         </g>
 
-        <g id="node-workspace" data-node-id="workspace" data-node-label="Workspace" tabindex="0" role="button" aria-label="Focus Workspace, workspace.mjs, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="workspace.mjs" data-node-context="Architecture component">
-          <title>Workspace · workspace.mjs · Architecture component</title>
+        <g id="node-workspace" data-node-id="workspace" data-node-label="Workspace" tabindex="0" role="button" aria-label="Focus Workspace, workspace + flow, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="workspace + flow" data-node-context="Architecture component">
+          <title>Workspace · workspace + flow · Architecture component</title>
           <rect x="260" y="300" width="160" height="64" rx="6" class="c-mask"/>
           <rect x="260" y="300" width="160" height="64" rx="6" class="c-frontend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(266 306) scale(0.6875)">
@@ -3874,7 +3874,7 @@
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
           <text data-detail-anchor x="340" y="330" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Workspace</text>
-        <text data-detail="context" x="340" y="346" class="t-muted" font-size="9" text-anchor="middle">workspace.mjs</text>
+        <text data-detail="context" x="340" y="346" class="t-muted" font-size="9" text-anchor="middle">workspace + flow</text>
         </g>
 
         <g id="node-engine" data-node-id="engine" data-node-label="Motore locale" tabindex="0" role="button" aria-label="Focus Motore locale, pdf-engine.mjs, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="pdf-engine.mjs" data-node-context="Architecture component">
@@ -4164,8 +4164,8 @@
         </div>
         <ul>
           <li>&bull; Aggiungi, seleziona, riordina e ruota pagine</li>
-          <li>&bull; Esporta oppure continua negli strumenti</li>
-          <li>&bull; Riapri un risultato senza caricarlo di nuovo</li>
+          <li>&bull; Scegli azioni nello stesso workspace</li>
+          <li>&bull; Risultati applicati automaticamente; scarica alla fine</li>
         </ul>
       </div>
 

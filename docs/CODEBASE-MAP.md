@@ -10,7 +10,8 @@ Sorgente versionata: `diagrams/pdfdelta.architecture.json`.
 | `bootstrap.mjs` | Carica motore, applicazione e workspace nell'ordine richiesto |
 | `pdf-engine.mjs` | PDF.js 6.3.289, worker, risorse locali, input PDF e rilascio lettori |
 | `workspace-model.mjs` | Cronologia immutabile di descrittori pagina, rotazione e riordino |
-| `workspace.mjs` | Sessione, miniature, selezione, import atomico, esportazione e ponte strumenti |
+| `workspace.mjs` | Sessione, miniature, selezione, import atomico ed esportazione |
+| `workspace-flow.mjs` | Flusso unico, catalogo su richiesta, editor integrato e sincronizzazione strumenti/documento |
 | `tool-catalog.mjs` | Catalogo dichiarativo degli strumenti |
 | `app.js` | Coda, opzioni, editor e handler delle operazioni esistenti |
 | `sw.js` | Shell offline versionata e cache limitata agli asset dichiarati |
@@ -20,8 +21,9 @@ I descrittori conservano sorgente, indice e rotazione: annullare non richiede
 ricomprimere il PDF. Durante l'export pdf-lib copia le pagine nell'ordine attuale;
 PDF.js serve per le anteprime e la lettura. Non è un backend.
 
-Il ponte verso il catalogo sostituisce la coda con un File generato localmente.
-L'evento `pdfdelta-output` rende l'ultimo risultato PDF riapribile nel workspace.
+Il coordinatore prepara un File dalle pagine modificate prima di eseguire uno strumento.
+L'evento `pdfdelta-output` applica automaticamente il risultato PDF al workspace;
+il download finale è esplicito. Il catalogo vive in un dialogo, l'editor accanto alle azioni.
 File cifrati vengono rifiutati dal motore di modifica, senza ignorare la cifratura.
 
 I task PDF.js del workspace hanno vita di sessione e vengono distrutti quando la
