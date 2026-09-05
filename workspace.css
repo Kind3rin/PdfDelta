@@ -54,3 +54,42 @@
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 #workspace-title { font-size: clamp(24px, 3vw, 34px); }
+
+/* A single document flow. The former cockpit controls are reused in the sidebar. */
+#wsFromQueue, #wsContinue, #wsUseOutput { display: none !important; }
+.visual-workspace:not(.flow-loaded) .ws-body { display: block; }
+.visual-workspace:not(.flow-loaded) .ws-canvas-area { min-height: 350px; display: grid; place-items: center; }
+.flow-loaded .ws-body { grid-template-columns: 290px minmax(0, 1fr); }
+.ws-heading > div:first-child { min-width: 0; }
+.ws-heading h1 { max-width: 850px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(20px, 2.4vw, 29px); }
+.ws-sidebar > h2, .ws-sidebar > p { display: none; }
+.ws-sidebar .run-card { min-height: 0; margin: 20px 0; padding: 16px 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; background: transparent; }
+.ws-sidebar .run-card h2 { font-size: 17px; margin: 0 0 12px; }
+.ws-sidebar .run-card .card-kicker, .ws-sidebar #selectedTool, .ws-sidebar #toolBrief, .ws-sidebar #compatibilityNote { display: none !important; }
+.ws-sidebar .run-card:has(#runTool:disabled) #compatibilityNote { display: block !important; }
+.ws-sidebar #runTool { width: 100%; text-align: center; background: #193e56; color: white; }
+.ws-sidebar #resultPanel { font-size: 12px; overflow-wrap: anywhere; }
+.flow-actions h2 { font-size: 17px; margin: 0 0 12px; }
+.flow-actions button { display: block; width: 100%; text-align: left; }
+.flow-files { border-top: 1px solid var(--line); padding-top: 12px; }
+.flow-files .file-list li { display: flex; flex-wrap: wrap; font-size: 12px; gap: 4px; }
+.flow-files .file-name { min-width: 0; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.visual-workspace[data-selected="false"] [data-edit] { display: none; }
+.flow-loaded .page-tile small { display: none; }
+.flow-editing .ws-toolbar { display: none; }
+.flow-editing .ws-canvas-area { max-height: none; }
+.flow-editing #editor { margin: 0; padding: 0; background: transparent; border: 0; }
+.flow-editing .editor-panel { margin-top: 12px; }
+#flowToolPicker { width: min(1100px, 94vw); max-height: 88vh; padding: 22px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; }
+#flowToolPicker::backdrop { background: #15293ba8; }
+#flowToolPicker #strumenti { margin: 12px 0 0; padding: 0; border: 0; box-shadow: none; }
+.flow-close { float: right; padding: 10px 18px; min-height: 44px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; background: var(--surface); color: var(--ink); }
+@media (max-width: 700px) {
+  .flow-loaded .ws-body { display: flex; flex-direction: column; }
+  .flow-loaded .ws-sidebar { order: -2; }
+  .flow-loaded .ws-canvas-area { max-height: 460px; }
+  .flow-loaded .ws-sidebar { border-top: 1px solid var(--line); }
+  .flow-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .flow-actions h2 { grid-column: 1 / -1; }
+  .flow-actions button { margin: 0; width: 100%; }
+}

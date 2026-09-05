@@ -38,7 +38,9 @@ async function main() {
       const $ = id => document.getElementById(id);
       const until = async fn => { const end = Date.now() + 15000; while (!fn()) { if (Date.now() > end) throw new Error('Attesa scaduta: ' + fn); await new Promise(r => setTimeout(r, 50)); } };
       const assert = (value, label) => { if (!value) throw new Error(label); };
-      await until(() => $('wsDemo').onclick);
+      await until(() => $('visualWorkspace').dataset.flow === 'ready');
+      assert(getComputedStyle($('workspace')).display === 'none', 'No second upload workflow');
+      assert(getComputedStyle($('wsContinue')).display === 'none', 'No manual bridge');
       assert(pdfjsLib.version === '6.3.289', 'PDF.js version');
       $('wsDemo').click();
       await until(() => document.querySelectorAll('[data-page]').length === 3 && !$('wsExport').disabled);
@@ -59,20 +61,27 @@ async function main() {
       const task = pdfjsLib.getDocument({ data: bytes.slice(), owner: 'workspace' }); const reader = await task.promise;
       const text = (await (await reader.getPage(2)).getTextContent()).items.map(i => i.str).join(' ');
       assert(text.includes('Proposta di progetto'), 'Output text preservation'); await task.destroy();
-      await until(() => !$('wsContinue').disabled);
-      $('wsContinue').click(); await until(() => !$('wsContinue').disabled);
-      assert(document.getElementById('fileList').textContent.includes('pdfdelta-workspace.pdf'), 'Tool bridge');
-      $('wsUseOutput').click(); await until(() => !$('wsExport').disabled);
-      assert($('wsSummary').textContent.startsWith('3 pagine'), 'Result roundtrip');
+      await until(() => !$('wsExport').disabled);
+      $('flowAllTools').click();
+      document.querySelector('[data-tool="page-numbers"]').click();
+      assert(!$('flowToolPicker').open, 'Picker closes after selection');
+      $('runTool').click();
+      await until(() => $('wsStatus').textContent.startsWith('Modifica applicata.'));
+      assert($('wsSummary').textContent.startsWith('3 pagine'), 'Automatic result roundtrip');
+      assert($('fileList').textContent.includes('pdfdelta-workspace'), 'Current edits passed to tool');
       let rejected = false;
       try { await PdfEngine.readEditable(new File(['not a pdf'], 'broken.pdf')); } catch { rejected = true; }
       assert(rejected, 'Malformed document rejection');
       const bad = new DataTransfer(); bad.items.add(new File(['invalid'], 'invalid.pdf'));
       $('wsFiles').files = bad.files; $('wsFiles').dispatchEvent(new Event('change'));
+      await until(() => $('wsStatus').textContent.includes('non contiene'));
       await until(() => !$('wsExport').disabled);
       assert($('wsSummary').textContent.startsWith('3 pagine'), 'Failed import preserves session');
       const cancelled = new DataTransfer(); cancelled.items.add(new File([bytes], 'cancel.pdf', { type: 'application/pdf' }));
-      $('wsFiles').files = cancelled.files; $('wsFiles').dispatchEvent(new Event('change')); $('wsCancel').click();
+      const cancelObserver = new MutationObserver(() => { if (!$('wsCancel').hidden) { $('wsCancel').click(); cancelObserver.disconnect(); } });
+      cancelObserver.observe($('wsCancel'), { attributes: true });
+      $('wsFiles').files = cancelled.files; $('wsFiles').dispatchEvent(new Event('change'));
+      await until(() => $('wsStatus').textContent.startsWith('Operazione annullata.'));
       await until(() => !$('wsExport').disabled);
       assert($('wsSummary').textContent.startsWith('3 pagine'), 'Cancelled import preserves session');
       document.getElementById('visualWorkspace').scrollIntoView();
@@ -87,13 +96,32 @@ async function main() {
       const shot = await send('Page.captureScreenshot', { format: 'png' });
       fs.writeFileSync(`dist/verification/workspace-${name}.png`, Buffer.from(shot.data, 'base64'));
     }
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      const until = async fn => { const end = Date.now() + 15000; while (!fn()) { if (Date.now() > end) throw new Error('Mobile: ' + fn); await new Promise(r => setTimeout(r, 25)); } };
+      document.querySelector('[data-page]').click(); document.querySelector('[data-edit="rotate"]').click();
+      await until(() => document.querySelectorAll('[data-page]').length === 3);
+      const extra = await PDFLib.PDFDocument.create(); extra.addPage([300, 400]);
+      const transfer = new DataTransfer(); transfer.items.add(new File([await extra.save()], 'extra.pdf', { type: 'application/pdf' }));
+      $('wsFiles').files = transfer.files; $('wsFiles').dispatchEvent(new Event('change'));
+      await until(() => document.querySelectorAll('[data-page]').length === 4 && !$('wsExport').disabled);
+      const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
+      $('wsExport').click(); const pdf = await PDFLib.PDFDocument.load(await (await output).arrayBuffer());
+      if (pdf.getPageCount() !== 4 || pdf.getPage(0).getRotation().angle !== 90) throw new Error('Adding files lost existing edits');
+      await until(() => !$('wsExport').disabled);
+      document.querySelector('[data-flow-tool="edit-pdf"]').click();
+      await until(() => !$('editor').hidden && $('editorInkCanvas').width > 0 && !$('runTool').disabled);
+      if (document.documentElement.scrollWidth > document.documentElement.clientWidth) throw new Error('Mobile editor overflow');
+      $('flowBack').click();
+      if (!$('editor').hidden || $('wsPages').hidden) throw new Error('Return to pages failed');
+    })()`);
     await evaluate('navigator.serviceWorker.ready.then(() => true)');
     await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
     await send('Page.reload');
     await new Promise(resolve => setTimeout(resolve, 1000));
     await evaluate(`(async () => {
       const end = Date.now() + 15000;
-      while (!document.getElementById('wsDemo')?.onclick) { if (Date.now() > end) throw new Error('Offline boot failed'); await new Promise(r => setTimeout(r, 50)); }
+      while (document.getElementById('visualWorkspace')?.dataset.flow !== 'ready') { if (Date.now() > end) throw new Error('Offline boot failed'); await new Promise(r => setTimeout(r, 50)); }
       document.getElementById('wsDemo').click();
       while (document.querySelectorAll('[data-page]').length !== 3 || document.getElementById('wsExport').disabled) { if (Date.now() > end) throw new Error('Offline PDF failed'); await new Promise(r => setTimeout(r, 50)); }
     })()`);

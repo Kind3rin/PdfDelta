@@ -8,12 +8,13 @@ export function initWorkspace(bridge) {
   const sources = new Map();
   const selected = new Set();
   let serial = 0, busy = false, cancel = false, generation = 0, limit = 60, lastOutput;
-  let renderTasks = [];
+  let renderTasks = [], baseline = '';
   const status = message => { $('wsStatus').textContent = message; };
   const title = () => sources.get(history.pages[0]?.source)?.file.name || 'Il tuo documento';
   function controls() {
+    host.dataset.selected = String(selected.size > 0);
     host.querySelectorAll('[data-edit]').forEach(button => { button.disabled = busy || !selected.size; });
-    $('wsUndo').disabled = busy || !history.canUndo;
+    $('wsUndo').disabled = busy || !history.canUndo || history.cursor <= 1;
     $('wsRedo').disabled = busy || !history.canRedo;
     for (const id of ['wsExport', 'wsContinue', 'wsSelectAll', 'wsCompare']) $(id).disabled = busy || !history.pages.length;
     for (const id of ['wsImport', 'wsDemo', 'wsFromQueue', 'wsUseOutput', 'wsReset']) $(id).disabled = busy;
@@ -25,11 +26,11 @@ export function initWorkspace(bridge) {
   async function job(action) {
     if (busy) return;
     busy = true; cancel = false; controls();
-    try { await action(); } catch (error) { status(error.message); }
+    try { await action(); return true; } catch (error) { status(error.message); return false; }
     finally { busy = false; controls(); }
   }
   async function open(files, replace = false) {
-    await job(async () => {
+    return job(async () => {
       const incoming = [...files];
       if (!incoming.length) throw new Error('Seleziona almeno un PDF o caricalo dagli strumenti.');
       const total = [...sources.values()].reduce((n, s) => n + s.file.size, 0) + incoming.reduce((n, f) => n + f.size, 0);
@@ -49,7 +50,8 @@ export function initWorkspace(bridge) {
         }
         checkCancelled();
         staged.forEach(s => sources.set(s.key, s));
-        history.commit(pages); selected.clear(); limit = 60;
+        const hadEdits = JSON.stringify(history.pages) !== baseline && history.pages.length > 0;
+        history.commit(pages); if (replace || !hadEdits) baseline = JSON.stringify(history.pages); selected.clear(); limit = 60;
         await render();
         status('Documento pronto. Seleziona le pagine per organizzarle.');
       } catch (error) {
@@ -116,7 +118,7 @@ export function initWorkspace(bridge) {
   $('wsImport').onclick = () => $('wsFiles').click();
   $('wsFromQueue').onclick = () => void open(bridge.getFiles());
   $('wsCancel').onclick = () => { cancel = true; status('Annullamento in corso…'); };
-  $('wsUndo').onclick = () => { history.undo(); selected.clear(); void render(); status('Modifica annullata.'); };
+  $('wsUndo').onclick = () => { if (history.cursor > 1) history.undo(); selected.clear(); void render(); status('Modifica annullata.'); };
   $('wsRedo').onclick = () => { history.redo(); selected.clear(); void render(); status('Modifica ripristinata.'); };
   $('wsSelectAll').onclick = () => {
     if (selected.size === history.pages.length) selected.clear();
@@ -165,7 +167,7 @@ export function initWorkspace(bridge) {
   });
   $('wsUseOutput').onclick = () => void open([lastOutput], true);
   $('wsMore').onclick = () => { limit += 60; void render(); };
-  $('wsReset').onclick = () => void job(async () => {
+  $('wsReset').onclick = () => job(async () => {
     ++generation; renderTasks.forEach(task => task.cancel());
     await Promise.allSettled([...sources.values()].map(s => s.task.destroy()));
     sources.clear(); history.entries = [[]]; history.cursor = 0; selected.clear();
@@ -185,7 +187,8 @@ export function initWorkspace(bridge) {
       page.drawText(`${index + 1}`, { x: 500, y: 40, size: 14, font });
     }
     const file = new File([await doc.save()], 'Proposta-studio.pdf', { type: 'application/pdf' });
-    busy = false; await open([file]);
+    busy = false;
+    if (await open([file])) window.dispatchEvent(new CustomEvent('pdfdelta-demo', { detail: file }));
   });
   $('wsCompare').onclick = () => void job(async () => {
     const item = history.pages.find(p => selected.has(p.id)) || history.pages[0];
@@ -203,8 +206,16 @@ export function initWorkspace(bridge) {
   host.addEventListener('keydown', event => {
     if (busy || /INPUT|SELECT|TEXTAREA/.test(event.target.tagName)) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-      event.preventDefault(); event.shiftKey ? history.redo() : history.undo(); selected.clear(); void render();
+      event.preventDefault(); if (event.shiftKey) history.redo(); else if (history.cursor > 1) history.undo(); selected.clear(); void render();
     }
   });
   void render();
+  return {
+    open,
+    clear: () => $('wsReset').onclick(),
+    getFiles: () => [...new Set(history.pages.map(p => sources.get(p.source).file))],
+    hasEdits: () => JSON.stringify(history.pages) !== baseline,
+    async materialize() { if (busy) throw new Error('Attendi il caricamento del documento.'); cancel = false; return compose(); },
+    status,
+  };
 }

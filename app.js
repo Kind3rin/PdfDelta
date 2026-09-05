@@ -401,6 +401,7 @@ function toggleFavorite(toolId) {
 }
 
 function renderFiles() {
+  window.dispatchEvent(new CustomEvent('pdfdelta-files', { detail: [...state.files] }));
   runButton.disabled = !isToolCompatible(state.selectedTool);
   if (compatibilityNote) compatibilityNote.textContent = compatibilityMessage();
   if (clearQueueButton) clearQueueButton.hidden = !state.files.length;
@@ -495,10 +496,8 @@ function selectTool(toolId, options = {}) {
   renderTools();
   renderFiles();
 
-  if (tool.id === "edit-pdf" && getPdfFiles()[0] && options.scrollEditor !== false) {
-    setEditorStatus(getPdfFiles()[0] ? "Premi Avvia gratis o usa l'editor qui sotto." : "Carica un PDF per compilare e firmare.");
-    document.querySelector("#editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  } else if (tool.id === "edit-pdf") {
+  window.dispatchEvent(new CustomEvent('pdfdelta-tool', { detail: { tool, automatic: options.scrollEditor === false } }));
+  if (tool.id === "edit-pdf") {
     setEditorStatus("Carica un PDF per compilare e firmare.");
   }
 }
@@ -685,6 +684,7 @@ async function openPdfEditorTool() {
   setEditorReady(true);
   setEditorStatus(`${file.name} pronto per compilazione e firma.`);
   resultPanel.innerHTML = "<strong>Editor pronto.</strong> Compila, firma e scarica il PDF modificato.";
+  window.dispatchEvent(new Event('pdfdelta-editor'));
   await renderEditorPage();
   document.querySelector("#editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -719,7 +719,7 @@ async function saveEditedPdf() {
   });
 
   const bytes = await savePdfBytes(pdfDoc);
-  downloadBlob(new Blob([bytes], { type: "application/pdf" }), `${sanitizeFileName(state.editor.file.name)}-compilato-firmato.pdf`);
+  downloadBlob(new Blob([bytes], { type: "application/pdf" }), `${sanitizeFileName(state.editor.file.name)}-compilato-firmato.pdf`, { apply: true });
   setEditorStatus("PDF modificato pronto.");
 }
 
@@ -781,8 +781,9 @@ async function loadPdf(file) {
   return window.PdfEngine.readEditable(file);
 }
 
-function downloadBlob(blob, filename) {
-  window.dispatchEvent(new CustomEvent('pdfdelta-output', { detail: { blob, filename } }));
+function downloadBlob(blob, filename, options = {}) {
+  const apply = /\.pdf$/i.test(filename) && (state.busy || options.apply === true);
+  window.dispatchEvent(new CustomEvent('pdfdelta-output', { detail: { blob, filename, apply } }));
   if (state.lastDownloadUrl) URL.revokeObjectURL(state.lastDownloadUrl);
   const url = URL.createObjectURL(blob);
   state.lastDownloadUrl = url;
@@ -791,13 +792,14 @@ function downloadBlob(blob, filename) {
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
-  link.click();
+  if (!apply) link.click();
   link.remove();
 
   resultPanel.innerHTML = `
     <strong>Pronto.</strong>
     <a href="${url}" download="${escapeHtml(filename)}">Scarica di nuovo ${escapeHtml(filename)}</a>
   `;
+  if (apply) resultPanel.textContent = `Modifica applicata: ${filename}`;
   updateStepStrip();
 }
 
@@ -3382,6 +3384,8 @@ async function runSelectedTool() {
   resultPanel.textContent = "I file restano nel browser. Nessun upload in corso.";
 
   try {
+    const prepared = await workspaceBridge.beforeRun(tool);
+    if (prepared) state.files = prepared;
     await handler(getOptions());
   } catch (error) {
     resultPanel.innerHTML = `<strong>Errore.</strong> ${escapeHtml(error.message || "Operazione non riuscita.")}`;
@@ -3437,7 +3441,7 @@ document.addEventListener("click", async (event) => {
       return;
     }
     try {
-      await openPdfEditorTool();
+      await runSelectedTool();
     } catch (error) {
       setEditorStatus(error.message || "Editor non disponibile.");
     }
@@ -3600,6 +3604,17 @@ resetEditor();
 renderFiles();
 
 export const workspaceBridge = {
+  beforeRun: async () => null,
+  isBusy: () => state.busy,
+  getAllFiles: () => [...state.files],
+  replaceFiles(files) {
+    state.files = [...files];
+    renderTools();
+    renderFiles();
+  },
+  addFiles,
+  selectTool,
+  run: runSelectedTool,
   getFiles: () => getPdfFiles(),
   useFile(file) {
     if (state.busy) throw new Error('Attendi che lo strumento termini prima di sostituire il documento.');
