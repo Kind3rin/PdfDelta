@@ -31,6 +31,7 @@ function mimeType(filePath) {
       ".css": "text/css;charset=utf-8",
       ".html": "text/html;charset=utf-8",
       ".js": "text/javascript;charset=utf-8",
+      ".mjs": "text/javascript;charset=utf-8",
       ".json": "application/json;charset=utf-8",
       ".md": "text/markdown;charset=utf-8",
       ".wasm": "application/wasm",
@@ -364,8 +365,7 @@ async function main() {
       const merge = document.querySelector('#resultPanel').textContent.trim();
 
       localStorage.removeItem('pdfdelta-favorites');
-      renderCategories();
-      renderTools();
+      document.querySelector('[data-category="Tutti"]').click();
       document.querySelector('[data-favorite="merge"]').click();
       const storedFavorites = JSON.parse(localStorage.getItem('pdfdelta-favorites') || '[]');
       document.querySelector('[data-category="Preferiti"]').click();
@@ -536,8 +536,8 @@ async function main() {
     const failures = [];
 
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
-    if (value.worker !== "vendor/pdf.worker.min.js") failures.push("worker PDF.js non locale");
-    if (!value.initialUx.firstHeading.includes("PDF") || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word") || !value.initialUx.roadmapHidden || !value.initialUx.catalogInsights.includes("strumenti realmente eseguibili")) failures.push("UX iniziale non riuscita");
+    if (value.worker !== `${staticSite.origin}/vendor/pdfjs/build/pdf.worker.min.mjs`) failures.push("worker PDF.js non locale");
+    if (value.initialUx.firstHeading !== "Il tuo documento" || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word") || !value.initialUx.roadmapHidden || !value.initialUx.catalogInsights.includes("strumenti realmente eseguibili")) failures.push("UX iniziale non riuscita");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
     if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge") || !value.guidedUx.queueSummary.includes("2 PDF") || !value.guidedUx.toolBrief.includes("PDF unico")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");
@@ -612,7 +612,8 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+if (require.main === module) main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+module.exports = { startStaticServer, cdpJson };

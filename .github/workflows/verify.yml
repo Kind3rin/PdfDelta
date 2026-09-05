@@ -1,0 +1,17 @@
+name: Verify PDF workspace
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node audit-zero-cost.js
+      - run: node --test verify-security.test.js verify-model.test.mjs
+      - run: node verify-local.js
+      - run: node verify-workspace.cjs

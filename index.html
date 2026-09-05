@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self' blob: data:; img-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
     <meta
       name="description"
       content="PdfDelta: strumenti PDF gratuiti, moderni e pensati per lavorare nel browser."
@@ -11,9 +12,9 @@
     <title>PdfDelta - PDF gratis, moderni, senza premium</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="workspace.css" />
     <script src="vendor/pdf-lib.min.js" defer></script>
     <script src="vendor/jszip.min.js" defer></script>
-    <script src="vendor/pdf.min.js" defer></script>
     <script src="vendor/qrcode-generator.js" defer></script>
   </head>
   <body>
@@ -24,7 +25,7 @@
       </a>
 
       <nav class="nav-links" aria-label="Navigazione principale">
-        <a href="#workspace">Carica</a>
+        <a href="#visualWorkspace">Workspace</a>
         <a href="#strumenti">Strumenti</a>
         <a href="#editor">Editor</a>
         <a href="#gratis">Gratis</a>
@@ -34,7 +35,7 @@
         <button class="icon-button" id="themeToggle" type="button" aria-label="Cambia tema">
           <span aria-hidden="true">◐</span>
         </button>
-        <a class="button button-dark" href="#workspace">
+        <a class="button button-dark" href="#visualWorkspace">
           <span aria-hidden="true">+</span>
           Carica
         </a>
@@ -42,11 +43,43 @@
     </header>
 
     <main id="home" class="app-shell">
+      <section id="visualWorkspace" class="visual-workspace" aria-labelledby="wsTitle">
+        <div class="ws-heading">
+          <div><p class="ws-kicker">Workspace PDF · Sul tuo dispositivo</p><h1 id="wsTitle">Il tuo documento</h1></div>
+          <div class="ws-primary"><button id="wsImport" class="button button-dark" type="button">Aggiungi PDF</button><button id="wsExport" class="button button-dark" type="button" disabled>Esporta PDF</button></div>
+          <input id="wsFiles" type="file" accept=".pdf,application/pdf" multiple hidden />
+        </div>
+        <div class="ws-toolbar" aria-label="Organizza le pagine">
+          <button id="wsUndo" type="button" disabled>Annulla</button><button id="wsRedo" type="button" disabled>Ripeti</button>
+          <span class="ws-divider" aria-hidden="true"></span>
+          <button id="wsSelectAll" type="button" disabled>Seleziona tutto</button>
+          <button type="button" data-edit="left" disabled>Sposta prima</button><button type="button" data-edit="right" disabled>Sposta dopo</button>
+          <button type="button" data-edit="rotate" disabled>Ruota 90°</button><button type="button" data-edit="remove" disabled>Rimuovi</button>
+          <button id="wsCompare" type="button" disabled>Prima / dopo</button>
+        </div>
+        <div class="ws-body">
+          <aside class="ws-sidebar">
+            <h2>Documento</h2><p id="wsSummary">0 pagine · 0 selezionate</p>
+            <p>Seleziona le pagine. Trascina per riordinarle oppure usa i pulsanti Sposta.</p>
+            <button id="wsFromQueue" type="button">Apri PDF dalla coda</button>
+            <button id="wsContinue" type="button" disabled>Continua negli strumenti</button>
+            <button id="wsUseOutput" type="button" hidden>Apri ultimo risultato</button>
+            <details><summary>Informazioni sessione</summary><p>Fino a 1000 pagine e 200 MB complessivi. Le modifiche restano in memoria fino alla chiusura della pagina.</p><p>L'organizzazione ricrea le pagine: firme digitali e campi interattivi potrebbero non conservarsi. Mantieni l'originale.</p><button id="wsReset" type="button">Svuota sessione</button></details>
+          </aside>
+          <div class="ws-canvas-area">
+            <div id="wsEmpty" class="ws-empty"><div class="ws-paper-symbol" aria-hidden="true">PΔ</div><h2>Uno spazio per tutte le tue pagine.</h2><p>Aggiungi uno o più PDF. Riordina, ruota e combina le pagine senza perdere il filo.</p><button id="wsDemo" type="button">Prova con un documento di esempio</button></div>
+            <div id="wsPages" class="ws-pages" aria-label="Pagine del documento"></div>
+            <button id="wsMore" type="button" hidden>Mostra altre 60 pagine</button>
+          </div>
+        </div>
+        <div class="ws-status"><span id="wsStatus" role="status" aria-live="polite">I tuoi file restano qui. Nessun upload.</span><button id="wsCancel" type="button" hidden>Annulla operazione</button></div>
+        <dialog id="wsPreview" aria-labelledby="wsPreviewTitle"><div class="ws-dialog-head"><h2 id="wsPreviewTitle">Confronto pagina</h2><button id="wsClosePreview" type="button">Chiudi</button></div><div class="ws-comparison"><figure><figcaption>Originale</figcaption><canvas id="wsOriginal"></canvas></figure><figure><figcaption>Modificata</figcaption><canvas id="wsCurrent"></canvas></figure></div></dialog>
+      </section>
       <section class="command-center" id="workspace" aria-labelledby="workspace-title">
         <div class="command-head">
           <div>
             <p class="eyebrow">PdfDelta</p>
-            <h1 id="workspace-title">Cosa vuoi fare col tuo PDF?</h1>
+            <h2 id="workspace-title">Strumenti per il tuo PDF</h2>
             <p class="command-subtitle">Carica file. Scegli una card. Scarica. Nessun upload, nessun account.</p>
           </div>
           <div class="step-strip" aria-label="Flusso di lavoro">
@@ -210,6 +243,6 @@
       <a href="#home">Torna su</a>
     </footer>
 
-    <script src="app.js" defer></script>
+    <script src="bootstrap.mjs" type="module"></script>
   </body>
 </html>

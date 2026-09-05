@@ -3,6 +3,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
+
+test('vendored PDF.js assets match the recorded checksums', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'vendor/pdfjs-manifest.json'), 'utf8'));
+  assert.equal(manifest.version, '6.3.289');
+  for (const file of manifest.files) {
+    assert.equal(createHash('sha256').update(fs.readFileSync(path.join(__dirname, file.path))).digest('hex'), file.sha256, file.path);
+  }
+});
 
 function worker({ cached, response, offline = false, quota = false } = {}) {
   const handlers = {};
@@ -15,15 +24,16 @@ function worker({ cached, response, offline = false, quota = false } = {}) {
     addAll: async () => {},
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'sw.js'), 'utf8'), {
-    URL, Response,
+    URL, Response, importScripts: () => {},
     self: {
+      PDFJS_ASSETS: [],
       registration: { scope: 'https://example.com/PdfDelta/' },
       addEventListener: (name, handler) => { handlers[name] = handler; },
       clients: { claim: async () => {} },
       skipWaiting: async () => {},
     },
     caches: {
-      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v38'],
+      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v39'],
       delete: async (key) => deleted.push(key),
       open: async () => cache,
     },

@@ -1,20 +1,27 @@
+importScripts('./vendor/pdfjs-assets.js');
 const CACHE_PREFIX = "pdfdelta-static-";
-const CACHE_NAME = `${CACHE_PREFIX}v38`;
+const CACHE_NAME = `${CACHE_PREFIX}v39`;
 const ASSETS = [
   "./",
   "./index.html",
   "./privacy.html",
   "./styles.css",
   "./app.js",
+  "./tool-catalog.mjs",
+  "./bootstrap.mjs",
+  "./pdf-engine.mjs",
+  "./workspace.mjs",
+  "./workspace-model.mjs",
+  "./workspace.css",
+  "./vendor/pdfjs-assets.js",
   "./manifest.webmanifest",
   "./README.md",
   "./FREE_BACKEND_STRATEGY.md",
   "./vendor/pdf-lib.min.js",
   "./vendor/jszip.min.js",
-  "./vendor/pdf.min.js",
-  "./vendor/pdf.worker.min.js",
   "./vendor/qrcode-generator.js",
   "./vendor/THIRD_PARTY.md",
+  ...self.PDFJS_ASSETS,
 ];
 const ASSET_URLS = new Set(ASSETS.map((asset) => new URL(asset, self.registration.scope).href));
 

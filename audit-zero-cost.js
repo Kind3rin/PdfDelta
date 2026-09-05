@@ -5,6 +5,12 @@ const root = __dirname;
 const runtimeFiles = new Set([
   "_headers",
   "app.js",
+  "bootstrap.mjs",
+  "pdf-engine.mjs",
+  "workspace.mjs",
+  "workspace-model.mjs",
+  "tool-catalog.mjs",
+  "workspace.css",
   "index.html",
   "manifest.webmanifest",
   "privacy.html",
@@ -25,7 +31,7 @@ const blockedRuntimePatterns = [
   /wrangler\.toml/i,
 ];
 
-const ignoredDirs = new Set([".git", ".ruflo"]);
+const ignoredDirs = new Set([".git", ".ruflo", "graphify-out", "node_modules", "dist"]);
 const files = [];
 
 function walk(dir) {
@@ -39,7 +45,7 @@ function walk(dir) {
 
 walk(root);
 
-const textExtensions = new Set([".html", ".js", ".css", ".md", ".json", ".webmanifest", ".txt", ""]);
+const textExtensions = new Set([".html", ".js", ".mjs", ".css", ".md", ".json", ".webmanifest", ".txt", ""]);
 const failures = [];
 let totalBytes = 0;
 
