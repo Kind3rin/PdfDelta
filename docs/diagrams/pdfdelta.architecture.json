@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "PdfDelta | Documenti sul dispositivo",
+    "subtitle": "Workspace visuale, strumenti PDF e distribuzione statica",
+    "quality_profile": "standard",
+    "views": [
+      { "id": "edit", "label": "Modifica locale", "focus": ["files", "workspace", "engine", "output"], "note": "I documenti vengono letti e trasformati nella memoria del browser." },
+      { "id": "history", "label": "Stato e strumenti", "focus": ["workspace", "history", "tools"], "note": "Cronologia di descrittori pagina e ponte esplicito verso gli strumenti." },
+      { "id": "delivery", "label": "Distribuzione", "focus": ["hosting", "cache", "workspace"], "note": "GitHub Pages distribuisce codice e librerie. La cache conserva solo asset statici." }
+    ]
+  },
+  "components": [
+    { "id": "files", "type": "external", "label": "File locali", "sublabel": "File API", "pos": [40, 300], "size": [140, 64] },
+    { "id": "workspace", "type": "frontend", "label": "Workspace", "sublabel": "workspace.mjs", "pos": [260, 300], "size": [160, 64] },
+    { "id": "engine", "type": "backend", "label": "Motore locale", "sublabel": "pdf-engine.mjs", "pos": [520, 300], "size": [160, 64] },
+    { "id": "output", "type": "external", "label": "Esporta PDF", "sublabel": "pdf-lib + Blob", "pos": [780, 300], "size": [160, 64] },
+    { "id": "history", "type": "database", "label": "Cronologia RAM", "sublabel": "workspace-model.mjs", "pos": [250, 130], "size": [180, 64] },
+    { "id": "tools", "type": "frontend", "label": "Strumenti", "sublabel": "app.js + catalogo", "pos": [260, 470], "size": [160, 64] },
+    { "id": "worker", "type": "backend", "label": "PDF.js worker", "sublabel": "6.3.289 / locale", "pos": [520, 130], "size": [160, 64] },
+    { "id": "cache", "type": "database", "label": "Cache asset", "sublabel": "sw.js / allowlist", "pos": [40, 130], "size": [140, 64] },
+    { "id": "hosting", "type": "cloud", "label": "GitHub Pages", "sublabel": "HTTPS / statico", "pos": [40, 10], "size": [140, 64] }
+  ],
+  "connections": [
+    { "id": "open-files", "from": "files", "to": "workspace", "variant": "emphasis" },
+    { "id": "local-transform", "from": "workspace", "to": "engine", "variant": "emphasis" },
+    { "id": "export", "from": "engine", "to": "output", "variant": "emphasis" },
+    { "id": "undo-redo", "from": "workspace", "to": "history", "fromSide": "top", "toSide": "bottom" },
+    { "id": "continue-tools", "from": "workspace", "to": "tools", "fromSide": "bottom", "toSide": "top" },
+    { "id": "render-pages", "from": "engine", "to": "worker", "fromSide": "top", "toSide": "bottom" },
+    { "id": "download-shell", "from": "hosting", "to": "cache", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Flusso", "items": ["Aggiungi, seleziona, riordina e ruota pagine", "Esporta oppure continua negli strumenti", "Riapri un risultato senza caricarlo di nuovo"] },
+    { "dot": "emerald", "title": "Memoria locale", "items": ["Cronologia fino a 50 modifiche", "100 MB per file, 200 MB per sessione workspace", "Nessuna persistenza dei documenti"] },
+    { "dot": "rose", "title": "Limiti dichiarati", "items": ["Nessuna firma digitale o censura sicura", "Campi e firme possono perdersi ricreando pagine", "Desktop Chrome verificato; altri browser da provare"] }
+  ]
+}

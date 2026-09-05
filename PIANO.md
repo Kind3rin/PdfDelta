@@ -1,6 +1,6 @@
 # PdfDelta — percorso verso qualità enterprise
 
-Aggiornato: 2026-09-05. Stato: hardening iniziale, non enterprise-ready.
+Aggiornato: 2026-09-05. Stato: primo workspace visuale e motore aggiornato; non enterprise-ready.
 
 ## Direzione
 
@@ -38,10 +38,12 @@ La firma disegnata attuale non equivale a un servizio di firma digitale.
 - [x] Cache limitata agli asset dichiarati; pulizia limitata al namespace PdfDelta.
 - [x] Shell coerente per versione; nessuna cache di errori, redirect o documenti.
 - [x] Test su isolamento cache, offline, errori, quota e configurazione PDF.js.
-- [ ] Aggiornare PDF.js e worker insieme, verificando advisory e compatibilità.
+- [x] Aggiornare PDF.js e worker insieme, verificando advisory e compatibilità: 6.3.289 con risorse locali e checksum.
 - [ ] Separare catalogo, motore PDF, stato e UI dall'attuale `app.js` monolitico.
+  Catalogo, motore e modello workspace estratti; handler storici ed editor ancora in app.js.
 - [ ] Riaprire gli output PDF/ZIP/DOCX nei test e verificarne contenuto e struttura.
 - [ ] CI riproducibile, timeout dei test e verifiche Firefox/WebKit/mobile.
+  Workflow Windows/Node 22 aggiunto; Chrome locale e viewport mobile verificati. Altri browser restano da provare.
 - [ ] Limiti risorse, rilascio canvas/documenti, file malformati/cifrati e concorrenza.
 - [ ] Verificare header in hosting: `_headers` non configura GitHub Pages.
 
@@ -51,10 +53,13 @@ e nomi dei risultati; non certificano fedeltà e integrità di ogni output.
 
 ## Fase 2 — semplicità e identità visiva
 
-- [ ] Workspace centrato sul documento: miniature, selezione e riordino pagine.
+- [x] Workspace centrato sul documento: miniature, selezione e riordino pagine.
 - [ ] Azioni principali evidenti; impostazioni avanzate solo quando necessarie.
 - [ ] Anteprima risultato, confronto prima/dopo, undo/redo e azioni concatenate.
+  Disponibili anteprima pagine, confronto rotazione, cronologia e ponte esplicito agli strumenti.
+  Confronto completo delle trasformazioni e integrazione diretta dell'editor restano da ampliare.
 - [ ] Avanzamento reale, annullamento e messaggi di recupero utilizzabili.
+  Disponibili in import/export workspace; da estendere agli strumenti storici.
 - [ ] Tastiera, focus, contrasto, touch e layout mobile verificati.
 - [ ] Preview desktop/mobile a fine feature e regressione dei flussi collegati.
 
@@ -95,3 +100,8 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
   https://github.com/mozilla/pdf.js/security/advisories/GHSA-wgrm-67xf-hhpq
 - La mitigazione non sostituisce l'aggiornamento dipendenze né un audit completo.
 - Produzione, dispositivi reali e superiorità rispetto al concorrente non verificati.
+
+## Chiusura dei cicli
+
+Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
+deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

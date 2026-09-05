@@ -4,8 +4,8 @@ Toolkit PDF statico, gratuito e pensato per hosting free senza costi nascosti.
 
 Percorso di evoluzione e criteri di qualità: [PIANO.md](PIANO.md).
 
-Hardening iniziale: PDF.js usa `isEvalSupported: false` in tutti i caricamenti
-per mitigare CVE-2024-4367; la libreria resta da aggiornare. La cache offline
+Motore aggiornato: PDF.js 6.3.289 e worker corrispondente, con risorse e licenza
+locali, checksum verificati e valutazione dinamica disabilitata. La cache offline
 conserva solo gli asset dichiarati e non elimina le cache di altre applicazioni.
 Queste verifiche non costituiscono una certificazione enterprise.
 
@@ -20,9 +20,8 @@ Queste verifiche non costituiscono una certificazione enterprise.
 
 ## Avvio locale
 
-Apri `index.html` nel browser.
-
-Per testare il service worker:
+Servi la cartella via HTTP (i moduli JavaScript non funzionano aprendo `index.html`
+direttamente da file):
 
 ```powershell
 python -m http.server 4173
@@ -67,10 +66,27 @@ I file in `vendor/` sono copie statiche delle librerie open source usate dall'ap
 
 - `pdf-lib@1.17.1`
 - `JSZip@3.10.1`
-- `pdfjs-dist@3.11.174`
+- `pdfjs-dist@6.3.289`
 - `qrcode-generator@1.4.4`
 
 Servirle localmente riduce rischi di downtime, tracking esterno e dipendenze runtime non controllate.
+
+Per ricostruire la copia PDF.js: `node scripts/vendor-pdfjs.mjs`. Lo script scarica
+la versione fissata dal registro npm, verifica SHA-512 e registra i checksum dei
+203 asset in `vendor/pdfjs-manifest.json`. Nessun download esterno a runtime.
+
+## Workspace visuale
+
+1. Premi **Aggiungi PDF**, trascina documenti o prova il documento dimostrativo.
+2. Seleziona le miniature: ruota, sposta prima/dopo o trascina per riordinare.
+3. **Annulla/Ripeti** conserva fino a 50 modifiche; **Prima / dopo** confronta la pagina selezionata.
+4. **Esporta PDF** crea il documento; **Continua negli strumenti** lo rende disponibile al catalogo.
+5. **Apri ultimo risultato** riporta un PDF prodotto nel workspace, senza upload ripetuto.
+
+Limiti: 100 MB per file, 200 MB per sessione, 1000 pagine; miniature mostrate a
+gruppi di 60. Sessione solo in memoria: esportare prima di chiudere la pagina.
+Il workspace ricrea le pagine e non garantisce conservazione di moduli interattivi,
+firme digitali, segnalibri o allegati. La firma disegnata non è firma digitale.
 
 ## Verifica automatica locale
 
@@ -80,13 +96,16 @@ Il test avvia autonomamente un server locale su una porta libera:
 ```powershell
 node audit-zero-cost.js
 node --test verify-security.test.js
+node --test verify-model.test.mjs
 node verify-local.js
+node verify-workspace.cjs
 ```
 
 Gli audit controllano assenza di CDN/API paid, dimensione deploy, librerie locali, preferiti localStorage, zero richieste esterne, merge PDF, merge PDF+immagini, editor compila/firma, intercalazione PDF, split per range, split pari/dispari, split per testo, split su pagine bianche, carta intestata, copertina, logo immagine, QR su PDF, PDF in TXT/Markdown/Word testo/JPG/WebP/social, JPG lungo, scheda anteprime, crop, margine stampabile, segni di taglio, normalizzazione formato, separazione orientamento, report documento, report coda, report/separazione formati pagina, header/footer, Bates, timbro nome file, auto-trim, confronto visuale, conteggio parole, lettura/scrittura/pulizia metadati, annotazioni, azioni PDF, allegati PDF, aggiunta/rimozione allegati, estrazione/rimozione per testo, duplicati, booklet, poster multipagina, compressione scansioni, miglioramento scansioni, scala di grigi, pagine vuote, PDF vuoto e overflow desktop.
 
 ## Feature attive
 
+- Workspace visuale con anteprime, riordino, selezione, rotazione, rimozione, undo/redo e ponte verso gli strumenti.
 - Unisci PDF e intercala due PDF fronte/retro.
 - Unisci PDF e immagini nello stesso documento mantenendo l'ordine della coda.
 - Editor visuale per compilare, firmare e disegnare su PDF nel browser.
@@ -160,3 +179,6 @@ Dettagli: vedi `MARKET_ANALYSIS.md` e `ZERO_COST_POLICY.md`.
 ## Deploy
 
 Checklist operativa: `CLOUDFLARE_FREE_DEPLOY.md`.
+
+Ogni ciclo consolidato chiude con test, documentazione e deploy su GitHub Pages.
+Architettura: [mappa del codice](docs/CODEBASE-MAP.md) e [diagramma navigabile](docs/diagrams/pdfdelta.html).
