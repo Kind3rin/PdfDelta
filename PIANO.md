@@ -175,5 +175,11 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Test nella viewport mobile: tentativi concorrenti di cancellazione, aggiunta, rotazione ed esecuzione durante entrambe le transizioni; verificati ripristino dei comandi e contenuto PDF esportato.
 - Resta aperto l'annullamento generalizzato degli strumenti e lo stress test con grandi documenti.
 
+### Esportazione annullabile e documenti lunghi
+
+- Corretto l'annullamento prima del download anche quando l'esportazione restituisce il PDF originale senza ricostruirlo.
+- Fixture sintetica di 120 pagine: anteprime iniziali limitate a 60, caricamento delle successive, annullamento prima dell'export e durante la ricostruzione, nuovo tentativo con conteggio pagine/rotazione e testo delle pagine 1/60/120 verificati.
+- Importazione di 1001 pagine rifiutata senza sostituire il documento corrente. Non equivale a uno stress test di scansioni pesanti o telefoni reali.
+
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

@@ -119,3 +119,9 @@ del workspace prima di accettare nuove esecuzioni o modifiche agli input.
 Il pulsante di annullamento resta disponibile durante le operazioni del
 workspace. La suite mobile verifica gli input invariati e l'output dopo
 tentativi concorrenti in entrambe le fasi.
+
+L'esportazione controlla l'annullamento sia all'ingresso di `compose()` sia
+immediatamente prima del download, coprendo anche il ritorno del File originale.
+La suite browser usa inoltre 120 pagine sintetiche per verificare anteprime,
+interruzione della ricostruzione e nuovo export; una fixture da 1001 pagine
+verifica il rifiuto oltre il limite senza sostituire la sessione.
