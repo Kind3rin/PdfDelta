@@ -133,3 +133,9 @@ proporzioni; riduce la risoluzione richiesta solo quando necessario. Le
 dimensioni fisiche delle pagine esportate non cambiano. La compressione libera
 il canvas dopo aver incorporato ogni immagine. Una scansione sintetica ad alta
 risoluzione verifica cap e contenuto dell'output, senza sostituire test su telefoni reali.
+
+`pdfToLongJpg()` controlla l'ingombro cumulativo prima di renderizzare: evita
+canvas finali oltre i limiti e non conserva tutte le pagine raster in memoria.
+Dopo il controllo, renderizza e copia una pagina alla volta, liberandola subito.
+Test browser dedicati verificano il rifiuto prima delle allocazioni e un JPG
+con pagine di dimensioni diverse (ordine, centratura, colori e altezza con separatore).

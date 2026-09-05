@@ -188,5 +188,12 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Test browser con scansione sintetica 2480×3508 su pagina 14400×14400 punti: verificati cap, output non vuoto, dimensioni PDF; controllate anche risoluzione normale invariata e proporzioni estreme.
 - Nessun telefono collegato rilevato tramite ADB. La verifica su hardware mobile resta aperta, come i carichi con molte scansioni pesanti.
 
+### JPG lungo — limite cumulativo e memoria
+
+- Verifica preventiva di dimensioni e area dell'immagine completa prima di renderizzare le pagine; stessi limiti del motore raster.
+- Eliminato l'accumulo di tutte le pagine in canvas: composizione sequenziale con rilascio dopo ogni pagina.
+- Test: risultato eccessivo rifiutato senza allocazioni raster né download; due pagine di dimensioni e colori diversi verificano ordine, centratura e dimensioni del JPG.
+- Il messaggio suggerisce JPG separati o meno pagine: abbassare la compressione JPEG non risolve un limite sulle dimensioni.
+
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
