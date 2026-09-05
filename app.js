@@ -5,6 +5,7 @@ const { PDFDocument, StandardFonts, rgb, degrees, PDFName } = window.PDFLib || {
 const FAVORITES_KEY = "pdfdelta-favorites";
 let workspaceBusy = () => false;
 let reusableSignature = null;
+let editorSequence = 0;
 let signatureDraft = [], signatureStroke = null;
 const signatureFaces = { TimesRomanItalic: 'italic Georgia', HelveticaOblique: 'italic Arial', CourierOblique: 'italic Courier New' };
 
@@ -584,6 +585,7 @@ function setEditorMode(mode) {
   });
   if (editorInkCanvas) editorInkCanvas.style.cursor = mode === "draw" ? "crosshair" : "copy";
   document.getElementById('signatureFontField').hidden = mode !== 'signature';
+  document.getElementById('signatureSizeField').hidden = mode !== 'signature-drawing';
   if (mode === 'signature') setEditorStatus('Scegli uno stile e clicca nei punti dove inserire la firma. Per firmare a mano, scegli Disegna una firma.');
 }
 
@@ -617,6 +619,7 @@ function safePdfText(value) {
 }
 
 function drawEditorOverlay() {
+  document.getElementById('editorUndoInsertion').disabled = !state.editor.marks.length && !state.editor.strokes.length;
   if (!editorInkCanvas || !state.editor.canvasSize.width) return;
   const context = editorInkCanvas.getContext("2d");
   context.clearRect(0, 0, editorInkCanvas.width, editorInkCanvas.height);
@@ -3571,6 +3574,7 @@ editorInkCanvas?.addEventListener("pointerdown", (event) => {
   if (state.editor.mode === "draw") {
     state.editor.drawing = true;
     state.editor.currentStroke = {
+      sequence: ++editorSequence,
       page: state.editor.pageNumber,
       thickness: 1.8,
       points: [point],
@@ -3581,6 +3585,7 @@ editorInkCanvas?.addEventListener("pointerdown", (event) => {
   }
 
   const mark = {
+    sequence: ++editorSequence,
     page: state.editor.pageNumber,
     type: state.editor.mode,
     text: editorTextValue(),
@@ -3590,6 +3595,16 @@ editorInkCanvas?.addEventListener("pointerdown", (event) => {
     font: document.getElementById('signatureFont').value,
     ...(state.editor.mode === 'signature-drawing' ? { strokes: reusableSignature.map(stroke => stroke.map(p => ({ ...p }))) } : {}),
   };
+  if (mark.type === 'signature-drawing') {
+    const factor = Number(document.getElementById('signatureSize').value) / 160;
+    const points = mark.strokes.flat();
+    const width = Math.max(1, ...points.map(p => p.x)), height = Math.max(1, ...points.map(p => p.y));
+    const margin = Math.min(4, state.editor.pageSize.width / 10, state.editor.pageSize.height / 10);
+    const fit = Math.min(factor, (state.editor.pageSize.width - margin * 2) / width, (state.editor.pageSize.height - margin * 2) / height);
+    mark.strokes = mark.strokes.map(stroke => stroke.map(p => ({ x:p.x * fit, y:p.y * fit })));
+    mark.x = Math.max(margin, Math.min(point.x, state.editor.pageSize.width - width * fit - margin));
+    mark.y = Math.min(state.editor.pageSize.height - margin, Math.max(point.y, height * fit + margin));
+  }
   state.editor.marks.push(mark);
   drawEditorOverlay();
   setEditorStatus(`${state.editor.mode.startsWith("signature") ? "Firma" : "Testo"} aggiunto a pagina ${state.editor.pageNumber}.`);
@@ -3621,6 +3636,15 @@ editorNext?.addEventListener("click", async () => {
 });
 
 editorClear?.addEventListener("click", clearCurrentEditorPage);
+document.getElementById('editorUndoInsertion').onclick = async () => {
+  const latest = [...state.editor.marks, ...state.editor.strokes].sort((a,b) => b.sequence - a.sequence)[0];
+  if (!latest) return;
+  state.editor.marks = state.editor.marks.filter(mark => mark !== latest);
+  state.editor.strokes = state.editor.strokes.filter(stroke => stroke !== latest);
+  state.editor.pageNumber = latest.page;
+  await renderEditorPage();
+  setEditorStatus('Ultimo inserimento annullato. La firma rimane disponibile per essere inserita di nuovo.');
+};
 
 editorSave?.addEventListener("click", async () => {
   editorSave.disabled = true;

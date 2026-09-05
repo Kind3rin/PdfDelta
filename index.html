@@ -202,12 +202,14 @@
             </label>
             <label class="editor-field" id="signatureFontField" hidden><span>Stile firma</span><select id="signatureFont"><option value="TimesRomanItalic">Classica</option><option value="HelveticaOblique">Essenziale</option><option value="CourierOblique">Dattiloscritta</option></select></label>
             <button type="button" id="signatureDraw" class="text-button">Disegna una firma</button>
+            <label class="editor-field" id="signatureSizeField" hidden><span>Dimensione firma a mano</span><select id="signatureSize"><option value="100">Piccola</option><option value="160" selected>Media</option><option value="240">Grande</option></select></label>
             <div class="editor-pages">
               <button class="icon-button" id="editorPrev" type="button" aria-label="Pagina precedente">‹</button>
               <span id="editorPageInfo">0 / 0</span>
               <button class="icon-button" id="editorNext" type="button" aria-label="Pagina successiva">›</button>
             </div>
             <button class="text-button" id="editorClear" type="button">Pulisci pagina</button>
+            <button class="text-button" id="editorUndoInsertion" type="button" disabled>Annulla inserimento</button>
             <button class="button button-accent" id="editorSave" type="button">Scarica PDF</button>
           </div>
 

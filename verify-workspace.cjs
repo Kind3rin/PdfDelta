@@ -37,6 +37,10 @@ async function main() {
     fs.mkdirSync('dist/verification', { recursive: true });
     await evaluate(`(async () => { const end = Date.now() + 15000; while (document.getElementById('visualWorkspace')?.dataset.flow !== 'ready') { if (Date.now() > end) throw new Error('Flow startup'); await new Promise(r => setTimeout(r, 30)); } await document.fonts.ready; })()`);
     fs.writeFileSync('dist/verification/workspace-empty.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await send('Emulation.setDeviceMetricsOverride', { width:390, height:844, deviceScaleFactor:1, mobile:false });
+    if (await evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')) throw new Error('Home mobile overflow');
+    fs.writeFileSync('dist/verification/home-mobile.png', Buffer.from((await send('Page.captureScreenshot', { format:'png' })).data, 'base64'));
+    await send('Emulation.setDeviceMetricsOverride', { width:1440, height:1050, deviceScaleFactor:1, mobile:false });
     const result = await evaluate(`(async () => {
       const $ = id => document.getElementById(id);
       const until = async fn => { const end = Date.now() + 15000; while (!fn()) { if (Date.now() > end) throw new Error('Attesa scaduta: ' + fn); await new Promise(r => setTimeout(r, 50)); } };
@@ -45,7 +49,15 @@ async function main() {
       assert(getComputedStyle($('workspace')).display === 'none', 'No second upload workflow');
       assert(getComputedStyle($('wsContinue')).display === 'none', 'No manual bridge');
       assert(pdfjsLib.version === '6.3.289', 'PDF.js version');
-      $('wsDemo').click();
+      assert(!$('toolHome').hidden && $('visualWorkspace').hidden, 'Home precedes empty workspace');
+      assert(document.querySelectorAll('[data-home-tool]').length === 12, 'Popular tools visible');
+      $('homeSearch').value = 'firma'; $('homeSearch').dispatchEvent(new Event('input'));
+      assert(document.querySelector('[data-home-tool="edit-pdf"]'), 'Home search finds signature');
+      document.querySelector('[data-home-tool="edit-pdf"]').click();
+      assert($('toolHome').hidden && !$('visualWorkspace').hidden && $('wsEmpty').querySelector('h2').textContent === 'Compila e firma', 'Tool selection opens contextual upload');
+      document.querySelector('.home-nav').click();
+      $('homeSearch').value = ''; $('homeSearch').dispatchEvent(new Event('input'));
+      $('homeDemo').click();
       await until(() => document.querySelectorAll('[data-page]').length === 3 && !$('wsExport').disabled);
       document.querySelector('[data-page]').click();
       document.querySelector('[data-edit="rotate"]').click();
@@ -360,6 +372,9 @@ async function main() {
       $('signaturePadUse').click();
       const place = (x,y) => { const r = $('editorInkCanvas').getBoundingClientRect(); $('editorInkCanvas').dispatchEvent(new PointerEvent('pointerdown', { clientX:r.x+r.width*x, clientY:r.y+r.height*y, bubbles:true })); };
       place(.1,.35); place(.5,.55);
+      if ($('editorUndoInsertion').disabled) throw new Error('Undo insertion unavailable');
+      await $('editorUndoInsertion').onclick();
+      $('signatureSize').value = '240'; place(.99,.99);
       document.querySelector('[data-editor-mode="signature"]').click(); $('editorTextInput').value = 'Firma test';
       for (const [i,font] of ['TimesRomanItalic','HelveticaOblique','CourierOblique'].entries()) { $('signatureFont').value = font; place(.1,.1+i*.08); }
       $('editorNext').click();
@@ -370,6 +385,18 @@ async function main() {
       try { const pdf = await task.promise, page = await pdf.getPage(1); const text = await page.getTextContent();
         if (new Set(text.items.filter(i=>i.str==='Firma test').map(i=>i.fontName)).size !== 3) throw new Error('Signature font styles lost in PDF');
         for (const number of [1,2]) { const ops = await (await pdf.getPage(number)).getOperatorList(); if (ops.fnArray.filter(op=>op===pdfjsLib.OPS.constructPath).length < 4) throw new Error('Reusable signature missing from PDF page '+number); }
+        const viewport = page.getViewport({ scale:1 });
+        const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d'); await page.render({ canvasContext:ctx, viewport }).promise;
+        const pixels = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+        let bottomInk=0, erasedInk=0;
+        for (let y=0;y<canvas.height;y++) for(let x=0;x<canvas.width;x++) {
+          const i=(y*canvas.width+x)*4, ink=pixels[i]<100 && pixels[i+2]>40;
+          if (ink && (x===0 || y===0 || x===canvas.width-1 || y===canvas.height-1)) throw new Error('Signature clipped at page edge');
+          if (ink && y>700) bottomInk++;
+          if (ink && x>300 && x<465 && y>440 && y<510) erasedInk++;
+        }
+        if (!bottomInk || erasedInk) throw new Error('Signature size/undo/edge placement failed');
       } finally { await task.destroy(); }
     })()`);
     await evaluate("document.getElementById('themeToggle').click()");

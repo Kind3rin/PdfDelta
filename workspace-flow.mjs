@@ -1,3 +1,4 @@
+import { createHome } from './home.mjs';
 // One input collection and one current document, shared by pages and tools.
 export function initFlow(bridge, workspace) {
   bridge.setWorkspaceBusy(workspace.isBusy);
@@ -6,6 +7,7 @@ export function initFlow(bridge, workspace) {
   const sidebar = host.querySelector('.ws-sidebar');
   const same = (a, b) => a.length === b.length && a.every((file, i) => file === b[i]);
   let lastFiles = [], pending = Promise.resolve();
+  let intent = null;
   const icons = {
     edit: '<path d="m15 4 5 5M4 20l5-1L20 8a2 2 0 0 0-5-5L4 14z"/>',
     compress: '<path d="M8 3v5H3m13-5v5h5M8 21v-5H3m13 5v-5h5"/>',
@@ -90,6 +92,28 @@ export function initFlow(bridge, workspace) {
   $('wsEmpty').querySelector('h2').textContent = 'Inizia dal tuo documento.';
   $('wsEmpty').querySelector('p').textContent = 'Aggiungi un PDF, un’immagine o un file di testo. Poi scegli cosa fare, qui accanto.';
   $('wsFiles').accept = '.pdf,.jpg,.jpeg,.png,.txt';
+  const home = createHome({
+    onTool: tool => {
+      intent = tool; home.hidden = true; host.hidden = false;
+      if (bridge.getAllFiles().length) {
+        intent = null; bridge.selectTool(tool.id);
+        if (tool.id === 'edit-pdf') void bridge.run();
+      } else {
+        $('wsEmpty').querySelector('h2').textContent = tool.name;
+        $('wsEmpty').querySelector('p').textContent = tool.description;
+        $('wsFiles').accept = tool.accepts.map(type=>'.'+type).join(',');
+        $('flowOpen').querySelector('span').textContent = tool.accepts.length === 1 && tool.accepts[0] === 'pdf' ? 'Seleziona PDF' : 'Seleziona file';
+      }
+      host.scrollIntoView({ block:'start', behavior:'instant' });
+    },
+    onUpload: () => { intent = null; $('wsFiles').accept = '.pdf,.jpg,.jpeg,.png,.txt'; $('wsFiles').click(); },
+    onDemo: () => { intent = null; $('wsDemo').click(); },
+    onResume: () => { home.hidden = true; host.hidden = false; host.scrollIntoView({ block:'start', behavior:'instant' }); }
+  });
+  host.before(home);
+  const homeNav = document.createElement('button'); homeNav.type = 'button'; homeNav.className = 'home-nav'; homeNav.textContent = 'Tutti gli strumenti';
+  homeNav.onclick = () => { if (bridge.isBusy() || workspace.isBusy()) return; intent=null; home.hidden=false; host.hidden=true; home.querySelector('#homeResume').hidden=!bridge.getAllFiles().length; home.scrollIntoView({ block:'start', behavior:'instant' }); };
+  document.querySelector('.nav-links').prepend(homeNav);
   function receiveFiles(files) { bridge.addFiles(files); }
   $('wsFiles').addEventListener('change', event => {
     event.stopImmediatePropagation(); receiveFiles([...event.target.files]); event.target.value = '';
@@ -103,6 +127,8 @@ export function initFlow(bridge, workspace) {
   });
   function update(files) {
     const loaded = files.length > 0;
+    home.hidden = loaded || Boolean(intent); host.hidden = !loaded && !intent;
+    home.querySelector('#homeResume').hidden = !loaded;
     host.classList.toggle('flow-loaded', loaded);
     pageBar.hidden = !workspace.getFiles().length;
     sidebar.hidden = !loaded;
@@ -139,6 +165,10 @@ export function initFlow(bridge, workspace) {
         if (!success) { lastFiles = previous; bridge.replaceFiles(previous); update(previous); return; }
       }
       showPages(); update(files);
+      if (intent && files.length) {
+        const chosen = intent; intent = null; bridge.selectTool(chosen.id);
+        if (chosen.id === 'edit-pdf') setTimeout(() => void bridge.run(), 0);
+      }
     }).catch(error => workspace.status(error.message));
   });
   window.addEventListener('pdfdelta-history', event => {
@@ -173,7 +203,7 @@ export function initFlow(bridge, workspace) {
   const reflectBusy = () => {
     const busy = bridge.isBusy() || workspace.isBusy();
     host.setAttribute('aria-busy', String(busy));
-    for (const panel of [quick, actionPanel, fileDetails, picker, $('editor')]) panel.inert = busy;
+    for (const panel of [home, quick, actionPanel, fileDetails, picker, $('editor')]) panel.inert = busy;
   };
   window.addEventListener('pdfdelta-busy', reflectBusy);
   window.addEventListener('pdfdelta-workspace-busy', reflectBusy);

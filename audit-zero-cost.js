@@ -9,6 +9,7 @@ const runtimeFiles = new Set([
   "pdf-engine.mjs",
   "workspace.mjs",
   "workspace-flow.mjs",
+  "home.mjs",
   "workspace-model.mjs",
   "tool-catalog.mjs",
   "workspace.css",

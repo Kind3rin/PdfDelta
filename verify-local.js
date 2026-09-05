@@ -366,6 +366,8 @@ async function main() {
       const secondPdf = await makePdf('Second side');
       const initialUx = {
         firstHeading: document.querySelector('h1')?.textContent.trim(),
+        homeVisible: !document.querySelector('#toolHome').hidden,
+        popularCount: document.querySelectorAll('[data-home-tool]').length,
         editorReady: document.querySelector('#editorPanel').classList.contains('editor-ready'),
         editorEmpty: getComputedStyle(document.querySelector('#editorEmptyState')).display !== 'none',
         runText: document.querySelector('#runTool').textContent.trim(),
@@ -588,7 +590,7 @@ async function main() {
 
     if (!value.libs.pdfLib || !value.libs.jszip || !value.libs.pdfjs || !value.libs.qrcode) failures.push("librerie mancanti");
     if (value.worker !== `${staticSite.origin}/vendor/pdfjs/build/pdf.worker.min.mjs`) failures.push("worker PDF.js non locale");
-    if (value.initialUx.firstHeading !== "Il tuo documento" || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word") || !value.initialUx.roadmapHidden || !value.initialUx.catalogInsights.includes("strumenti realmente eseguibili")) failures.push("UX iniziale non riuscita");
+    if (value.initialUx.firstHeading !== "I tuoi PDF.Tutto più semplice." || !value.initialUx.homeVisible || value.initialUx.popularCount !== 12 || value.initialUx.editorReady || !value.initialUx.editorEmpty || value.initialUx.suggestions.includes("pdf-to-word") || !value.initialUx.roadmapHidden || !value.initialUx.catalogInsights.includes("strumenti realmente eseguibili")) failures.push("UX iniziale non riuscita");
     if (!value.merge.includes("pdfdelta-unito.pdf")) failures.push("merge non riuscito");
     if (!value.guidedUx.selected.includes("Unisci PDF") || !value.guidedUx.compatibility.includes("pronto") || !value.guidedUx.suggestions.includes("merge") || !value.guidedUx.queueSummary.includes("2 PDF") || !value.guidedUx.toolBrief.includes("PDF unico")) failures.push("UX guidata non riuscita");
     if (!value.favorites.stored || !value.favorites.filtered) failures.push("preferiti locali non riusciti");
