@@ -2,6 +2,16 @@
 
 Aggiornato: 2026-09-05. Stato: primo workspace visuale e motore aggiornato; non enterprise-ready.
 
+Le regole persistenti dell'obiettivo sono in AGENTS.md e valgono anche per nuove sessioni.
+Priorità da feedback reale: firma digitata con più stili e firma a mano riutilizzabile.
+
+### Feedback firma e hosting Vercel
+
+- Tre stili della firma digitata incorporati nel PDF; area per disegno con mouse/touch/penna e riutilizzo in più punti/pagine nella stessa sessione.
+- Disegno libero distinto dalla firma a mano. Test browser verifica tre font nel PDF e tratti vettoriali su due pagine; screenshot mobile della creazione firma.
+- Progetto Vercel `pdfdelta` collegato a `Kind3rin/PdfDelta`: push GitHub automatici, hosting statico Hobby. GitHub Pages resta subordinato alla CI; l'integrazione nativa Vercel avvia il proprio deploy su push e non attende automaticamente il workflow GitHub.
+- Verificare il nuovo URL e i deploy effettivi prima di dichiarare concluso il ciclo.
+
 ## Direzione
 
 Obiettivo: progetto portfolio credibile e alternativa competitiva per i PDF
@@ -194,6 +204,12 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Eliminato l'accumulo di tutte le pagine in canvas: composizione sequenziale con rilascio dopo ogni pagina.
 - Test: risultato eccessivo rifiutato senza allocazioni raster né download; due pagine di dimensioni e colori diversi verificano ordine, centratura e dimensioni del JPG.
 - Il messaggio suggerisce JPG separati o meno pagine: abbassare la compressione JPEG non risolve un limite sulle dimensioni.
+
+### Pubblicazione subordinata alla CI
+
+- Deploy Pages nello stesso workflow dei test, con `needs: verify` e solo per main fuori dalle pull request.
+- L'artefatto proviene da `git archive HEAD`: stesso commit verificato, senza file locali o risultati temporanei dei test.
+- Ambiente github-pages e serializzazione dei deploy. Pages passa dalla pubblicazione automatica del branch a GitHub Actions.
 
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

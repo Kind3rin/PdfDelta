@@ -191,7 +191,17 @@ Dettagli: vedi `MARKET_ANALYSIS.md` e `ZERO_COST_POLICY.md`.
 
 ## Deploy
 
+Vercel Hobby: progetto `pdfdelta` collegato al repository GitHub. I push su main
+generano un deploy production e gli altri branch generano preview. Nessun backend PDF.
+La CI GitHub resta obbligatoria per considerare verificato un rilascio; l'integrazione
+Git nativa Vercel non aspetta automaticamente il workflow GitHub.
+
+Regole persistenti di lavoro e completamento: [AGENTS.md](AGENTS.md).
+
 Checklist operativa: `CLOUDFLARE_FREE_DEPLOY.md`.
 
 Ogni ciclo consolidato chiude con test, documentazione e deploy su GitHub Pages.
+Il deploy è subordinato al job di verifica nello stesso workflow GitHub Actions:
+solo main può pubblicare, dopo tutti i test. L'artefatto contiene i file versionati
+del commit verificato; una pull request non pubblica il sito.
 Architettura: [mappa del codice](docs/CODEBASE-MAP.md) e [diagramma navigabile](docs/diagrams/pdfdelta.html).

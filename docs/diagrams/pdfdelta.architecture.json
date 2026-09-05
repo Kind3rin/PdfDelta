@@ -8,7 +8,7 @@
     "views": [
       { "id": "edit", "label": "Modifica locale", "focus": ["files", "workspace", "engine", "output"], "note": "I documenti vengono letti e trasformati nella memoria del browser." },
       { "id": "history", "label": "Stato e strumenti", "focus": ["workspace", "history", "tools"], "note": "Cronologia pagine e coordinamento automatico tramite workspace-flow.mjs." },
-      { "id": "delivery", "label": "Distribuzione", "focus": ["hosting", "cache", "workspace"], "note": "GitHub Pages distribuisce codice e librerie. La cache conserva solo asset statici." }
+      { "id": "delivery", "label": "Distribuzione", "focus": ["hosting", "cache", "workspace"], "note": "GitHub Pages pubblica dopo CI; Vercel genera deploy dai push GitHub. I PDF restano nel browser." }
     ]
   },
   "components": [
@@ -20,7 +20,7 @@
     { "id": "tools", "type": "frontend", "label": "Strumenti", "sublabel": "app.js + catalogo", "pos": [260, 470], "size": [160, 64] },
     { "id": "worker", "type": "backend", "label": "PDF.js worker", "sublabel": "6.3.289 / locale", "pos": [520, 130], "size": [160, 64] },
     { "id": "cache", "type": "database", "label": "Cache asset", "sublabel": "sw.js / allowlist", "pos": [40, 130], "size": [140, 64] },
-    { "id": "hosting", "type": "cloud", "label": "GitHub Pages", "sublabel": "HTTPS / statico", "pos": [40, 10], "size": [140, 64] }
+    { "id": "hosting", "type": "cloud", "label": "Pages / Vercel", "sublabel": "Hosting statico", "pos": [40, 10], "size": [140, 64] }
   ],
   "connections": [
     { "id": "open-files", "from": "files", "to": "workspace", "variant": "emphasis" },

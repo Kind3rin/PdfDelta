@@ -3771,7 +3771,7 @@
       <p class="subtitle">Workspace visuale, strumenti PDF e distribuzione statica</p>
     </div>
 
-    <script id="archify-guided-views-data" type="application/json">[{"id":"edit","label":"Modifica locale","focus":["files","workspace","engine","output"],"note":"I documenti vengono letti e trasformati nella memoria del browser."},{"id":"history","label":"Stato e strumenti","focus":["workspace","history","tools"],"note":"Cronologia pagine e coordinamento automatico tramite workspace-flow.mjs."},{"id":"delivery","label":"Distribuzione","focus":["hosting","cache","workspace"],"note":"GitHub Pages distribuisce codice e librerie. La cache conserva solo asset statici."}]</script>
+    <script id="archify-guided-views-data" type="application/json">[{"id":"edit","label":"Modifica locale","focus":["files","workspace","engine","output"],"note":"I documenti vengono letti e trasformati nella memoria del browser."},{"id":"history","label":"Stato e strumenti","focus":["workspace","history","tools"],"note":"Cronologia pagine e coordinamento automatico tramite workspace-flow.mjs."},{"id":"delivery","label":"Distribuzione","focus":["hosting","cache","workspace"],"note":"GitHub Pages pubblica dopo CI; Vercel genera deploy dai push GitHub. I PDF restano nel browser."}]</script>
     <div class="guided-views no-print" id="guided-views" hidden aria-label="Guided diagram views">
       <button id="guided-view-prev" type="button" aria-label="Previous guided view" title="Previous guided view ([)">&#8592;</button>
       <div class="guided-view-copy">
@@ -3949,15 +3949,15 @@
         <text data-detail="context" x="110" y="176" class="t-muted" font-size="9" text-anchor="middle">sw.js / allowlist</text>
         </g>
 
-        <g id="node-hosting" data-node-id="hosting" data-node-label="GitHub Pages" tabindex="0" role="button" aria-label="Focus GitHub Pages, HTTPS / statico, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="HTTPS / statico" data-node-context="Architecture component">
-          <title>GitHub Pages · HTTPS / statico · Architecture component</title>
+        <g id="node-hosting" data-node-id="hosting" data-node-label="Pages / Vercel" tabindex="0" role="button" aria-label="Focus Pages / Vercel, Hosting statico, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="Hosting statico" data-node-context="Architecture component">
+          <title>Pages / Vercel · Hosting statico · Architecture component</title>
           <rect x="40" y="10" width="140" height="64" rx="6" class="c-mask"/>
           <rect x="40" y="10" width="140" height="64" rx="6" class="c-cloud" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(46 16) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-detail-anchor x="110" y="40" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">GitHub Pages</text>
-        <text data-detail="context" x="110" y="56" class="t-muted" font-size="9" text-anchor="middle">HTTPS / statico</text>
+          <text data-detail-anchor x="110" y="40" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Pages / Vercel</text>
+        <text data-detail="context" x="110" y="56" class="t-muted" font-size="9" text-anchor="middle">Hosting statico</text>
         </g>
 
         <!-- Connection labels -->

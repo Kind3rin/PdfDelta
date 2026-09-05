@@ -87,11 +87,20 @@ Il validatore dei risultati è separato dagli handler in `tests/output-validator
 - Corpus esteso, altri browser, accessibilità completa e performance su file
   complessi restano nel piano; non dichiarare certificazione enterprise.
 
-GitHub Pages distribuisce asset statici dal branch main. `_headers` si applica
+GitHub Pages distribuisce l'artefatto del commit main dopo il job `verify`.
+Il job `deploy` dipende dai test, esclude le pull request e archivia soltanto
+i file versionati con `git archive HEAD`. `_headers` si applica
 su Cloudflare, non su Pages: `index.html` include quindi una CSP meta per script,
 worker e risorse locali. WASM è consentito per i decoder, JavaScript eval no.
 La CSP meta non sostituisce header come frame-ancestors o X-Content-Type-Options.
 # Sincronizzazione della cronologia
+
+L'editor conserva una firma a mano vettoriale in memoria di sessione: il riquadro
+di creazione normalizza i tratti e ogni inserimento ne copia i punti nel documento.
+I tratti sono esportati su ogni pagina selezionata. Le firme digitate conservano
+lo stile scelto (Times Italic, Helvetica Oblique, Courier Oblique) nel PDF.
+Vercel usa `vercel.json` e il repository Git collegato; AGENTS.md rende persistenti
+le regole dell'obiettivo. Il collegamento locale `.vercel` e i token sono esclusi da Git.
 
 Il workspace emette `pdfdelta-history` dopo Annulla/Ripeti, anche da tastiera.
 `workspace-flow.mjs` aggiorna gli input degli strumenti e l'elenco file con le
