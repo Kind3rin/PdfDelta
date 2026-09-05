@@ -242,3 +242,6 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - [x] Client attivato; SDK e PDF restano separati, segreto assente dal repository.
 - Prova su Vercel e verifica CI seguite dopo il push; telefoni reali e utenti non tecnici restano aperti.
 
+
+- [x] Accesso su Vercel, recupero tema e preferito da sessione con storage separato, reload e logout verificati. Redirect temporaneo rimosso. CI e suite pubblica superate.
+

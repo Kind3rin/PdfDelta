@@ -7,9 +7,8 @@ regione eu-central-1. Costo di creazione confermato: 0 EUR/mese sul piano Free.
 La tabella account_preferences è attiva: tema e identificatori degli strumenti.
 Nessun PDF, firma, nome file o contenuto di documento viene sincronizzato.
 
-Il provider Google è configurato e `account-config.mjs` abilita il client. In precedenza:
-il provider non è configurato e verificato. Non mostrare registrazioni funzionanti
-prima di un accesso reale completo. Gli strumenti PDF restano disponibili offline.
+Il provider Google è configurato e il client è attivo. Accesso reale verificato
+prima in locale, poi su Vercel. Gli strumenti PDF restano disponibili offline.
 
 ## Configurazione Google (completata il 5 settembre 2026)
 
@@ -43,8 +42,7 @@ la conferma dell'indirizzo per aggirare questo limite.
 - Advisor sicurezza Supabase: nessun rilievo dopo la migrazione.
 - Browser: dialog account a 390px, blocco OAuth con PDF aperto, nessuna richiesta
   esterna nel flusso ospite, suite workspace/output invariata.
-- Accesso Google reale e sincronizzazione tra due sessioni autenticate: ancora
-  da verificare. I test del controller e di RLS non sostituiscono questa prova.
+- Accesso Google reale verificato su locale e Vercel, con storage browser separato per origine: tema e preferito recuperati dal database. Provati reload e logout. Questa prova non equivale a due telefoni fisici.
 
 ## Confini e limiti
 
@@ -70,3 +68,6 @@ https://supabase.com/docs/guides/database/postgres/row-level-security.
 - Branding con home e privacy; pubblico Google portato da Test a In produzione.
 - Accesso reale del proprietario riuscito; reload mantiene Account; tema dark e preferito split osservati nel database dopo interazioni UI.
 - Il nome mostrato da Google durante l'accesso è il dominio del progetto Supabase; nessuna verifica del marchio o dominio personalizzato dichiarata.
+
+- Collaudo pubblico riuscito su https://pdfdelta.vercel.app/; CI e deploy Pages verdi al commit 2e36451.
+- Redirect locale rimosso dopo il collaudo: resta solo Vercel. Preferenze di prova ripristinate.
