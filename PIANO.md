@@ -158,5 +158,12 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Attesa di avvio Chrome estesa a 30 secondi per i runner CI; suite locale completa superata.
 - CI obbligatoria prima di dichiarare chiuso il ciclo: https://github.com/Kind3rin/PdfDelta/actions/workflows/verify.yml
 
+### Coerenza cronologia e strumenti
+
+- Annulla/Ripeti sincronizzano i file di input e il relativo elenco con le sorgenti ripristinate, senza reimportare e perdere le modifiche alle pagine.
+- La scorciatoia da tastiera usa lo stesso percorso; il ripristino viene ignorato durante un'elaborazione attiva.
+- Regressione browser: risultato con metadati → annulla → ripeti → annulla da tastiera → download integro → nuovo strumento.
+- Restano aperte le verifiche dei confronti tra più documenti dopo modifiche strutturali e delle operazioni concorrenti.
+
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.

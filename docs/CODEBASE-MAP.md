@@ -91,3 +91,11 @@ GitHub Pages distribuisce asset statici dal branch main. `_headers` si applica
 su Cloudflare, non su Pages: `index.html` include quindi una CSP meta per script,
 worker e risorse locali. WASM è consentito per i decoder, JavaScript eval no.
 La CSP meta non sostituisce header come frame-ancestors o X-Content-Type-Options.
+# Sincronizzazione della cronologia
+
+Il workspace emette `pdfdelta-history` dopo Annulla/Ripeti, anche da tastiera.
+`workspace-flow.mjs` aggiorna gli input degli strumenti e l'elenco file con le
+sorgenti ripristinate, preservando gli input non PDF. Non riapre i PDF:
+ordine e rotazioni restano quelli della cronologia. Il ripristino è bloccato
+mentre uno strumento sta elaborando. La suite browser verifica entrambe le
+direzioni della cronologia e il download del documento originale completo.
