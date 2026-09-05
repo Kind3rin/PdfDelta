@@ -7,11 +7,11 @@ regione eu-central-1. Costo di creazione confermato: 0 EUR/mese sul piano Free.
 La tabella account_preferences è attiva: tema e identificatori degli strumenti.
 Nessun PDF, firma, nome file o contenuto di documento viene sincronizzato.
 
-Il client è implementato ma `account-config.mjs` mantiene enabled=false finché
+Il provider Google è configurato e `account-config.mjs` abilita il client. In precedenza:
 il provider non è configurato e verificato. Non mostrare registrazioni funzionanti
 prima di un accesso reale completo. Gli strumenti PDF restano disponibili offline.
 
-## Attivazione Google (configurazione esterna ancora necessaria)
+## Configurazione Google (completata il 5 settembre 2026)
 
 1. In Google Cloud, creare/configurare un client OAuth di tipo Web application.
    Origine autorizzata: https://pdfdelta.vercel.app.
@@ -61,3 +61,12 @@ pubblica; nessuna service_role nel client. Schema versionato nelle migrazioni.
 Fonti: https://supabase.com/docs/guides/auth/social-login/auth-google,
 https://supabase.com/docs/guides/auth/auth-smtp,
 https://supabase.com/docs/guides/database/postgres/row-level-security.
+
+## Verifica OAuth reale
+
+- Provider Google abilitato su Supabase; segreto inserito solo nel pannello provider.
+- Origine Vercel e callback Supabase verificate nel client Google.
+- Site URL e redirect Vercel configurati; callback locale temporanea per collaudo.
+- Branding con home e privacy; pubblico Google portato da Test a In produzione.
+- Accesso reale del proprietario riuscito; reload mantiene Account; tema dark e preferito split osservati nel database dopo interazioni UI.
+- Il nome mostrato da Google durante l'accesso è il dominio del progetto Supabase; nessuna verifica del marchio o dominio personalizzato dichiarata.

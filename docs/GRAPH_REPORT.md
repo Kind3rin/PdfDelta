@@ -4,12 +4,12 @@
 - cluster-only mode — file stats not available
 
 ## Summary
-- 351 nodes · 923 edges · 25 communities (22 shown, 3 thin omitted)
+- 351 nodes · 923 edges · 24 communities (21 shown, 3 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 90 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `af9d8668`
+- Built from commit: `05b82761`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -35,7 +35,6 @@
 - sw.js
 - blankPdf
 - enhanceCanvas
-- docxDocumentXml
 
 ## God Nodes (most connected - your core abstractions)
 1. `downloadBlob()` - 77 edges
@@ -64,7 +63,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (25 total, 3 thin omitted)
+## Communities (24 total, 3 thin omitted)
 
 ### Community 0 - "downloadBlob"
 Cohesion: 0.14
@@ -99,8 +98,8 @@ Cohesion: 0.16
 Nodes (18): blankPageIndicesFromRenderDoc(), canvasHasVisibleInk(), canvasToBlob(), canvasToGrayscale(), canvasToImageBytes(), canvasToPngBytes(), contactSheet(), enhanceScan() (+10 more)
 
 ### Community 8 - "extractTextFromPdfFile"
-Cohesion: 0.18
-Nodes (12): auditAccessibility(), csvCell(), csvDate(), documentReport(), extractedTextBody(), extractTextFromPdfFile(), joinPdfTextLine(), pdfTextItemsToLines() (+4 more)
+Cohesion: 0.13
+Nodes (16): auditAccessibility(), csvCell(), csvDate(), documentReport(), docxDocumentXml(), docxParagraph(), extractedTextBody(), extractTextFromPdfFile() (+8 more)
 
 ### Community 9 - "setEditorStatus"
 Cohesion: 0.24
@@ -137,10 +136,6 @@ Nodes (5): csvValue(), detectPageFormat(), getPageSizeInfo(), pageSizeReport(), 
 ### Community 17 - "toggleFavorite"
 Cohesion: 0.50
 Nodes (4): renderCategories(), saveFavorites(), setFilter(), toggleFavorite()
-
-### Community 24 - "docxDocumentXml"
-Cohesion: 0.50
-Nodes (4): docxDocumentXml(), docxParagraph(), makeDocxBlob(), xmlEscape()
 
 ## Knowledge Gaps
 - **99 isolated node(s):** `signatureDraft`, `signatureFaces`, `categories`, `state`, `grid` (+94 more)

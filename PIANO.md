@@ -234,3 +234,11 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - [x] Test controller, isolamento database e dialog mobile. Dettagli in docs/ACCOUNTS.md.
 - [ ] Configurare provider Google (o SMTP), completare accesso reale e prova tra due browser, quindi abilitare accesso pubblico. Flag disattivato finché queste prove mancano.
 - [ ] Validazione utenti non tecnici e dispositivi fisici; non sostituita da CI o viewport.
+
+### Attivazione Google OAuth
+
+- [x] Configurati provider, Site URL, redirect e branding; Google in produzione.
+- [x] Accesso reale con account proprietario, persistenza dopo reload, scrittura tema e preferito verificate.
+- [x] Client attivato; SDK e PDF restano separati, segreto assente dal repository.
+- Prova su Vercel e verifica CI seguite dopo il push; telefoni reali e utenti non tecnici restano aperti.
+
