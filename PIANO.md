@@ -99,7 +99,20 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Mitigazione ufficiale:
   https://github.com/mozilla/pdf.js/security/advisories/GHSA-wgrm-67xf-hhpq
 - La mitigazione non sostituisce l'aggiornamento dipendenze né un audit completo.
-- Produzione, dispositivi reali e superiorità rispetto al concorrente non verificati.
+- Il primo ciclo è pubblicato su GitHub Pages: workspace, export e offline verificati anche sul sito pubblico.
+- Dispositivi reali e superiorità rispetto al concorrente non verificati.
+
+## Ciclo pubblicato — 2026-09-05
+
+- Motore PDF.js 6.3.289, workspace visuale e documentazione Graphify/Archify.
+- 12 test unitari/sicurezza superati; suite strumenti e verifica workspace superate.
+- CI: https://github.com/Kind3rin/PdfDelta/actions/runs/33953802439
+- Deploy: https://github.com/Kind3rin/PdfDelta/actions/runs/33953801244
+- Verifica pubblica su https://kind3rin.github.io/PdfDelta/: 3 pagine esportate,
+  ordine e rotazione verificati, testo conservato, import fallito/annullato non
+  altera la sessione, avvio e rendering offline riusciti, zero errori JavaScript
+  e zero richieste a origini esterne.
+- Le restanti caselle del piano rimangono aperte; nessuna dichiarazione enterprise-ready.
 
 ## Chiusura dei cicli
 

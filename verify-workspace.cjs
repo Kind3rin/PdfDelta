@@ -17,7 +17,7 @@ async function main() {
     ws.onmessage = event => {
       const msg = JSON.parse(event.data);
       if (msg.method === 'Runtime.exceptionThrown') errors.push(msg.params.exceptionDetails.text);
-      if (msg.method === 'Network.requestWillBeSent' && /^https?:/.test(msg.params.request.url) && !msg.params.request.url.startsWith(site.origin)) external.push(msg.params.request.url);
+      if (msg.method === 'Network.requestWillBeSent' && /^https?:/.test(msg.params.request.url) && new URL(msg.params.request.url).origin !== new URL(site.origin).origin) external.push(msg.params.request.url);
       if (pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
     };
     const send = (method, params = {}) => new Promise((resolve, reject) => {

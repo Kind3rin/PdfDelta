@@ -64,6 +64,7 @@ Profilo standard: validazione con zero errori e zero avvisi.
 - Workspace Chrome: PDF esportato riaperto e controllato per pagine, ordine,
   rotazione e testo; import fallito/annullato conserva il documento precedente.
 - Offline: nuova apertura dell'app e rendering del documento di esempio con rete disattivata.
+- Gli stessi controlli workspace/export/offline passano anche su GitHub Pages.
 - Preview 1440×1050 e 390×844, nessun overflow orizzontale; non sono prove su telefono reale.
 - Suite strumenti esistenti separata dalla verifica degli output del workspace.
 - Corpus esteso, altri browser, accessibilità completa e performance su file
