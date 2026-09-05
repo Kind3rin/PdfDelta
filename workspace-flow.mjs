@@ -169,5 +169,9 @@ export function initFlow(bridge, workspace) {
     }).catch(error => workspace.status(error.message));
   });
   update(bridge.getAllFiles());
+  window.addEventListener('pdfdelta-busy', event => {
+    host.setAttribute('aria-busy', String(event.detail));
+    for (const panel of [quick, actionPanel, fileDetails, picker, $('editor')]) panel.inert = event.detail;
+  });
   host.dataset.flow = 'ready';
 }

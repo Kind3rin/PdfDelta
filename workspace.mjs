@@ -12,16 +12,21 @@ export function initWorkspace(bridge) {
   const status = message => { $('wsStatus').textContent = message; };
   const title = () => sources.get(history.pages[0]?.source)?.file.name || 'Il tuo documento';
   function controls() {
+    const locked = busy || bridge.isBusy();
     host.dataset.selected = String(selected.size > 0);
-    host.querySelectorAll('[data-edit]').forEach(button => { button.disabled = busy || !selected.size; });
-    $('wsUndo').disabled = busy || !history.canUndo;
-    $('wsRedo').disabled = busy || !history.canRedo;
-    for (const id of ['wsExport', 'wsContinue', 'wsSelectAll', 'wsCompare']) $(id).disabled = busy || !history.pages.length;
-    for (const id of ['wsImport', 'wsDemo', 'wsFromQueue', 'wsUseOutput', 'wsReset']) $(id).disabled = busy;
-    $('wsFiles').disabled = busy;
+    host.querySelectorAll('[data-edit]').forEach(button => { button.disabled = locked || !selected.size; });
+    $('wsUndo').disabled = locked || !history.canUndo;
+    $('wsRedo').disabled = locked || !history.canRedo;
+    for (const id of ['wsExport', 'wsContinue', 'wsSelectAll', 'wsCompare']) $(id).disabled = locked || !history.pages.length;
+    for (const id of ['wsImport', 'wsDemo', 'wsFromQueue', 'wsUseOutput', 'wsReset']) $(id).disabled = locked;
+    $('wsFiles').disabled = locked;
     $('wsCancel').hidden = !busy;
     $('wsSummary').textContent = `${history.pages.length} pagine · ${selected.size} selezionate`;
   }
+  window.addEventListener('pdfdelta-busy', controls);
+  host.addEventListener('click', event => {
+    if (bridge.isBusy()) { event.preventDefault(); event.stopImmediatePropagation(); }
+  }, true);
   function checkCancelled() { if (cancel) throw new DOMException('Operazione annullata. Il documento precedente è intatto.', 'AbortError'); }
   async function job(action) {
     if (busy) return;
@@ -153,12 +158,13 @@ export function initWorkspace(bridge) {
   }
   $('wsPages').onclick = event => {
     const card = event.target.closest('[data-page]');
-    if (!card || busy) return;
+    if (!card || busy || bridge.isBusy()) return;
     const id = card.dataset.page;
     selected.has(id) ? selected.delete(id) : selected.add(id);
     updateSelection();
   };
   host.querySelectorAll('[data-edit]').forEach(button => button.onclick = () => {
+    if (busy || bridge.isBusy()) return;
     try {
       const action = button.dataset.edit;
       if (action === 'rotate') history.rotate(selected);
@@ -172,7 +178,7 @@ export function initWorkspace(bridge) {
   $('wsPages').ondragstart = event => { if (busy) { event.preventDefault(); return; } dragged = event.target.closest('[data-page]')?.dataset.page; event.dataTransfer.setData('text/plain', dragged || ''); };
   $('wsPages').ondragover = event => { if (dragged) event.preventDefault(); };
   $('wsPages').ondrop = event => {
-    if (!dragged || busy) return;
+    if (!dragged || busy || bridge.isBusy()) return;
     event.preventDefault(); history.moveTo(dragged, event.target.closest('[data-page]')?.dataset.page); dragged = null; void render();
   };
   $('wsPages').ondragend = () => { dragged = null; };

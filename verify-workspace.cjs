@@ -184,8 +184,10 @@ async function main() {
       await until(() => document.querySelectorAll('[data-page]').length === 4 && !$('wsExport').disabled);
       document.querySelector('[data-page]').click(); document.querySelector('[data-edit="rotate"]').click();
       const originalBeforeRun = workspaceBridge.beforeRun;
-      let checked = false;
+      let checked = false, release;
+      const gate = new Promise(resolve => { release = resolve; });
       workspaceBridge.beforeRun = async tool => {
+        await gate;
         const prepared = await originalBeforeRun(tool);
         if (prepared?.length !== 2 || prepared[0].name !== files[0].name || prepared[1] !== files[1]) throw new Error('Comparison inputs were merged or an untouched document was rewritten');
         const edited = await PDFLib.PDFDocument.load(await prepared[0].arrayBuffer());
@@ -194,10 +196,24 @@ async function main() {
       };
       workspaceBridge.selectTool('compare-visual');
       const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail), { once: true }));
-      await workspaceBridge.run();
+      const running = workspaceBridge.run();
+      await until(() => workspaceBridge.isBusy());
+      if (!$('wsExport').disabled || !$('wsImport').disabled || !$('flowAllTools').parentElement.inert || $('visualWorkspace').getAttribute('aria-busy') !== 'true') throw new Error('Busy controls remain active');
+      $('clearQueue').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      document.querySelector('[data-remove-file]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      document.querySelector('[data-edit="rotate"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      workspaceBridge.selectTool('page-numbers');
+      workspaceBridge.addFiles([new File(['unwanted'], 'extra.txt')]);
+      if (workspaceBridge.getAllFiles().length !== 2) throw new Error('Inputs changed while busy');
+      release(); await running;
       if (!checked) throw new Error('Comparison preparation failed: ' + $('resultPanel')?.textContent);
       const report = await output;
       if (!report.filename.endsWith('.html') || !(await report.blob.text()).includes('Versione-A')) throw new Error('Comparison report missing');
+      workspaceBridge.beforeRun = originalBeforeRun;
+      if ($('flowAllTools').parentElement.inert || $('visualWorkspace').getAttribute('aria-busy') !== 'false') throw new Error('Controls not restored after completion');
+      workspaceBridge.beforeRun = async () => { throw new Error('Errore di prova controllato'); };
+      await workspaceBridge.run();
+      if (workspaceBridge.isBusy() || $('wsExport').disabled || $('flowAllTools').parentElement.inert) throw new Error('Controls not restored after failure');
       workspaceBridge.beforeRun = originalBeforeRun;
     })()`);
     await evaluate("document.getElementById('themeToggle').click()");

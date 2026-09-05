@@ -485,6 +485,7 @@ function getOptions() {
 }
 
 function selectTool(toolId, options = {}) {
+  if (state.busy) return;
   const tool = tools.find((item) => item.id === toolId);
   if (!tool) return;
 
@@ -3377,6 +3378,7 @@ async function runSelectedTool() {
   if (!handler) throw new Error("Strumento non ancora implementato in modalita zero costi.");
 
   state.busy = true;
+  window.dispatchEvent(new CustomEvent('pdfdelta-busy', { detail: true }));
   const lockedControls = [...document.querySelectorAll('#workspace button, #workspace input, #workspace select')].map(control => [control, control.disabled]);
   lockedControls.forEach(([control]) => { control.disabled = true; });
   runButton.disabled = true;
@@ -3394,6 +3396,7 @@ async function runSelectedTool() {
     state.busy = false;
     lockedControls.forEach(([control, disabled]) => { control.disabled = disabled; });
     renderFiles();
+    window.dispatchEvent(new CustomEvent('pdfdelta-busy', { detail: false }));
   }
 }
 
@@ -3459,6 +3462,7 @@ searchInput.addEventListener("input", (event) => {
 fileInput.addEventListener("change", (event) => addFiles(event.target.files));
 
 fileList.addEventListener("click", (event) => {
+  if (state.busy) return;
   const remove = event.target.closest("[data-remove-file]");
   if (!remove) return;
   state.files.splice(Number(remove.dataset.removeFile), 1);
@@ -3492,6 +3496,7 @@ fileList.addEventListener("click", (event) => {
 dropzone.addEventListener("drop", (event) => addFiles(event.dataTransfer.files));
 
 $("#clearQueue").addEventListener("click", () => {
+  if (state.busy) return;
   state.files = [];
   fileInput.value = "";
   resultPanel.textContent = "";
