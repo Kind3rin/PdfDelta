@@ -407,7 +407,7 @@ async function main() {
       const { initAccount } = await import('./account.mjs');
       const { accountConfig } = await import('./account-config.mjs');
       const { workspaceBridge } = await import('./app.js');
-      await initAccount(workspaceBridge, { ...accountConfig, enabled: true });
+      if (!document.querySelector('.account-open')) await initAccount(workspaceBridge, { ...accountConfig, enabled: true });
       document.querySelector('.account-open').click();
       document.querySelector('.account-login').click();
       if (!document.querySelector('.account-status').textContent.includes('Scarica il documento')) throw new Error('OAuth must not discard an open PDF');
