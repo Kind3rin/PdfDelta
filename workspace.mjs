@@ -107,6 +107,7 @@ export function initWorkspace(bridge) {
     }
   }
   async function compose(pages = history.pages, filename = 'pdfdelta-workspace.pdf') {
+    checkCancelled();
     // Preserve document-level data when only viewing a file or a tool result.
     const activeSources = [...new Set(pages.map(page => page.source))];
     if (activeSources.length === 1) {
@@ -183,7 +184,7 @@ export function initWorkspace(bridge) {
     event.preventDefault(); history.moveTo(dragged, event.target.closest('[data-page]')?.dataset.page); dragged = null; void render();
   };
   $('wsPages').ondragend = () => { dragged = null; };
-  $('wsExport').onclick = () => void job(async () => { const file = await compose(); bridge.download(file, file.name); status('PDF esportato. Le modifiche restano disponibili.'); });
+  $('wsExport').onclick = () => void job(async () => { const file = await compose(); checkCancelled(); bridge.download(file, file.name); status('PDF esportato. Le modifiche restano disponibili.'); });
   $('wsContinue').onclick = () => void job(async () => {
     bridge.useFile(await compose());
     document.querySelector('#workspace').scrollIntoView({ behavior: 'smooth' });

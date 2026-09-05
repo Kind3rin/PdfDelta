@@ -234,6 +234,48 @@ async function main() {
       if (workspaceBridge.isBusy() || $('wsExport').disabled || $('flowAllTools').parentElement.inert) throw new Error('Controls not restored after failure');
       workspaceBridge.beforeRun = originalBeforeRun;
     })()`);
+    await evaluate(`(async () => {
+      const $ = id => document.getElementById(id);
+      const until = async fn => { const end = Date.now() + 20000; while (!fn()) { if (Date.now() > end) throw new Error('Long document: ' + fn); await new Promise(r => setTimeout(r, 20)); } };
+      const { workspaceBridge } = await import('./app.js');
+      const doc = await PDFLib.PDFDocument.create();
+      for (let i = 0; i < 120; i++) doc.addPage([300, 400]).drawText('Page ' + (i + 1));
+      const original = new File([await doc.save()], '120-pagine.pdf', { type: 'application/pdf' });
+      workspaceBridge.replaceFiles([original]);
+      await until(() => $('wsSummary').textContent.startsWith('120 pagine') && !$('wsExport').disabled);
+      if (document.querySelectorAll('[data-page]').length !== 60 || $('wsMore').hidden) throw new Error('Initial long-document preview is not bounded');
+      let outputs = 0;
+      const count = () => { outputs++; }; window.addEventListener('pdfdelta-output', count);
+      const cancelImmediately = event => { if (event.detail) $('wsCancel').click(); };
+      window.addEventListener('pdfdelta-workspace-busy', cancelImmediately);
+      $('wsExport').click();
+      await until(() => !$('wsExport').disabled);
+      window.removeEventListener('pdfdelta-workspace-busy', cancelImmediately);
+      if (outputs || !$('wsStatus').textContent.includes('annullata')) throw new Error('Cancelled passthrough still downloaded');
+      document.querySelector('[data-page]').click(); document.querySelector('[data-edit="rotate"]').click();
+      const cancelProgress = new MutationObserver(() => { if ($('wsStatus').textContent.startsWith('Preparazione pagina 11 ')) $('wsCancel').click(); });
+      cancelProgress.observe($('wsStatus'), { childList: true });
+      $('wsExport').click(); await until(() => !$('wsExport').disabled); cancelProgress.disconnect();
+      if (outputs || !$('wsStatus').textContent.includes('annullata') || !$('wsSummary').textContent.startsWith('120 pagine')) throw new Error('Cancelled rebuild changed the document or downloaded');
+      window.removeEventListener('pdfdelta-output', count);
+      const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
+      $('wsExport').click(); const bytes = await (await output).arrayBuffer();
+      const saved = await PDFLib.PDFDocument.load(bytes);
+      if (saved.getPageCount() !== 120 || saved.getPage(0).getRotation().angle !== 90) throw new Error('Retry lost pages or rotation');
+      const task = pdfjsLib.getDocument({ data: new Uint8Array(bytes), owner: 'workspace' });
+      try {
+        const reader = await task.promise;
+        for (const number of [1, 60, 120]) if (!(await (await reader.getPage(number)).getTextContent()).items.some(item => item.str === 'Page ' + number)) throw new Error('Long export text/order corrupted');
+      } finally { await task.destroy(); }
+      await until(() => !$('wsExport').disabled);
+      $('wsMore').click(); await until(() => document.querySelectorAll('[data-page]').length === 120);
+      if (!$('wsMore').hidden) throw new Error('Long preview pagination failed');
+      const oversized = await PDFLib.PDFDocument.create();
+      for (let i = 0; i < 1001; i++) oversized.addPage([100, 100]);
+      workspaceBridge.replaceFiles([new File([await oversized.save()], 'troppo-lungo.pdf', { type: 'application/pdf' })]);
+      await until(() => $('wsStatus').textContent.includes('1000 pagine') && !$('wsExport').disabled);
+      if (!$('wsSummary').textContent.startsWith('120 pagine') || workspaceBridge.getFiles()[0] !== original) throw new Error('Rejected page-limit import replaced current document');
+    })()`);
     await evaluate("document.getElementById('themeToggle').click()");
     fs.writeFileSync('dist/verification/workspace-dark.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await evaluate("document.getElementById('themeToggle').click()");
