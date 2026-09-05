@@ -140,6 +140,13 @@ export function initFlow(bridge, workspace) {
       showPages(); update(files);
     }).catch(error => workspace.status(error.message));
   });
+  window.addEventListener('pdfdelta-history', event => {
+    // The restored sources are already open. Refresh tool inputs without importing
+    // them again, which would overwrite the restored page order and rotations.
+    lastFiles = [...event.detail, ...bridge.getAllFiles().filter(file => !/\.pdf$/i.test(file.name))];
+    bridge.replaceFiles(lastFiles);
+    showPages(); update(lastFiles); actionPanel.hidden = true;
+  });
   bridge.beforeRun = async tool => {
     await pending;
     if (!workspace.hasEdits() || !workspace.getFiles().length) return null;

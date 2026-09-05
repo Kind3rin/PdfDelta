@@ -155,6 +155,12 @@ async function main() {
       const task = pdfjsLib.getDocument({ data: saved.slice(), owner: 'workspace' });
       try { if ((await (await task.promise).getAttachments())?.size !== 1) throw new Error('Attachment lost on final download'); } finally { await task.destroy(); }
       await until(() => !$('wsExport').disabled); $('wsUndo').click();
+      const { workspaceBridge } = await import('./app.js');
+      if (workspaceBridge.getFiles()[0]?.name !== 'rich.pdf' || !$('fileList').textContent.includes('rich.pdf')) throw new Error('Undo left stale tool inputs');
+      $('wsRedo').click();
+      if (workspaceBridge.getFiles()[0]?.name === 'rich.pdf') throw new Error('Redo did not restore tool inputs');
+      $('visualWorkspace').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      if (workspaceBridge.getFiles()[0]?.name !== 'rich.pdf') throw new Error('Keyboard undo left stale tool inputs');
       const restored = new Promise(resolve => window.addEventListener('pdfdelta-output', e => resolve(e.detail.blob), { once: true }));
       $('wsExport').click(); const restoredBytes = new Uint8Array(await (await restored).arrayBuffer());
       if (restoredBytes.length !== initialRichBytes.length || !restoredBytes.every((byte, i) => byte === initialRichBytes[i])) throw new Error('Undo did not restore the complete original document');

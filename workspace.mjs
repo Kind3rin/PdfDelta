@@ -129,8 +129,19 @@ export function initWorkspace(bridge) {
   $('wsImport').onclick = () => $('wsFiles').click();
   $('wsFromQueue').onclick = () => void open(bridge.getFiles());
   $('wsCancel').onclick = () => { cancel = true; status('Annullamento in corso…'); };
-  $('wsUndo').onclick = () => { history.undo(); selected.clear(); void render(); status('Modifica annullata.'); };
-  $('wsRedo').onclick = () => { history.redo(); selected.clear(); void render(); status('Modifica ripristinata.'); };
+  function restoreHistory(redo = false) {
+    if (busy || bridge.isBusy()) return;
+    if (redo ? !history.canRedo : !history.canUndo) return;
+    if (redo) history.redo(); else history.undo();
+    selected.clear();
+    window.dispatchEvent(new CustomEvent('pdfdelta-history', {
+      detail: [...new Set(history.pages.map(page => sources.get(page.source).file))],
+    }));
+    void render();
+    status(redo ? 'Modifica ripristinata.' : 'Modifica annullata.');
+  }
+  $('wsUndo').onclick = () => restoreHistory();
+  $('wsRedo').onclick = () => restoreHistory(true);
   $('wsSelectAll').onclick = () => {
     if (selected.size === history.pages.length) selected.clear();
     else history.pages.forEach(p => selected.add(p.id));
@@ -217,7 +228,7 @@ export function initWorkspace(bridge) {
   host.addEventListener('keydown', event => {
     if (busy || /INPUT|SELECT|TEXTAREA/.test(event.target.tagName)) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-      event.preventDefault(); if (event.shiftKey) history.redo(); else history.undo(); selected.clear(); void render();
+      event.preventDefault(); restoreHistory(event.shiftKey);
     }
   });
   void render();
