@@ -275,3 +275,24 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - Testo e firme digitate mantengono orientamento e dimensione; firme disegnate e tratti liberi trasformano ogni punto e lo spessore.
 - Test geometrico delle quattro rotazioni, offset e scala; browser con inserimento su quattro pagine ritagliate e verifica posizione/orientamento del testo nell'output riaperto. Restano le regressioni delle firme vettoriali su due pagine.
 - Nessun invio dei documenti; test desktop e viewport mobile non equivalgono a telefoni fisici.
+
+### Affidabilità da uso reale: PDF con restrizioni e recupero
+
+- L'import distingue i PDF cifrati apribili senza password dai PDF che richiedono una password di apertura. I primi vengono preparati localmente con qpdf WASM, senza rasterizzare il contenuto; i secondi mostrano un errore esplicito (inserimento password non ancora disponibile).
+- Il File originale resta intatto. Workspace e strumenti usano la stessa copia modificabile; una nuova importazione fallita conserva il documento precedente e le modifiche.
+- Errori visibili vicino al documento, focus sull'avviso e scelta di un altro file; il ritorno automatico alla home non nasconde più l'errore.
+- Worker dedicato, annullamento/timeout, 100 MB per file e 200 MB dopo preparazione. Heap WASM limitato a 512 MiB: non equivale a un limite dell'intero processo. Port qpdf 12.3.2 con licenze e checksum; aggiornamento build alle protezioni native più recenti resta aperto.
+- Corpus sintetico con PDF ordinario, AES-256 apribile senza password, AES-256 con password di prova, testo, moduli e allegati. Nessun PDF dell'utente è incluso nel repository.
+
+### Editor: annullamento completo delle aggiunte
+
+- Annulla/Ripeti fino a 50 operazioni per testo, firme e tratti; rimuovere le aggiunte dalla pagina è annullabile. Una modifica nuova interrompe il ramo Ripeti.
+- Il ripristino torna alla pagina corretta; gesto di disegno finalizzato prima di navigazione, resize e salvataggio.
+- Mostra originale confronta l'anteprima senza cancellare modifiche o cambiare l'output. Scorciatoie separate dalla cronologia pagine e dalla digitazione nei campi.
+- Stato limitato alla sessione editor corrente; non implica cronologia universale di tutti gli strumenti.
+
+### Verifica su più motori browser
+
+- Playwright fissato nel progetto: Chromium, Firefox e WebKit, desktop e viewport mobile/touch. Fixture di caricamento, esempio, rotazione, annulla/ripeti, download e riapertura, errore e recupero, PDF con restrizioni.
+- Job CI Linux per ciascun motore; Pages attende anche questi test. Report, screenshot e tempi misurati allegati alla CI.
+- WebKit di Playwright non è Safari distribuito da Apple; viewport/touch non sono telefoni fisici. Restano aperti Safari reale, dispositivi fisici, corpus documentale più ampio e prove con utenti non tecnici.

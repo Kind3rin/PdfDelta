@@ -180,3 +180,22 @@ impedisce nuovi inserimenti finché l'anteprima non è pronta.
 editor-geometry.mjs inverte la matrice del viewport PDF.js per esportare le
 annotazioni visuali. Rotazione, origine del ritaglio e scala della pagina vengono
 applicate a punti, dimensioni e orientamento, senza ricreare o rasterizzare pagine.
+
+## Copie modificabili e recupero import
+
+readEditableSource in pdf-engine.mjs restituisce documento e File coerenti. Solo
+quando pdf-lib identifica cifratura, pdf-unlock.mjs avvia un Worker qpdf locale con
+password vuota; l'output è una copia in RAM, poi riletto e validato da pdf-lib.
+workspace-flow sostituisce anche la coda degli strumenti con la copia preparata.
+L'originale sul disco non cambia; il download senza altre modifiche restituisce
+questa copia modificabile per i documenti normalizzati, non i byte cifrati originali.
+
+pdf-unlock-worker.mjs usa MEMFS, non storage o rete. Istanza per job, timeout60s,
+annullamento e limite heap512MiB; non è un limite RSS. Vedi vendor/qpdf/README.md
+per provenienza, licenze e limiti della versione. La riscrittura può invalidare
+firme digitali preesistenti: mantenere sempre il file originale.
+
+editor-history.mjs conserva delta delle aggiunte per 50 operazioni. Il confronto
+originale agisce solo sull'overlay; export e annotazioni restano intatti.
+La suite tests/browser verifica tre motori e due viewport per motore, con download
+realmente riaperti. tests/fixtures/pdf contiene esclusivamente dati sintetici.
