@@ -94,6 +94,11 @@ Riordino, rotazione, rimozione o unione ricreano invece le pagine e non garantis
 conservazione di moduli interattivi, firme digitali, segnalibri o allegati.
 La firma disegnata e la firma testuale non sono firme digitali.
 
+L'importazione iniziale è la base della cronologia: Annulla non lascia un documento
+vuoto. I lettori dei file non più raggiungibili da Annulla/Ripeti vengono rilasciati.
+Annullare un'operazione può ripristinare il file completo, senza riscriverlo se
+ordine e rotazione delle pagine coincidono con il documento di origine.
+
 ## Verifica automatica locale
 
 Con Node.js 22 e Chrome nel percorso previsto da `verify-local.js`.

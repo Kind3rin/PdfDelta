@@ -32,6 +32,11 @@ I task PDF.js del workspace hanno vita di sessione e vengono distrutti quando la
 sessione è svuotata; quelli degli strumenti sono rilasciati dopo l'operazione,
 eccetto il lettore dell'editor attivo. I documenti non vengono salvati in cache.
 
+La cronologia espone l'insieme delle sorgenti ancora raggiungibili; il workspace
+rilascia quelle escluse dopo una nuova modifica o il superamento dei 50 passi.
+Il primo import è lo stato base. Il download conserva il file completo anche dopo
+undo quando i descrittori pagina coincidono con la sorgente originale.
+
 ## Graphify
 
 Estrazione AST locale con Graphify 0.9.18, senza API o estrazione semantica dei

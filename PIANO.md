@@ -117,6 +117,14 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 
 ## Chiusura dei cicli
 
+### Cronologia e risorse
+
+- Import iniziale come base; tutti i 50 passi rimangono annullabili dopo l'espulsione
+  degli stati più vecchi. Test con 60 modifiche e nuova modifica dopo undo.
+- Rilascio dei lettori non più raggiungibili dalla cronologia, verificato anche nel browser.
+- Undo di un'operazione conserva l'intero PDF: prova byte per byte con modulo e allegato.
+- 15 test unitari/sicurezza, suite workspace e regressione dei 74 strumenti passano localmente.
+
 ### Integrità dei risultati
 
 - 74/74 strumenti attivi con almeno un caso sintetico: output riaperti e verificati,
