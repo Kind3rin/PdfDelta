@@ -112,3 +112,10 @@ strumenti, editor e gestione file, impostando `aria-busy`. I gestori di
 aggiunta, cancellazione e cambio strumento proteggono anche lo stato applicativo.
 La regressione browser sospende la preparazione per tentare azioni concorrenti
 e verifica lo sblocco sia dopo un report riuscito sia dopo un errore controllato.
+
+`pdfdelta-workspace-busy` estende la stessa protezione alle operazioni del
+workspace, inclusi importazione ed esportazione. Il bridge consulta `isBusy`
+del workspace prima di accettare nuove esecuzioni o modifiche agli input.
+Il pulsante di annullamento resta disponibile durante le operazioni del
+workspace. La suite mobile verifica gli input invariati e l'output dopo
+tentativi concorrenti in entrambe le fasi.

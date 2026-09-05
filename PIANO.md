@@ -171,7 +171,9 @@ il budget cloud è zero. Office fedele resta un problema tecnico da risolvere.
 - Durante l'esecuzione di uno strumento, comandi delle pagine, selezione strumenti e gestione file non sono interattivi; il workspace espone lo stato occupato alle tecnologie assistive.
 - Guardie sui gestori impediscono anche cancellazioni, aggiunte e cambi strumento durante l'elaborazione.
 - Test browser con elaborazione sospesa: tentativi di svuotare/rimuovere/aggiungere file, ruotare e cambiare strumento non alterano gli input. Verificato ripristino dei comandi dopo successo ed errore.
-- Restano da verificare tutte le transizioni durante importazione ed esportazione, oltre all'annullamento generalizzato degli strumenti.
+- Importazione ed esportazione condividono la protezione dei comandi: i nuovi strumenti non partono mentre il workspace prepara il documento; Annulla operazione rimane disponibile.
+- Test nella viewport mobile: tentativi concorrenti di cancellazione, aggiunta, rotazione ed esecuzione durante entrambe le transizioni; verificati ripristino dei comandi e contenuto PDF esportato.
+- Resta aperto l'annullamento generalizzato degli strumenti e lo stress test con grandi documenti.
 
 Ogni ciclo consolidato chiude con test, aggiornamento docs/Graphify/Archify e
 deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
