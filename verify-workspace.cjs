@@ -380,8 +380,26 @@ async function main() {
       $('editorNext').click();
       const end = Date.now()+10000; while ($('editorPageInfo').textContent !== '2 / 2') { if (Date.now()>end) throw new Error('Signature page navigation'); await new Promise(r=>setTimeout(r,20)); }
       $('signatureDraw').click(); $('signaturePadUse').click(); place(.2,.4);
+      const { workspaceBridge } = await import('./app.js');
+      const originalLoad = PDFLib.PDFDocument.load;
+      PDFLib.PDFDocument.load = async () => { throw new Error('Errore salvataggio simulato'); };
+      $('editorSave').click();
+      while (workspaceBridge.isBusy()) await new Promise(r=>setTimeout(r,10));
+      if ($('editorSave').disabled || $('editor').inert || !document.body.textContent.includes('Errore salvataggio simulato')) throw new Error('Editor cannot retry after save failure');
+      let release;
+      const gate = new Promise(resolve => { release = resolve; });
+      PDFLib.PDFDocument.load = async (...args) => { await gate; return originalLoad.apply(PDFLib.PDFDocument, args); };
       const output = new Promise(resolve => window.addEventListener('pdfdelta-output', e=>resolve(e.detail.blob), { once:true }));
-      $('editorSave').click(); const task = pdfjsLib.getDocument({ data:new Uint8Array(await (await output).arrayBuffer()), owner:'workspace' });
+      $('editorSave').click();
+      if (!workspaceBridge.isBusy() || !$('editor').inert || !$('editorSave').disabled) throw new Error('Editor save does not lock workspace');
+      // A synthetic click bypasses inert: the exported snapshot must still retain the drawing.
+      $('editorClear').click();
+      release();
+      const saved = await output;
+      PDFLib.PDFDocument.load = originalLoad;
+      while (workspaceBridge.isBusy()) await new Promise(r=>setTimeout(r,10));
+      if ($('editor').inert || $('editorSave').disabled) throw new Error('Editor remains locked after save');
+      const task = pdfjsLib.getDocument({ data:new Uint8Array(await saved.arrayBuffer()), owner:'workspace' });
       try { const pdf = await task.promise, page = await pdf.getPage(1); const text = await page.getTextContent();
         if (new Set(text.items.filter(i=>i.str==='Firma test').map(i=>i.fontName)).size !== 3) throw new Error('Signature font styles lost in PDF');
         for (const number of [1,2]) { const ops = await (await pdf.getPage(number)).getOperatorList(); if (ops.fnArray.filter(op=>op===pdfjsLib.OPS.constructPath).length < 4) throw new Error('Reusable signature missing from PDF page '+number); }

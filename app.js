@@ -712,12 +712,14 @@ async function openPdfEditorTool() {
 
 async function saveEditedPdf() {
   if (!state.editor.file || !state.editor.pdfBytes) throw new Error("Apri un PDF nell'editor.");
+  const fileName = state.editor.file.name;
+  const { marks, strokes } = structuredClone({ marks: state.editor.marks, strokes: state.editor.strokes });
   const pdfDoc = await PDFDocument.load(state.editor.pdfBytes.slice(0), { ignoreEncryption: true });
   const textFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const signatureFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
   const signatureFonts = { TimesRomanItalic: signatureFont, HelveticaOblique: await pdfDoc.embedFont(StandardFonts.HelveticaOblique), CourierOblique: await pdfDoc.embedFont(StandardFonts.CourierOblique) };
 
-  state.editor.marks.forEach((mark) => {
+  marks.forEach((mark) => {
     const page = pdfDoc.getPage(mark.page - 1);
     if (mark.type === 'signature-drawing') {
       for (const stroke of mark.strokes) for (let i = 1; i < stroke.length; i++) page.drawLine({ start: { x: mark.x + stroke[i - 1].x, y: mark.y - stroke[i - 1].y }, end: { x: mark.x + stroke[i].x, y: mark.y - stroke[i].y }, thickness: 1.5, color: rgb(.07, .25, .55) });
@@ -732,7 +734,7 @@ async function saveEditedPdf() {
     });
   });
 
-  state.editor.strokes.forEach((stroke) => {
+  strokes.forEach((stroke) => {
     const page = pdfDoc.getPage(stroke.page - 1);
     for (let index = 1; index < stroke.points.length; index += 1) {
       page.drawLine({
@@ -745,7 +747,7 @@ async function saveEditedPdf() {
   });
 
   const bytes = await savePdfBytes(pdfDoc);
-  downloadBlob(new Blob([bytes], { type: "application/pdf" }), `${sanitizeFileName(state.editor.file.name)}-compilato-firmato.pdf`, { apply: true });
+  downloadBlob(new Blob([bytes], { type: "application/pdf" }), `${sanitizeFileName(fileName)}-compilato-firmato.pdf`, { apply: true });
   setEditorStatus("PDF modificato pronto.");
 }
 
@@ -3648,13 +3650,19 @@ document.getElementById('editorUndoInsertion').onclick = async () => {
 };
 
 editorSave?.addEventListener("click", async () => {
+  if (state.busy || workspaceBusy()) return;
+  state.busy = true;
   editorSave.disabled = true;
+  setEditorStatus("Preparazione del PDF con testo e firme…");
+  window.dispatchEvent(new CustomEvent('pdfdelta-busy', { detail: true }));
   try {
     await saveEditedPdf();
   } catch (error) {
     setEditorStatus(error.message || "Salvataggio non riuscito.");
   } finally {
+    state.busy = false;
     editorSave.disabled = false;
+    window.dispatchEvent(new CustomEvent('pdfdelta-busy', { detail: false }));
   }
 });
 

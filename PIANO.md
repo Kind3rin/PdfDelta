@@ -254,3 +254,10 @@ deploy GitHub Pages, come autorizzato. Verificare build e sito dopo ogni push.
 - Test aggiunti: errore di scrittura e nuova istanza, isolamento account, conferme fuori tempo, quota locale e vecchio dato ancora leggibile dopo errore quota.
 - Browser: navigazione reale in modalità offline, recupero del journal e successiva scrittura tramite trasporto simulato. OAuth reale già verificato nel ciclo precedente; questo test isola il recupero e non invia dati a Supabase.
 - Con storage bloccato o pieno il recupero resta in memoria fino alla chiusura: messaggio esplicito, nessuna garanzia di persistenza dopo reload in quel caso. Il merge simultaneo tra dispositivi resta aperto.
+
+### Salvataggio editor coerente
+
+- Il salvataggio blocca temporaneamente le operazioni del workspace e mostra lo stato di preparazione.
+- Nome file, testo, firme e tratti sono acquisiti prima delle attese: modifiche successive non cambiano l'output in corso.
+- Un errore sblocca l'editor e lascia gli inserimenti disponibili per riprovare.
+- Prova browser: errore di caricamento simulato, retry, attesa controllata, modifica sintetica durante il salvataggio e verifica delle firme nel PDF prodotto. Suite desktop/mobile e offline superata; dispositivi fisici restano da verificare.

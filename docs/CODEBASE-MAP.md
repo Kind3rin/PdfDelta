@@ -165,3 +165,8 @@ Il controller account include un journal delle preferenze non confermate: versio
 per modifica, chiave per proprietario, cancellazione solo dopo conferma corrente.
 La coda HTTP resta seriale; il journal sopravvive alla navigazione, quando lo storage
 locale è disponibile. I test di recupero non richiedono credenziali o rete cloud.
+
+Il salvataggio dell'editor usa lo stato busy condiviso con strumenti e workspace.
+L'evento pdfdelta-busy rende inerti i pannelli durante la preparazione; il finally
+ripristina le azioni anche dopo un errore. Le annotazioni sono copiate prima del
+primo await, così l'output corrisponde agli inserimenti presenti al clic.
