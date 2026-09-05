@@ -22,3 +22,11 @@ Rebuild: `node scripts/vendor-pdfjs.mjs` (Node 22 and tar; network only at vendo
 ## Account SDK
 
 @supabase/supabase-js 2.115.0, MIT; SDK e dipendenze sono inclusi nel bundle locale account-client.mjs. Licenza principale in ACCOUNT-LICENSE.txt; commenti di licenza conservati nel bundle. Riproduzione: npm ci, npm run vendor:account (esbuild 0.28.2). Le versioni transitive sono fissate in package-lock.json. Nessun CDN runtime.
+
+## Normalizzazione PDF locale
+
+qpdf 12.3.2, distribuzione WASM pdfstudio 0.4.0 (Apache-2.0), con zlib e IJG libjpeg.
+Questo software si basa in parte sul lavoro dell'Independent JPEG Group.
+Licenze, NOTICE, provenienza e checksum in qpdf/. Patch del limite heap a 512 MiB
+registrata nel manifest e riproducibile con scripts/vendor-qpdf.mjs. Nessun CDN
+runtime; nessun documento inviato a servizi esterni.

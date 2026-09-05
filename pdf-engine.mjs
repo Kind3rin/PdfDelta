@@ -3,6 +3,7 @@ import * as pdfjs from './vendor/pdfjs/build/pdf.min.mjs';
 const base = new URL('./vendor/pdfjs/', import.meta.url);
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('build/pdf.worker.min.mjs', base).href;
 const tasks = new Set();
+const normalizedFiles = new WeakMap();
 export const limits = Object.freeze({ fileBytes: 100 * 1024 * 1024, pages: 1000, canvasPixels: 16_000_000, canvasSide: 8192 });
 
 export function loadTask(options) {
@@ -38,16 +39,28 @@ export async function readBytes(file) {
   return bytes;
 }
 
-export async function readEditable(file) {
+export async function readEditableSource(file, { signal } = {}) {
+  let source = normalizedFiles.get(file) || file;
   try {
-    const document = await window.PDFLib.PDFDocument.load(await readBytes(file));
+    let document;
+    try {
+      document = await window.PDFLib.PDFDocument.load(await readBytes(source));
+    } catch (error) {
+      if (!/encrypt/i.test(error.message)) throw error;
+      const { normalizeEncryptedPdf } = await import('./pdf-unlock.mjs');
+      source = await normalizeEncryptedPdf(file, { password: '', signal });
+      document = await window.PDFLib.PDFDocument.load(await readBytes(source));
+      normalizedFiles.set(file, source);
+    }
     if (document.getPageCount() > limits.pages) throw new Error('Il limite locale è 1000 pagine per documento.');
-    return document;
+    return { file: source, document };
   } catch (error) {
-    if (/encrypt/i.test(error.message)) throw new Error('PDF protetto da password: apri una copia non protetta per modificarlo.');
+    if (error.code === 'PASSWORD_REQUIRED') throw new Error('Questo PDF richiede una password di apertura. Apri una copia senza password per usarla qui.');
     throw error;
   }
 }
+
+export async function readEditable(file) { return (await readEditableSource(file)).document; }
 
 export function viewportAtScale(page, scale, rotation = page.rotate) {
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('La risoluzione deve essere un numero positivo.');

@@ -83,3 +83,71 @@ test('annotation mapping reverses rotated, cropped and scaled viewports', () => 
     assert.ok(Math.abs(Math.abs(g.angle)-Math.abs(angle)) < .0001);
   }
 });
+
+import { AnnotationHistory } from './editor-history.mjs';
+
+test('annotation history restores mixed additions and page clearing in sequence order', () => {
+  const history = new AnnotationHistory();
+  const text = { sequence: 1, page: 1, type: 'text', text: 'Nome' };
+  const stroke = { sequence: 2, page: 2, points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] };
+  const signature = { sequence: 3, page: 1, type: 'signature-drawing', strokes: [[{ x: 2, y: 3 }, { x: 4, y: 5 }]] };
+  let state = { marks: [text, signature], strokes: [stroke] };
+  for (const mark of [text, signature]) history.record({ page: mark.page, added: { marks: [mark] } });
+  history.record({ page: 2, added: { strokes: [stroke] } });
+  history.record({ page: 1, removed: { marks: [text, signature] } });
+  state.marks = [];
+  state = history.move(state);
+  assert.equal(state.page, 1);
+  assert.deepEqual(state.marks, [text, signature]);
+  assert.deepEqual(state.strokes, [stroke]);
+  state = history.move(state, true);
+  assert.deepEqual(state.marks, []);
+  state = history.move(state);
+  state = history.move(state);
+  assert.equal(state.page, 2);
+  assert.deepEqual(state.strokes, []);
+  state = history.move(state, true);
+  assert.equal(state.page, 2);
+  assert.deepEqual(state.strokes, [stroke]);
+});
+
+test('annotation history snapshots nested points, clears redo on a new edit and resets per document', () => {
+  const history = new AnnotationHistory();
+  const mark = { sequence: 1, page: 1, strokes: [[{ x: 1, y: 2 }, { x: 3, y: 4 }]] };
+  history.record({ page: 1, added: { marks: [mark] } });
+  mark.strokes[0][0].x = 999;
+  let state = history.move({ marks: [mark], strokes: [] });
+  assert.equal(history.canRedo, true);
+  state = history.move(state, true);
+  assert.equal(state.marks[0].strokes[0][0].x, 1);
+  state.marks[0].strokes[0][0].x = 555;
+  state = history.move(state);
+  state = history.move(state, true);
+  assert.equal(state.marks[0].strokes[0][0].x, 1);
+  state = history.move(state);
+  history.record({ page: 2, added: { marks: [{ sequence: 2, page: 2, text: 'Nuovo' }] } });
+  assert.equal(history.canRedo, false);
+  assert.equal(history.move(state, true), null);
+  history.reset();
+  assert.equal(history.canUndo, false);
+  assert.equal(history.canRedo, false);
+  assert.equal(history.move(state), null);
+});
+
+test('annotation history keeps 50 undoable operations and ignores empty actions', () => {
+  const history = new AnnotationHistory();
+  let state = { marks: [], strokes: [] };
+  for (let sequence = 1; sequence <= 60; sequence++) {
+    const mark = { sequence, page: 1, text: String(sequence) };
+    state.marks.push(mark);
+    history.record({ page: 1, added: { marks: [mark] } });
+  }
+  for (let i = 0; i < 50; i++) state = history.move(state);
+  assert.deepEqual(state.marks.map(mark => mark.sequence), Array.from({ length: 10 }, (_, i) => i + 1));
+  assert.equal(history.canUndo, false);
+  history.record({ page: 1, added: { marks: [] }, removed: { strokes: [] } });
+  assert.equal(history.canRedo, true);
+  for (let i = 0; i < 50; i++) state = history.move(state, true);
+  assert.equal(state.marks.length, 60);
+  assert.equal(history.canRedo, false);
+});

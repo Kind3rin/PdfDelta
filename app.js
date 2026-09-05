@@ -1,6 +1,7 @@
 import { tools } from "./tool-catalog.mjs";
 import { createPageRenderer } from './editor-renderer.mjs';
 import { annotationGeometry } from './editor-geometry.mjs';
+import { AnnotationHistory } from './editor-history.mjs';
 const { PDFDocument, StandardFonts, rgb, degrees, PDFName } = window.PDFLib || {};
 
 
@@ -8,6 +9,9 @@ const FAVORITES_KEY = "pdfdelta-favorites";
 let workspaceBusy = () => false;
 let reusableSignature = null;
 let editorSequence = 0;
+const editorHistory = new AnnotationHistory();
+let editorOriginal = false;
+let editorPointerId = null;
 let editorRendering = false, editorPreviewReady = false, editorRenderRevision = 0;
 let signatureDraft = [], signatureStroke = null;
 const signatureFaces = { TimesRomanItalic: 'italic Georgia', HelveticaOblique: 'italic Arial', CourierOblique: 'italic Courier New' };
@@ -560,6 +564,10 @@ function setEditorReady(ready) {
 }
 
 function resetEditor() {
+  finishEditorStroke();
+  editorHistory.reset();
+  editorOriginal = false;
+  editorSequence = 0;
   state.editor.file = null;
   state.editor.pdfBytes = null;
   state.editor.pdf = null;
@@ -578,11 +586,13 @@ function resetEditor() {
     editorInkCanvas.height = 0;
   }
   if (editorPageInfo) editorPageInfo.textContent = "0 / 0";
+  updateEditorHistoryControls();
   setEditorReady(false);
   setEditorStatus("Carica un PDF e scegli Compila e firma.");
 }
 
 function setEditorMode(mode) {
+  finishEditorStroke();
   state.editor.mode = mode;
   editorModes?.querySelectorAll("[data-editor-mode]").forEach((button) => {
     button.classList.toggle("active", button.dataset.editorMode === mode);
@@ -622,11 +632,38 @@ function safePdfText(value) {
     .slice(0, 180);
 }
 
+function updateEditorHistoryControls() {
+  const editable = Boolean(state.editor.pdf) && !editorOriginal;
+  document.getElementById('editorUndoInsertion').disabled = !editable || !editorHistory.canUndo;
+  document.getElementById('editorRedoInsertion').disabled = !editable || !editorHistory.canRedo;
+  editorClear.disabled = !editable || ![...state.editor.marks, ...state.editor.strokes].some(item => item.page === state.editor.pageNumber);
+  const original = document.getElementById('editorShowOriginal');
+  original.disabled = !state.editor.pdf;
+  original.setAttribute('aria-pressed', String(editorOriginal));
+  original.textContent = editorOriginal ? 'Torna alle modifiche' : 'Mostra originale';
+  editorStage.dataset.original = String(editorOriginal);
+  editorInkCanvas.style.cursor = editorOriginal ? 'default' : state.editor.mode === 'draw' ? 'crosshair' : 'copy';
+  document.querySelectorAll('#editorModes button, #editorTextInput, #signatureFont, #signatureSize, #signatureDraw').forEach(control => { control.disabled = !editable; });
+}
+
+function finishEditorStroke() {
+  const stroke = state.editor.currentStroke;
+  state.editor.drawing = false;
+  state.editor.currentStroke = null;
+  if (editorPointerId !== null && editorInkCanvas?.hasPointerCapture(editorPointerId)) editorInkCanvas.releasePointerCapture(editorPointerId);
+  editorPointerId = null;
+  if (!stroke) return;
+  if (stroke.points.length > 1) editorHistory.record({ page: stroke.page, added: { strokes: [stroke] } });
+  else state.editor.strokes = state.editor.strokes.filter(item => item !== stroke);
+  drawEditorOverlay();
+}
+
 function drawEditorOverlay() {
-  document.getElementById('editorUndoInsertion').disabled = !state.editor.marks.length && !state.editor.strokes.length;
+  updateEditorHistoryControls();
   if (!editorInkCanvas || !state.editor.canvasSize.width) return;
   const context = editorInkCanvas.getContext("2d");
   context.clearRect(0, 0, editorInkCanvas.width, editorInkCanvas.height);
+  if (editorOriginal) return;
   context.lineCap = "round";
   context.lineJoin = "round";
 
@@ -689,11 +726,10 @@ const renderEditorPreview = createPageRenderer({
 
 async function renderEditorPage() {
   if (!state.editor.pdf || !pdfEditorCanvas || !editorInkCanvas) return;
+  finishEditorStroke();
   const revision = ++editorRenderRevision;
   editorRendering = true;
   editorPreviewReady = false;
-  state.editor.drawing = false;
-  state.editor.currentStroke = null;
   editorStage.setAttribute('aria-busy', 'true');
   editorPageInfo.textContent = `Caricamento pagina ${state.editor.pageNumber}…`;
   editorPrev.disabled = state.editor.pageNumber <= 1;
@@ -716,13 +752,21 @@ async function openPdfEditorTool() {
   const file = getPdfFiles()[0];
   if (!file) throw new Error("Carica un PDF per usare l'editor.");
 
+  finishEditorStroke();
+  const pdfBytes = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: new Uint8Array(pdfBytes.slice(0)) }).promise;
   state.editor.file = file;
-  state.editor.pdfBytes = await file.arrayBuffer();
-  state.editor.pdf = await window.pdfjsLib.getDocument({ isEvalSupported: false, data: new Uint8Array(state.editor.pdfBytes.slice(0)) }).promise;
+  state.editor.pdfBytes = pdfBytes;
+  state.editor.pdf = pdf;
   state.editor.pageNumber = 1;
   state.editor.pageCount = state.editor.pdf.numPages;
   state.editor.marks = [];
   state.editor.strokes = [];
+  editorHistory.reset();
+  editorOriginal = false;
+  editorSequence = 0;
+  state.editor.drawing = false;
+  state.editor.currentStroke = null;
   setEditorMode(state.editor.mode || "text");
   setEditorReady(true);
   setEditorStatus(`${file.name} pronto per compilazione e firma.`);
@@ -734,6 +778,7 @@ async function openPdfEditorTool() {
 
 async function saveEditedPdf() {
   if (!state.editor.file || !state.editor.pdfBytes) throw new Error("Apri un PDF nell'editor.");
+  finishEditorStroke();
   const fileName = state.editor.file.name;
   const sourcePdf = state.editor.pdf;
   const { marks, strokes } = structuredClone({ marks: state.editor.marks, strokes: state.editor.strokes });
@@ -781,10 +826,18 @@ async function saveEditedPdf() {
 }
 
 function clearCurrentEditorPage() {
+  if (!state.editor.pdf || editorOriginal || state.busy || workspaceBusy()) return;
+  finishEditorStroke();
+  const removed = {
+    marks: state.editor.marks.filter(mark => mark.page === state.editor.pageNumber),
+    strokes: state.editor.strokes.filter(stroke => stroke.page === state.editor.pageNumber),
+  };
+  if (!removed.marks.length && !removed.strokes.length) return;
+  editorHistory.record({ page: state.editor.pageNumber, removed });
   state.editor.marks = state.editor.marks.filter((mark) => mark.page !== state.editor.pageNumber);
   state.editor.strokes = state.editor.strokes.filter((stroke) => stroke.page !== state.editor.pageNumber);
   drawEditorOverlay();
-  setEditorStatus(`Pagina ${state.editor.pageNumber} pulita.`);
+  setEditorStatus(`Aggiunte rimosse da pagina ${state.editor.pageNumber}. Puoi ripristinarle con Annulla.`);
 }
 
 function parseRanges(input, pageCount) {
@@ -3568,6 +3621,7 @@ $("#clearQueue").addEventListener("click", () => {
 runButton.addEventListener("click", runSelectedTool);
 
 editorModes?.addEventListener("click", (event) => {
+  if (editorOriginal || state.busy || workspaceBusy()) return;
   const button = event.target.closest("[data-editor-mode]");
   if (button) setEditorMode(button.dataset.editorMode);
 });
@@ -3598,7 +3652,7 @@ document.getElementById('signaturePadUse').onclick = () => {
 };
 
 editorInkCanvas?.addEventListener("pointerdown", (event) => {
-  if (editorRendering || !editorPreviewReady || state.busy || workspaceBusy()) return;
+  if (editorOriginal || editorRendering || !editorPreviewReady || state.busy || workspaceBusy() || state.editor.drawing || event.button !== 0) return;
   if (!state.editor.pdf) {
     setEditorStatus("Apri un PDF nell'editor.");
     return;
@@ -3613,7 +3667,9 @@ editorInkCanvas?.addEventListener("pointerdown", (event) => {
       points: [point],
     };
     state.editor.strokes.push(state.editor.currentStroke);
-    editorInkCanvas.setPointerCapture(event.pointerId);
+    editorPointerId = event.pointerId;
+    // Synthetic keyboard/browser checks do not always have an active native pointer.
+    try { editorInkCanvas.setPointerCapture(event.pointerId); } catch {}
     return;
   }
 
@@ -3639,45 +3695,67 @@ editorInkCanvas?.addEventListener("pointerdown", (event) => {
     mark.y = Math.min(state.editor.pageSize.height - margin, Math.max(point.y, height * fit + margin));
   }
   state.editor.marks.push(mark);
+  editorHistory.record({ page: mark.page, added: { marks: [mark] } });
   drawEditorOverlay();
   setEditorStatus(`${state.editor.mode.startsWith("signature") ? "Firma" : "Testo"} aggiunto a pagina ${state.editor.pageNumber}.`);
 });
 
 editorInkCanvas?.addEventListener("pointermove", (event) => {
-  if (!state.editor.drawing || !state.editor.currentStroke) return;
+  if (!state.editor.drawing || !state.editor.currentStroke || event.pointerId !== editorPointerId || editorOriginal || state.busy || workspaceBusy()) return;
   state.editor.currentStroke.points.push(editorPdfPoint(event));
   drawEditorOverlay();
 });
 
 ["pointerup", "pointercancel", "pointerleave"].forEach((eventName) => {
-  editorInkCanvas?.addEventListener(eventName, () => {
-    state.editor.drawing = false;
-    state.editor.currentStroke = null;
+  editorInkCanvas?.addEventListener(eventName, event => {
+    if (event.pointerId === editorPointerId) finishEditorStroke();
   });
 });
 
 editorPrev?.addEventListener("click", async () => {
-  if (!state.editor.pdf || state.editor.pageNumber <= 1) return;
+  if (state.busy || workspaceBusy() || !state.editor.pdf || state.editor.pageNumber <= 1) return;
+  finishEditorStroke();
   state.editor.pageNumber -= 1;
   await renderEditorPage();
 });
 
 editorNext?.addEventListener("click", async () => {
-  if (!state.editor.pdf || state.editor.pageNumber >= state.editor.pageCount) return;
+  if (state.busy || workspaceBusy() || !state.editor.pdf || state.editor.pageNumber >= state.editor.pageCount) return;
+  finishEditorStroke();
   state.editor.pageNumber += 1;
   await renderEditorPage();
 });
 
 editorClear?.addEventListener("click", clearCurrentEditorPage);
-document.getElementById('editorUndoInsertion').onclick = async () => {
-  const latest = [...state.editor.marks, ...state.editor.strokes].sort((a,b) => b.sequence - a.sequence)[0];
-  if (!latest) return;
-  state.editor.marks = state.editor.marks.filter(mark => mark !== latest);
-  state.editor.strokes = state.editor.strokes.filter(stroke => stroke !== latest);
-  state.editor.pageNumber = latest.page;
+async function restoreEditorHistory(redo = false) {
+  if (editorOriginal || state.busy || workspaceBusy() || !state.editor.pdf) return;
+  finishEditorStroke();
+  const restored = editorHistory.move(state.editor, redo);
+  if (!restored) return;
+  state.editor.marks = restored.marks;
+  state.editor.strokes = restored.strokes;
+  state.editor.pageNumber = restored.page;
   await renderEditorPage();
-  setEditorStatus('Ultimo inserimento annullato. La firma rimane disponibile per essere inserita di nuovo.');
+  setEditorStatus(`${redo ? 'Modifica ripetuta' : 'Modifica annullata'} a pagina ${restored.page}. La firma resta disponibile.`);
+}
+document.getElementById('editorUndoInsertion').onclick = async () => restoreEditorHistory();
+document.getElementById('editorRedoInsertion').onclick = async () => restoreEditorHistory(true);
+document.getElementById('editorShowOriginal').onclick = () => {
+  if (state.busy || workspaceBusy() || !state.editor.pdf) return;
+  finishEditorStroke();
+  editorOriginal = !editorOriginal;
+  if (editorOriginal) document.getElementById('signaturePadPanel').hidden = true;
+  drawEditorOverlay();
+  setEditorStatus(editorOriginal ? 'Originale: le tue aggiunte sono nascoste solo in anteprima. Torna alle modifiche per continuare.' : 'Le tue aggiunte sono di nuovo visibili. Puoi continuare a modificare il PDF.');
 };
+document.getElementById('editor').addEventListener('keydown', event => {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || event.target.isContentEditable) return;
+  const key = event.key.toLowerCase();
+  if (key !== 'z' && key !== 'y') return;
+  event.preventDefault();
+  event.stopPropagation();
+  void restoreEditorHistory(key === 'y' || event.shiftKey);
+});
 
 editorSave?.addEventListener("click", async () => {
   if (state.busy || workspaceBusy()) return;

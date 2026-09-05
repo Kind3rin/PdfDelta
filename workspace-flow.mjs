@@ -162,10 +162,17 @@ export function initFlow(bridge, workspace) {
         const append = current.length > 0 && current.every(file => pdfs.includes(file));
         const incoming = append ? pdfs.filter(file => !current.includes(file)) : pdfs;
         const success = !incoming.length || await workspace.open(incoming, !append);
-        if (!success) { lastFiles = previous; bridge.replaceFiles(previous); update(previous); return; }
+        if (!success) {
+          lastFiles = previous; bridge.replaceFiles(previous); update(previous);
+          home.hidden = true; host.hidden = false;
+          if (!$('wsError').hidden) { $('wsError').focus({ preventScroll: true }); $('wsError').scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+          return;
+        }
       }
-      showPages(); update(files);
-      if (intent && files.length) {
+      const accepted = [...workspace.getFiles(), ...files.filter(file => !/\.pdf$/i.test(file.name))];
+      if (!same(accepted, files)) { lastFiles = accepted; bridge.replaceFiles(accepted); }
+      showPages(); update(accepted);
+      if (intent && accepted.length) {
         const chosen = intent; intent = null; bridge.selectTool(chosen.id);
         if (chosen.id === 'edit-pdf') setTimeout(() => void bridge.run(), 0);
       }

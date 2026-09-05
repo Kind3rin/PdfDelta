@@ -1,5 +1,5 @@
 import { PageHistory } from './workspace-model.mjs';
-import { readEditable, readBytes, viewportFor } from './pdf-engine.mjs';
+import { readEditableSource, readBytes, viewportFor } from './pdf-engine.mjs';
 
 export function initWorkspace(bridge) {
   const host = document.querySelector('#visualWorkspace');
@@ -9,7 +9,15 @@ export function initWorkspace(bridge) {
   const selected = new Set();
   let serial = 0, busy = false, cancel = false, generation = 0, limit = 60, lastOutput;
   let renderTasks = [], baseline = '';
+  let jobAbort;
   const status = message => { $('wsStatus').textContent = message; };
+  const showError = message => {
+    status(message);
+    $('wsErrorMessage').textContent = message;
+    $('wsError').hidden = false;
+    $('wsError').focus({ preventScroll: true });
+    $('wsError').scrollIntoView({ block: 'nearest', behavior: 'instant' });
+  };
   const title = () => sources.get(history.pages[0]?.source)?.file.name || 'Il tuo documento';
   function controls() {
     const locked = busy || bridge.isBusy();
@@ -31,8 +39,8 @@ export function initWorkspace(bridge) {
   function checkCancelled() { if (cancel) throw new DOMException('Operazione annullata. Il documento precedente è intatto.', 'AbortError'); }
   async function job(action) {
     if (busy) return;
-    busy = true; cancel = false; controls();
-    try { await action(); return true; } catch (error) { status(error.message); return false; }
+    busy = true; cancel = false; jobAbort = new AbortController(); $('wsError').hidden = true; controls();
+    try { await action(); return true; } catch (error) { if (error.name === 'AbortError') status(error.message); else showError(error.message); return false; }
     finally { busy = false; controls(); }
   }
   async function open(files, replace = false) {
@@ -41,12 +49,16 @@ export function initWorkspace(bridge) {
       if (!incoming.length) throw new Error('Seleziona almeno un PDF o caricalo dagli strumenti.');
       const total = [...sources.values()].reduce((n, s) => n + s.file.size, 0) + incoming.reduce((n, f) => n + f.size, 0);
       if (total > 200 * 1024 * 1024) throw new Error('La sessione supera 200 MB. Esporta e inizia una nuova sessione.');
+      let preparedTotal = total;
       const staged = [], pages = replace ? [] : [...history.pages];
       try {
-        for (const [i, file] of incoming.entries()) {
+        for (const [i, original] of incoming.entries()) {
           checkCancelled();
-          status(`Apertura documento ${i + 1} di ${incoming.length}: ${file.name}`);
-          const doc = await readEditable(file);
+          status(`Apertura documento ${i + 1} di ${incoming.length}: ${original.name}`);
+          const { file, document: doc } = await readEditableSource(original, { signal: jobAbort.signal });
+          checkCancelled();
+          preparedTotal += file.size - original.size;
+          if (preparedTotal > 200 * 1024 * 1024) throw new Error('Le copie modificabili superano 200 MB. Apri meno documenti insieme.');
           if (pages.length + doc.getPageCount() > 1000) throw new Error('La sessione supporta fino a 1000 pagine.');
           const task = window.pdfjsLib.getDocument({ data: await readBytes(file), owner: 'workspace' });
           const reader = await task.promise;
@@ -135,7 +147,8 @@ export function initWorkspace(bridge) {
   });
   $('wsImport').onclick = () => $('wsFiles').click();
   $('wsFromQueue').onclick = () => void open(bridge.getFiles());
-  $('wsCancel').onclick = () => { cancel = true; status('Annullamento in corso…'); };
+  $('wsCancel').onclick = () => { cancel = true; jobAbort?.abort(); status('Annullamento in corso…'); };
+  $('wsErrorRetry').onclick = () => $('wsFiles').click();
   function restoreHistory(redo = false) {
     if (busy || bridge.isBusy()) return;
     if (redo ? !history.canRedo : !history.canUndo) return;

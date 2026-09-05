@@ -34,7 +34,7 @@ function worker({ cached, response, offline = false, quota = false } = {}) {
       skipWaiting: async () => {},
     },
     caches: {
-      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v58'],
+      keys: async () => ['another-app-v1', 'pdfdelta-static-v37', 'pdfdelta-static-v59'],
       delete: async (key) => deleted.push(key),
       open: async () => cache,
     },
@@ -110,4 +110,33 @@ test('every PDF.js entry point disables evaluation (CVE-2024-4367 mitigation)', 
   assert.ok(calls.length > 0);
   for (const call of calls) assert.match(call[1], /isEvalSupported:\s*false/);
   assert.equal(calls.length, [...source.matchAll(/pdfjsLib\.getDocument\(/g)].length);
+});
+
+test('vendored qpdf assets and bounded heap match the reviewed manifest', () => {
+  const dir = path.join(__dirname, 'vendor/qpdf');
+  const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'));
+  for (const [name, info] of Object.entries(manifest.files)) {
+    assert.equal(createHash('sha256').update(fs.readFileSync(path.join(dir, name))).digest('hex'), info.sha256, name);
+  }
+  assert.ok(fs.readFileSync(path.join(dir, 'qpdf.mjs'), 'utf8').includes('var getHeapMax=()=>536870912'));
+});
+
+test('local decryption retains forms, metadata and embedded files', async () => {
+  const { default: createQpdfModule } = await import('./vendor/qpdf/qpdf.mjs');
+  const { PDFDocument, PDFName } = require('./vendor/pdf-lib.min.js');
+  const input = fs.readFileSync(path.join(__dirname, 'tests/fixtures/pdf/owner-restricted.pdf'));
+  await assert.rejects(PDFDocument.load(input), /encrypted/i);
+  const engine = await createQpdfModule({ noInitialRun: true, print() {}, printErr() {} });
+  try {
+    engine.FS.writeFile('/input.pdf', input);
+    const result = engine.callMain(['--decrypt', '--decode-level=none', '/input.pdf', '/output.pdf']);
+    assert.ok([0,3].includes(result));
+    const decoded = await PDFDocument.load(engine.FS.readFile('/output.pdf'));
+    assert.equal(decoded.getPageCount(), 2);
+    assert.equal(decoded.getTitle(), 'PdfDelta encrypted fixture');
+    assert.equal(decoded.getForm().getTextField('sample').getText(), 'Form value');
+    assert.ok(decoded.catalog.lookup(PDFName.of('Names')).lookup(PDFName.of('EmbeddedFiles')));
+  } finally {
+    for (const file of ['/input.pdf','/output.pdf']) { try { engine.FS.unlink(file); } catch {} }
+  }
 });
